@@ -10,7 +10,8 @@ import {
     MapPin,
     Search,
     Filter,
-    ArrowRight
+    ArrowRight,
+    Activity
 } from 'lucide-react'
 import {
     format,

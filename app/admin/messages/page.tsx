@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
     Search,
     Send,
@@ -30,7 +30,7 @@ export default function TacticalCommMatrix() {
     const [currentUser, setCurrentUser] = useState<any>(null)
     const scrollRef = useRef<HTMLDivElement>(null)
 
-    const fetchConversations = async () => {
+    const fetchConversations = useCallback(async () => {
         try {
             const token = localStorage.getItem('token')
             const res = await fetch('/api/messages/conversations', {
@@ -46,7 +46,7 @@ export default function TacticalCommMatrix() {
         } finally {
             setLoading(false)
         }
-    }
+    }, [activeChat])
 
     const fetchMessages = async (recipientId: string) => {
         try {
@@ -99,7 +99,7 @@ export default function TacticalCommMatrix() {
                 setCurrentUser(payload)
             } catch (e) { }
         }
-    }, [])
+    }, [fetchConversations])
 
     useEffect(() => {
         if (activeChat) {

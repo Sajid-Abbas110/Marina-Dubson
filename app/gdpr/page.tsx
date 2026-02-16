@@ -37,7 +37,7 @@ export default function GDPRPage() {
                     <p className="text-slate-400 leading-relaxed font-medium">
                         Marina Dubson Stenographic Services operates as a Data Processor for our clients (Data Controllers).
                         We handle all legal proceedings data with the highest level of confidentiality and
-                        security protocols, ensuring that EU citizens' data is protected regardless of where
+                        security protocols, ensuring that EU citizens&apos; data is protected regardless of where
                         the signal originates.
                     </p>
                 </div>

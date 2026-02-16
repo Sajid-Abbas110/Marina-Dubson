@@ -31,39 +31,39 @@ export default function BookingConfirmationPage() {
     const [confirmedFinancial, setConfirmedFinancial] = useState(false)
 
     useEffect(() => {
-        fetchConfirmationDetails()
-    }, [bookingId])
+        const fetchConfirmationDetails = async () => {
+            try {
+                const token = localStorage.getItem('token')
+                if (!token) {
+                    router.push('/login')
+                    return
+                }
 
-    const fetchConfirmationDetails = async () => {
-        try {
-            const token = localStorage.getItem('token')
-            if (!token) {
-                router.push('/login')
-                return
+                const res = await fetch(`/api/confirmations?bookingId=${bookingId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+
+                if (!res.ok) {
+                    const err = await res.json()
+                    throw new Error(err.error || 'Failed to fetch details')
+                }
+
+                const result = await res.json()
+                setData(result)
+
+                // If already confirmed, show success
+                if (result.confirmation) {
+                    setSuccess(true)
+                }
+            } catch (err: any) {
+                setError(err.message)
+            } finally {
+                setLoading(false)
             }
-
-            const res = await fetch(`/api/confirmations?bookingId=${bookingId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-
-            if (!res.ok) {
-                const err = await res.json()
-                throw new Error(err.error || 'Failed to fetch details')
-            }
-
-            const result = await res.json()
-            setData(result)
-
-            // If already confirmed, show success
-            if (result.confirmation) {
-                setSuccess(true)
-            }
-        } catch (err: any) {
-            setError(err.message)
-        } finally {
-            setLoading(false)
         }
-    }
+
+        fetchConfirmationDetails()
+    }, [bookingId, router])
 
     const handleSubmit = async () => {
         if (!confirmedScheduling || !confirmedCancellation || !confirmedFinancial) {
