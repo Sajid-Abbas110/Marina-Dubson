@@ -1,0 +1,223 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import {
+    Settings,
+    User,
+    Shield,
+    Bell,
+    Lock,
+    Database,
+    Zap,
+    Terminal,
+    Globe,
+    Fingerprint,
+    ArrowRight,
+    ChevronRight,
+    Command,
+    Smartphone,
+    Cloud,
+    Power,
+    CheckCircle2,
+    MessageSquare
+} from 'lucide-react'
+
+export default function AdministrativeSettingsPage() {
+    const [activeTab, setActiveTab] = useState('PROFILE')
+
+    return (
+        <div className="max-w-[1600px] w-[95%] mx-auto p-6 lg:p-12 space-y-12 pb-24 animate-in fade-in duration-700">
+            {/* Settings Header */}
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+                <div className="space-y-2">
+                    <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
+                        Configuration <span className="text-primary italic">Core</span>
+                    </h1>
+                    <p className="text-gray-500 font-medium">Fine-tuning the Global Node architecture & networking protocols.</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <button className="h-14 px-8 rounded-2xl bg-gray-900 text-white font-black text-xs uppercase tracking-[0.2em] flex items-center gap-3 hover:bg-primary transition-all shadow-2xl">
+                        Save System State <Zap className="h-5 w-5" />
+                    </button>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+                {/* Control Sidebar */}
+                <aside className="lg:col-span-1 space-y-10">
+                    <div className="space-y-2">
+                        <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] mb-6">Hierarchy Controls</h3>
+                        <nav className="flex flex-col gap-2">
+                            <SettingsTab active={activeTab === 'PROFILE'} onClick={() => setActiveTab('PROFILE')} icon={<User />} label="Root Identity" />
+                            <SettingsTab active={activeTab === 'SECURITY'} onClick={() => setActiveTab('SECURITY')} icon={<Shield />} label="Security Vault" />
+                            <SettingsTab active={activeTab === 'NETWORK'} onClick={() => setActiveTab('NETWORK')} icon={<Globe />} label="Network Grid" />
+                            <SettingsTab active={activeTab === 'SYSTEM'} onClick={() => setActiveTab('SYSTEM')} icon={<Terminal />} label="Core Engine" />
+                            <SettingsTab active={activeTab === 'NOTIFICATIONS'} onClick={() => setActiveTab('NOTIFICATIONS')} icon={<Bell />} label="Comms Routing" />
+                        </nav>
+                    </div>
+
+                    <div className="p-8 rounded-[2.5rem] bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 shadow-inner group">
+                        <Power className="h-8 w-8 text-gray-300 dark:text-gray-600 mb-4 group-hover:text-rose-500 transition-colors" />
+                        <h4 className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest mb-1">Emergency Off-Grid</h4>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase leading-relaxed tracking-tighter">Temporarily disable all external API endpoints and secure the node.</p>
+                        <button className="w-full py-4 mt-6 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[10px] font-black uppercase text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all">Enable Lockdown</button>
+                    </div>
+                </aside>
+
+                {/* Main Settings Canvas */}
+                <div className="lg:col-span-3 space-y-8">
+                    {activeTab === 'PROFILE' && (
+                        <div className="glass-panel rounded-[3rem] p-12 space-y-12 animate-in slide-in-from-right-8 duration-500">
+                            <div className="flex items-center gap-8 pb-12 border-b border-gray-100 dark:border-white/5">
+                                <div className="relative group">
+                                    <div className="h-24 w-24 rounded-[2.5rem] bg-gradient-to-br from-primary to-emerald-800 flex items-center justify-center text-white text-3xl font-black shadow-2xl relative z-10">
+                                        MD
+                                    </div>
+                                    <div className="absolute inset-0 bg-primary rounded-[2.5rem] blur-xl opacity-20 animate-pulse"></div>
+                                    <button className="absolute -bottom-2 -right-2 h-10 w-10 rounded-xl bg-white dark:bg-[#00120d] border border-gray-100 dark:border-white/10 shadow-xl flex items-center justify-center text-gray-400 hover:text-primary transition-all z-20">
+                                        <Smartphone className="h-4 w-4" />
+                                    </button>
+                                </div>
+                                <div className="space-y-1">
+                                    <h3 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Marina Dubson</h3>
+                                    <p className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.3em]">Chief Operational Officer • Node 01</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                <SettingsField label="Professional First Name" value="Marina" />
+                                <SettingsField label="Professional Last Name" value="Dubson" />
+                                <SettingsField label="Global Command Email" value="marina@marinadubson.com" />
+                                <SettingsField label="Secure Mobile Link" value="+1 (917) 494-1859" />
+                            </div>
+
+                            <div className="space-y-4 pt-8">
+                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em]">Biography Asset</h4>
+                                <textarea className="luxury-input dark:bg-white/5 dark:text-white min-h-[160px] py-8 leading-relaxed resize-none" defaultValue="Directing the future of stenographic excellence. Managing a global network of elite reporters and legal firms with zero-latency synchronization." />
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'SECURITY' && (
+                        <div className="glass-panel rounded-[3rem] p-12 space-y-10 animate-in slide-in-from-right-8 duration-500">
+                            <div className="space-y-8">
+                                <SecurityToggle label="Two-Factor Fingerprint Auth" status="Enabled" icon={<Fingerprint className="text-primary" />} />
+                                <SecurityToggle label="End-to-End Transcript Encryption" status="Military Grade (AES-256)" icon={<Lock className="text-emerald-500" />} />
+                                <SecurityToggle label="IP Access Whitelist" status="Restricted to Certified Nodes" icon={<Shield className="text-purple-500" />} />
+                                <SecurityToggle label="Automatic Cache Purge" status="Every 24 Hours" icon={<Zap className="text-yellow-500" />} />
+                            </div>
+
+                            <div className="pt-10 border-t border-gray-100 dark:border-white/5 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <Command className="h-10 w-10 text-gray-200 dark:text-gray-700" />
+                                    <div>
+                                        <p className="text-sm font-black text-gray-900 dark:text-white uppercase">Change Security Access Key</p>
+                                        <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest mt-0.5">Last updated 14 days ago</p>
+                                    </div>
+                                </div>
+                                <button className="px-6 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 text-[10px] font-black uppercase text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all">Initiate Reset</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'NETWORK' && (
+                        <div className="glass-panel rounded-[3rem] p-12 space-y-12 animate-in slide-in-from-right-8 duration-500">
+                            <div>
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Network Grid Coordination</h3>
+                                <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-2">Manage the links between legal clients and stenographic professionals.</p>
+                            </div>
+                            <div className="space-y-8">
+                                <SecurityToggle label="Automated Personnel Linking" status="Link clients to preferred reporters automatically" icon={<Globe className="text-primary" />} />
+                                <SecurityToggle label="Inter-Portal Direct Messaging" status="Allow direct comms between linked nodes" icon={<MessageSquare className="text-emerald-500" />} />
+                                <SecurityToggle label="Global Directory Visibility" status="Show reporter profiles to all verified clients" icon={<Database className="text-purple-500" />} />
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'SYSTEM' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-right-8 duration-500">
+                            <InfrastructureCard label="PostgreSQL Global Instance" status="Healthy" icon={<Database className="text-indigo-400" />} load="12%" />
+                            <InfrastructureCard label="Cloud Asset Storage (AWS)" status="Syncing" icon={<Cloud className="text-primary" />} load="44%" />
+                            <InfrastructureCard label="Real-time Stream Relay" status="Online" icon={<Zap className="text-amber-400" />} load="08%" />
+                            <InfrastructureCard label="Auth0 Identity Provider" status="Verified" icon={<Fingerprint className="text-rose-400" />} load="02%" />
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function SettingsTab({ icon, label, active, onClick }: any) {
+    return (
+        <button
+            onClick={onClick}
+            className={`flex items-center gap-5 w-full p-5 rounded-2xl transition-all duration-500 group ${active
+                ? 'bg-primary text-white shadow-2xl shadow-primary/20 translate-x-1'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-white/5 hover:shadow-xl hover:shadow-gray-200/20'
+                }`}
+        >
+            <div className={`transition-all duration-500 ${active ? 'text-white' : 'text-gray-300 group-hover:text-primary group-hover:rotate-12'}`}>
+                {icon}
+            </div>
+            <span className="text-[11px] font-black uppercase tracking-widest">{label}</span>
+            {active && <ChevronRight className="ml-auto h-4 w-4 opacity-50" />}
+        </button>
+    )
+}
+
+function SettingsField({ label, value }: any) {
+    return (
+        <div className="space-y-3">
+            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">{label}</label>
+            <input className="luxury-input dark:bg-white/5 dark:text-white dark:border-white/10 dark:focus:ring-primary/20" defaultValue={value} />
+        </div>
+    )
+}
+
+function SecurityToggle({ label, status, icon }: any) {
+    return (
+        <div className="flex items-center justify-between p-6 rounded-[2rem] bg-gray-50/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-transparent hover:border-gray-100 dark:hover:border-white/10 hover:shadow-lg transition-all cursor-pointer group">
+            <div className="flex items-center gap-6">
+                <div className="h-12 w-12 rounded-2xl bg-white dark:bg-white/5 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                    {icon}
+                </div>
+                <div>
+                    <h4 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{label}</h4>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest mt-0.5">{status}</p>
+                </div>
+            </div>
+            <div className="h-8 w-14 rounded-full bg-emerald-500 p-1 flex items-center justify-end relative shadow-inner">
+                <div className="h-6 w-6 rounded-full bg-white shadow-lg"></div>
+            </div>
+        </div>
+    )
+}
+
+function InfrastructureCard({ label, status, icon, load }: any) {
+    return (
+        <div className="glass-panel p-8 rounded-[2.5rem] space-y-8 border border-gray-100 dark:border-white/5 hover:shadow-2xl transition-all group">
+            <div className="flex justify-between items-start">
+                <div className="h-14 w-14 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center group-hover:bg-white dark:group-hover:bg-white/10 group-hover:shadow-lg transition-all">
+                    {icon}
+                </div>
+                <div className="text-right">
+                    <p className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Active Load</p>
+                    <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">{load}</p>
+                </div>
+            </div>
+            <div>
+                <h4 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight mb-2">{label}</h4>
+                <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">{status}</span>
+                </div>
+            </div>
+            <div className="h-1.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                <div className="h-full bg-primary transition-all duration-1000" style={{ width: load }}></div>
+            </div>
+        </div>
+    )
+}

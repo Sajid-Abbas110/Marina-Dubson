@@ -1,0 +1,295 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  password         String
+  firstName        String
+  lastName         String
+  role             String    @default("STAFF")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  certification    String?
+  company          String?
+  submittedBids    Bid[]     @relation("ReporterBids")
+  bookingsAssigned Booking[] @relation("ReporterBookings")
+  bookingsCreated  Booking[] @relation("CreatedBookings")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  sentMessages     Message[] @relation("SentMessages")
+  createdTasks     Task[]    @relation("CreatedTasks")
+  assignedTasks    Task[]    @relation("AssignedTasks")
+}
+
+model Contact {
+  id                   String               @id @default(cuid())
+  firstName            String
+  lastName             String
+  companyName          String?
+  email                String               @unique
+  phone                String?
+  clientType           String
+  billingContactName   String?
+  billingContactEmail  String?
+  customPricingEnabled Boolean              @default(false)
+  pricingNotes         String?
+  status               String               @default("Active")
+  notes                String?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  bookings             Booking[]
+  confirmations        ClientConfirmation[]
+  customPricing        CustomPricing[]
+  invoices             Invoice[]
+  messages             Message[]
+
+  @@index([email])
+  @@index([clientType])
+}
+
+model Service {
+  id                    String    @id @default(cuid())
+  serviceName           String
+  category              String
+  subService            String
+  defaultMinimumFee     Float     @default(400)
+  pageRate              Float
+  appearanceFeeRemote   Float
+  appearanceFeeInPerson Float
+  realtimeFee           Float
+  expediteImmediate     Float
+  expedite1Day          Float
+  expedite2Day          Float
+  expedite3Day          Float
+  description           String?
+  active                Boolean   @default(true)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  bookings              Booking[]
+
+  @@index([category])
+  @@index([active])
+}
+
+model CustomPricing {
+  id                    String   @id @default(cuid())
+  contactId             String
+  serviceId             String?
+  pageRate              Float?
+  appearanceFeeRemote   Float?
+  appearanceFeeInPerson Float?
+  realtimeFee           Float?
+  minimumFee            Float?
+  expediteImmediate     Float?
+  expedite1Day          Float?
+  expedite2Day          Float?
+  expedite3Day          Float?
+  notes                 String?
+  effectiveDate         DateTime @default(now())
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  contact               Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@index([contactId])
+}
+
+model Booking {
+  id                   String              @id @default(cuid())
+  bookingNumber        String              @unique
+  contactId            String
+  serviceId            String
+  userId               String
+  reporterId           String?
+  proceedingType       String
+  jurisdiction         String?
+  state                String?
+  bookingDate          DateTime
+  bookingTime          String
+  location             String?
+  venue                String?
+  appearanceType       String
+  turnaroundTime       String?
+  specialRequirements  String?
+  bookingStatus        String              @default("SUBMITTED")
+  invoiceStatus        String?
+  notes                String?
+  cancellationDeadline DateTime?
+  confirmedAt          DateTime?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  isMarketplace        Boolean             @default(false)
+  lockedAppearanceFee  Float?
+  lockedMinimumFee     Float?
+  lockedPageRate       Float?
+  lockedRealtimeFee    Float?
+  bids                 Bid[]
+  reporter             User?               @relation("ReporterBookings", fields: [reporterId], references: [id])
+  user                 User                @relation("CreatedBookings", fields: [userId], references: [id])
+  service              Service             @relation(fields: [serviceId], references: [id])
+  contact              Contact             @relation(fields: [contactId], references: [id])
+  confirmation         ClientConfirmation?
+  invoice              Invoice?
+  tasks                Task[]
+
+  @@index([contactId])
+  @@index([bookingStatus])
+  @@index([bookingDate])
+  @@index([bookingNumber])
+}
+
+model ClientConfirmation {
+  id                    String   @id @default(cuid())
+  bookingId             String   @unique
+  contactId             String
+  confirmedScheduling   Boolean  @default(false)
+  confirmedCancellation Boolean  @default(false)
+  confirmedFinancial    Boolean  @default(false)
+  ipAddress             String?
+  userAgent             String?
+  confirmedAt           DateTime @default(now())
+  contact               Contact  @relation(fields: [contactId], references: [id])
+  booking               Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([contactId])
+}
+
+model Invoice {
+  id               String    @id @default(cuid())
+  invoiceNumber    String    @unique
+  bookingId        String    @unique
+  contactId        String
+  jobNumber        String?
+  invoiceDate      DateTime  @default(now())
+  dueDate          DateTime?
+  status           String    @default("DRAFT")
+  pages            Int?
+  originalCopies   Int       @default(1)
+  additionalCopies Int       @default(0)
+  pageRate         Float
+  copyRate         Float     @default(1.00)
+  appearanceFee    Float
+  congestionFee    Float     @default(9.00)
+  realtimeFee      Float?
+  realtimeDevices  Int?
+  roughFee         Float?
+  videographerFee  Float?
+  interpreterFee   Float?
+  expertFee        Float?
+  afterHoursFee    Float?
+  afterHoursCount  Int?
+  waitTimeFee      Float?
+  cancellationFee  Float?
+  minimumFee       Float     @default(400)
+  subtotal         Float
+  tax              Float     @default(0)
+  total            Float
+  notes            String?
+  paidAt           DateTime?
+  paymentMethod    String?
+  stripePaymentId  String?
+  paypalPaymentId  String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  contact          Contact   @relation(fields: [contactId], references: [id])
+  booking          Booking   @relation(fields: [bookingId], references: [id])
+
+  @@index([contactId])
+  @@index([status])
+  @@index([invoiceNumber])
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  senderId    String
+  recipientId String
+  contactId   String?
+  subject     String?
+  content     String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  contact     Contact? @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  recipient   User     @relation("ReceivedMessages", fields: [recipientId], references: [id])
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id])
+
+  @@index([senderId])
+  @@index([recipientId])
+  @@index([contactId])
+  @@index([isRead])
+}
+
+model Document {
+  id         String   @id @default(cuid())
+  fileName   String
+  fileType   String
+  fileUrl    String
+  category   String
+  contactId  String?
+  bookingId  String?
+  uploadedBy String?
+  createdAt  DateTime @default(now())
+
+  @@index([contactId])
+  @@index([bookingId])
+  @@index([category])
+}
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  recipient String
+  subject   String
+  body      String
+  emailType String
+  sentAt    DateTime @default(now())
+  status    String
+  errorMsg  String?
+
+  @@index([recipient])
+  @@index([emailType])
+  @@index([sentAt])
+}
+
+model Task {
+  id           String    @id @default(cuid())
+  title        String
+  description  String?
+  status       String    @default("TODO")
+  priority     String    @default("MEDIUM")
+  dueDate      DateTime?
+  assignedToId String?
+  createdById  String
+  bookingId    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  booking      Booking?  @relation(fields: [bookingId], references: [id])
+  createdBy    User      @relation("CreatedTasks", fields: [createdById], references: [id])
+  assignedTo   User?     @relation("AssignedTasks", fields: [assignedToId], references: [id])
+
+  @@index([assignedToId])
+  @@index([createdById])
+  @@index([status])
+}
+
+model Bid {
+  id         String   @id @default(cuid())
+  bookingId  String
+  reporterId String
+  amount     Float
+  timeline   String?
+  notes      String?
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  reporter   User     @relation("ReporterBids", fields: [reporterId], references: [id])
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([reporterId])
+  @@index([status])
+}

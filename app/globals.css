@@ -1,0 +1,179 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 158 95% 39%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 158 40% 96.1%;
+    --secondary-foreground: 158 47.4% 11.2%;
+    --muted: 158 40% 96.1%;
+    --muted-foreground: 158 16.3% 46.9%;
+    --accent: 158 40% 96.1%;
+    --accent-foreground: 158 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 158 31.8% 91.4%;
+    --input: 158 31.8% 91.4%;
+    --ring: 158 95% 39%;
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: 158 95% 2%;
+    --foreground: 210 40% 98%;
+    --card: 158 95% 3%;
+    --card-foreground: 210 40% 98%;
+    --popover: 158 95% 3%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 158 95% 39%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 158 32.6% 12%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 158 32.6% 12%;
+    --muted-foreground: 158 20.2% 65.1%;
+    --accent: 158 32.6% 12%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 158 32.6% 12%;
+    --input: 158 32.6% 12%;
+    --ring: 158 95% 39%;
+  }
+}
+
+* {
+  @apply border-border;
+}
+
+body {
+  @apply bg-background text-foreground font-sans antialiased transition-colors duration-300;
+}
+
+.font-poppins {
+  font-family: var(--font-poppins), sans-serif;
+}
+
+/* Luxury Mesh Gradients */
+.mesh-gradient {
+  background-color: #ffffff;
+  background-image:
+    radial-gradient(at 0% 0%, hsla(210, 100%, 99%, 1) 0, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(240, 100%, 99%, 1) 0, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(220, 100%, 98%, 1) 0, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(210, 100%, 99%, 1) 0, transparent 50%);
+}
+
+.dark .mesh-gradient {
+  background-color: #00120d;
+  background-image:
+    radial-gradient(at 0% 0%, hsla(158, 47%, 12%, 1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(160, 47%, 10%, 1) 0px, transparent 50%);
+}
+
+.dark-mesh {
+  background-color: #ffffff;
+}
+
+.dark .dark-mesh {
+  background-color: #00120d;
+  background-image:
+    radial-gradient(at 0% 0%, hsla(158, 100%, 8%, 1) 0, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(160, 100%, 5%, 1) 0, transparent 50%);
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  @apply bg-white/90 dark:bg-white/[0.03] backdrop-blur-3xl border border-gray-100 dark:border-white/5 shadow-2xl shadow-gray-200/50 dark:shadow-none transition-all duration-300;
+}
+
+.glass-card {
+  @apply bg-white/40 dark:bg-white/[0.02] backdrop-blur-md border border-white/50 dark:border-white/5 hover:bg-white/60 dark:hover:bg-white/5 transition-all duration-500 hover:shadow-xl hover:shadow-blue-500/5;
+}
+
+/* Elite UI Elements */
+.luxury-btn {
+  @apply relative overflow-hidden bg-gray-900 dark:bg-blue-600 text-white font-black text-[9px] uppercase tracking-[0.2em] px-6 py-3 rounded-xl transition-all duration-500 hover:bg-blue-600 dark:hover:bg-blue-500 active:scale-95 flex items-center justify-center gap-2;
+}
+
+.luxury-btn::after {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full skew-x-12 transition-transform duration-1000;
+}
+
+.luxury-btn:hover::after {
+  @apply translate-x-[200%];
+}
+
+.luxury-input {
+  @apply w-full bg-gray-50/50 dark:bg-white/5 backdrop-blur-sm border border-transparent focus:border-blue-100 dark:focus:border-blue-500/50 focus:bg-white dark:focus:bg-white/10 focus:ring-2 focus:ring-blue-50/50 dark:focus:ring-blue-500/10 rounded-xl px-5 py-3 outline-none transition-all duration-300 font-medium text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 placeholder:font-bold placeholder:uppercase placeholder:text-[9px] placeholder:tracking-widest;
+}
+
+.glass-dropdown {
+  @apply bg-white/90 dark:bg-[#1e293b]/90 backdrop-blur-xl border border-gray-100 dark:border-white/5 shadow-2xl shadow-gray-200/50 dark:shadow-none transition-all duration-300;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-200 dark:bg-white/10 rounded-full hover:bg-blue-400 dark:hover:bg-blue-500 transition-colors;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+@keyframes pulse-soft {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 4s ease-in-out infinite;
+}
+
+.card {
+  @apply bg-white dark:bg-white/[0.03] rounded-3xl shadow-sm border border-gray-100 dark:border-white/5 p-6 transition-all duration-300 hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-none;
+}
+
+.badge {
+  @apply inline-flex items-center px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest;
+}
