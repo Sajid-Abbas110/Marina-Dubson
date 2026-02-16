@@ -270,10 +270,10 @@ export default function ServicesAdmin() {
                                 </select>
                             </div>
 
-                            <Field label="Base Page Rate ($)" value={formData.pageRate} onChange={v => setFormData({ ...formData, pageRate: parseFloat(v) })} />
-                            <Field label="Remote Presence Fee ($)" value={formData.appearanceFeeRemote} onChange={v => setFormData({ ...formData, appearanceFeeRemote: parseFloat(v) })} />
-                            <Field label="On-Site Attendance ($)" value={formData.appearanceFeeInPerson} onChange={v => setFormData({ ...formData, appearanceFeeInPerson: parseFloat(v) })} />
-                            <Field label="Real-time Stream Sync ($)" value={formData.realtimeFee} onChange={v => setFormData({ ...formData, realtimeFee: parseFloat(v) })} />
+                            <Field label="Base Page Rate ($)" value={formData.pageRate} onChange={(v: any) => setFormData({ ...formData, pageRate: parseFloat(v) })} />
+                            <Field label="Remote Presence Fee ($)" value={formData.appearanceFeeRemote} onChange={(v: any) => setFormData({ ...formData, appearanceFeeRemote: parseFloat(v) })} />
+                            <Field label="On-Site Attendance ($)" value={formData.appearanceFeeInPerson} onChange={(v: any) => setFormData({ ...formData, appearanceFeeInPerson: parseFloat(v) })} />
+                            <Field label="Real-time Stream Sync ($)" value={formData.realtimeFee} onChange={(v: any) => setFormData({ ...formData, realtimeFee: parseFloat(v) })} />
 
                             <div className="md:col-span-2 space-y-4">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] ml-2">Node Specification / Logistics</label>
