@@ -43,16 +43,16 @@ export default function DashboardPage() {
             const bookingsRes = await fetch('/api/bookings', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
-            const data = await bookingsRes.json()
-            const allBookings = Array.isArray(data.bookings) ? data.bookings : []
+            const bookingsData = await bookingsRes.json()
+            const allBookings = Array.isArray(bookingsData.bookings) ? bookingsData.bookings : []
             setRecentBookings(allBookings.slice(0, 5))
 
             // Fetch invoices
             const invoicesRes = await fetch('/api/invoices', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
-            const data = await invoicesRes.json()
-            const allInvoices = Array.isArray(data.invoices) ? data.invoices : []
+            const invoicesData = await invoicesRes.json()
+            const allInvoices = Array.isArray(invoicesData.invoices) ? invoicesData.invoices : []
 
             // Calculate stats
             const totalRevenue = allInvoices
