@@ -122,4 +122,11 @@ export class PricingEngine {
         const total = Math.max(subtotal, rates.minimumFee)
         return { subtotal, total }
     }
+
+    /**
+     * Requirement 6.2: Provides a base estimate before final data is known
+     */
+    static calculateEstimate(rates: BookingRates): number {
+        return rates.minimumFee
+    }
 }

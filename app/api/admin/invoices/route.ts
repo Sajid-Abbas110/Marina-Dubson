@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-// import { getServerSession } from 'next-auth'
-// import { authOptions } from '@/lib/auth'
+import { extractTokenFromHeader, verifyToken } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
     try {
         // Authenticate admin
-        // const session = await getServerSession(authOptions)
-        // if (session?.user?.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        const token = extractTokenFromHeader(request.headers.get('Authorization'))
+        const payload = token ? verifyToken(token) : null
+
+        if (!payload || (payload.role !== 'ADMIN' && payload.role !== 'MANAGER')) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
 
         const invoices = await prisma.invoice.findMany({
             include: {

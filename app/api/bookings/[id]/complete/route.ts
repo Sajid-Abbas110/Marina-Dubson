@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { integrationOrchestrator } from '@/lib/integration-orchestrator'
-import { authOptions } from '@/lib/auth'
-import { getServerSession } from 'next-auth'
+import { extractTokenFromHeader, verifyToken } from '@/lib/auth'
 
 export async function POST(
     request: NextRequest,
@@ -9,8 +8,12 @@ export async function POST(
 ) {
     try {
         // Authenticate admin
-        // const session = await getServerSession(authOptions)
-        // if (session?.user?.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        const token = extractTokenFromHeader(request.headers.get('Authorization'))
+        const payload = token ? verifyToken(token) : null
+
+        if (!payload || (payload.role !== 'ADMIN' && payload.role !== 'MANAGER')) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
 
         const id = params.id
         const billingData = await request.json()

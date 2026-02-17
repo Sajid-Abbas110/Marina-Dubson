@@ -38,14 +38,15 @@ export async function GET(request: NextRequest) {
         if (category) where.category = category
         if (active !== null) where.active = active === 'true'
 
-        let services = await prisma.service.findMany({
+        const services = await prisma.service.findMany({
             where,
             orderBy: { serviceName: 'asc' },
         })
 
         // Redact pricing for non-admin/staff
+        let resultServices = services as any[]
         if (payload.role !== 'ADMIN' && payload.role !== 'STAFF') {
-            services = services.map((s: any) => ({
+            resultServices = services.map((s: any) => ({
                 id: s.id,
                 serviceName: s.serviceName,
                 category: s.category,
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
             }))
         }
 
-        return NextResponse.json({ services })
+        return NextResponse.json({ services: resultServices })
     } catch (error) {
         console.error('Get services error:', error)
         return NextResponse.json(

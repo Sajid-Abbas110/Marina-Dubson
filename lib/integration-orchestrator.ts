@@ -87,6 +87,63 @@ export class IntegrationOrchestrator {
     }
 
     /**
+     * Automated Flow: Triggered after Client Confirmation
+     * Creates the initial invoice record
+     */
+    async createInvoiceAfterApproval(data: BookingIntegrationData): Promise<void> {
+        try {
+            // Simplified version of generateFinalInvoice specifically for the automated trigger
+            // This is primarily to ensure the invoice exists in the system once confirmed
+            const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`
+
+            await prisma.invoice.create({
+                data: {
+                    invoiceNumber,
+                    jobNumber: data.bookingNumber,
+                    contactId: (await prisma.booking.findUnique({ where: { id: data.bookingId } }))?.contactId || '',
+                    bookingId: data.bookingId,
+                    invoiceDate: new Date(),
+                    dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days
+                    status: 'DRAFT',
+                    pageRate: 0, // Will be updated during finalization
+                    appearanceFee: data.serviceAmount,
+                    subtotal: data.serviceAmount,
+                    total: data.serviceAmount,
+                    notes: `Automated invoice generated for ${data.serviceName} - ${data.proceedingType}`
+                }
+            })
+
+            // Requirement 7.1: Also sync to Zoho Books if possible
+            try {
+                const customerResult = await zohoBooks.upsertCustomer({
+                    contact_name: `${data.contactFirstName} ${data.contactLastName}`,
+                    company_name: data.companyName,
+                    email: data.contactEmail,
+                    phone: data.contactPhone
+                })
+
+                await zohoBooks.createInvoice({
+                    customer_id: customerResult.id,
+                    date: new Date().toISOString().split('T')[0],
+                    due_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    line_items: [{
+                        name: data.serviceName,
+                        description: `Initial booking for ${data.proceedingType}`,
+                        rate: data.serviceAmount,
+                        quantity: 1
+                    }],
+                    notes: `Booking confirmation for ${data.bookingNumber}`
+                })
+            } catch (zohoError) {
+                console.error('Initial Zoho Books sync failed, will retry at completion:', zohoError)
+            }
+        } catch (error) {
+            console.error('createInvoiceAfterApproval failed:', error)
+            throw error
+        }
+    }
+
+    /**
      * Step 2: Create final invoice in Zoho Books after completion
      */
     async generateFinalInvoice(bookingId: string, billingData: {

@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Verify user owns this booking (for clients) or is admin
-        if (decoded.role === 'CLIENT' && booking.contact.email !== decoded.email) {
+        if (decoded.role === 'CLIENT' && (booking.contact as any).email !== decoded.email) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
         }
 
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
             try {
                 await integrationOrchestrator.createInvoiceAfterApproval({
                     bookingId: updatedBooking.id,
-                    contactEmail: updatedBooking.contact.email,
+                    contactEmail: (updatedBooking.contact as any).email,
                     contactFirstName: updatedBooking.contact.firstName,
                     contactLastName: updatedBooking.contact.lastName,
                     contactPhone: updatedBooking.contact.phone || undefined,
@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Verify access
-        if (decoded.role === 'CLIENT' && booking.contact.email !== decoded.email) {
+        if (decoded.role === 'CLIENT' && (booking.contact as any).email !== decoded.email) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
         }
 
