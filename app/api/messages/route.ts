@@ -84,14 +84,20 @@ export async function POST(request: NextRequest) {
         try {
             // Find the contact associated with this client
             const user = await prisma.user.findUnique({
-                where: { id: payload.id },
-                include: { contact: true }
+                where: { id: payload.id }
             })
 
-            if (user?.contact) {
-                const contactIdInCRM = JSON.parse(user.contact.notes || '{}').zohoCRMContactId
-                if (contactIdInCRM) {
-                    await zohoCRM.addNote(contactIdInCRM, 'Contacts', `[Portal Message] ${payload.firstName || 'User'}: ${data.content}`)
+            if (user) {
+                // Look up contact by email since User and Contact share the email field
+                const contact = await prisma.contact.findUnique({
+                    where: { email: user.email }
+                })
+
+                if (contact) {
+                    const contactIdInCRM = JSON.parse(contact.notes || '{}').zohoCRMContactId
+                    if (contactIdInCRM) {
+                        await zohoCRM.addNote(contactIdInCRM, 'Contacts', `[Portal Message] ${payload.firstName || 'User'}: ${data.content}`)
+                    }
                 }
             }
         } catch (crmError) {
