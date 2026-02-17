@@ -68,12 +68,12 @@ export default function ClientPortal() {
 
                 if (userData.user) setUser(userData.user)
 
-                const userBookings = bookingsData.bookings || []
+                const userBookings = Array.isArray(bookingsData.bookings) ? bookingsData.bookings : []
                 setBookings(userBookings)
-                setServices(servicesData.services || [])
-                setDocuments(docsData.documents || [])
-                setInvoices(invoicesData.invoices || [])
-                setMessages(messagesData.messages || [])
+                setServices(Array.isArray(servicesData.services) ? servicesData.services : [])
+                setDocuments(Array.isArray(docsData.documents) ? docsData.documents : [])
+                setInvoices(Array.isArray(invoicesData.invoices) ? invoicesData.invoices : [])
+                setMessages(Array.isArray(messagesData.messages) ? messagesData.messages : [])
 
                 // Calculate stats
                 const active = userBookings.filter((b: any) => ['SUBMITTED', 'ACCEPTED', 'CONFIRMED'].includes(b.bookingStatus)).length

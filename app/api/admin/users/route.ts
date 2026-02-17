@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
             },
         })
 
-        return NextResponse.json(users)
+        return NextResponse.json({ users })
     } catch (error) {
         console.error('Fetch users error:', error)
         return NextResponse.json(

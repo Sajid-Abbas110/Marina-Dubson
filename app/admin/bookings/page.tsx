@@ -38,7 +38,7 @@ export default function BookingManagementPage() {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const data = await res.json()
-            setBookings(data.bookings)
+            setBookings(Array.isArray(data.bookings) ? data.bookings : [])
         } catch (error) {
             console.error('Failed to fetch bookings:', error)
         } finally {
@@ -193,9 +193,9 @@ export default function BookingManagementPage() {
 
             {/* Matrix Filters */}
             <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                <FilterTab active={filter === 'ALL'} onClick={() => setFilter('ALL')} label="Full Matrix" count={bookings.length.toString()} />
-                <FilterTab active={filter === 'SUBMITTED'} onClick={() => setFilter('SUBMITTED')} label="Requires Review" count={bookings.filter(b => b.bookingStatus === 'SUBMITTED').length.toString()} />
-                <FilterTab active={filter === 'ACCEPTED'} onClick={() => setFilter('ACCEPTED')} label="Active Logistics" count={bookings.filter(b => b.bookingStatus === 'ACCEPTED').length.toString()} />
+                <FilterTab active={filter === 'ALL'} onClick={() => setFilter('ALL')} label="Full Matrix" count={(bookings || []).length.toString()} />
+                <FilterTab active={filter === 'SUBMITTED'} onClick={() => setFilter('SUBMITTED')} label="Requires Review" count={(bookings || []).filter(b => b.bookingStatus === 'SUBMITTED').length.toString()} />
+                <FilterTab active={filter === 'ACCEPTED'} onClick={() => setFilter('ACCEPTED')} label="Active Logistics" count={(bookings || []).filter(b => b.bookingStatus === 'ACCEPTED').length.toString()} />
                 <div className="ml-auto h-12 w-12 rounded-2xl bg-white dark:bg-white/5 flex items-center justify-center border border-gray-100 dark:border-white/10 shadow-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-white/10">
                     <Filter className="h-4 w-4 text-gray-400" />
                 </div>
@@ -218,7 +218,7 @@ export default function BookingManagementPage() {
                 <div className="divide-y divide-gray-50 dark:divide-white/5">
                     {loading ? (
                         <div className="p-20 text-center text-gray-400 uppercase font-black text-xs tracking-widest">Synchronizing Matrix Data...</div>
-                    ) : bookings.filter(b => filter === 'ALL' || b.bookingStatus === filter).map(b => (
+                    ) : (bookings || []).filter(b => filter === 'ALL' || b.bookingStatus === filter).map(b => (
                         <div key={b.id} className="px-6 lg:px-10 py-8 hover:bg-primary/5 dark:hover:bg-primary/5 transition-all cursor-pointer group flex flex-col xl:flex-row xl:items-center justify-between gap-8">
                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 lg:gap-12">
                                 {/* Date Pillar */}

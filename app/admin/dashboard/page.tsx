@@ -43,25 +43,25 @@ export default function DashboardPage() {
             const bookingsRes = await fetch('/api/bookings', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
-            const bookingsData = await bookingsRes.json()
-            const allBookings = bookingsData.bookings || []
+            const data = await bookingsRes.json()
+            const allBookings = Array.isArray(data.bookings) ? data.bookings : []
             setRecentBookings(allBookings.slice(0, 5))
 
             // Fetch invoices
             const invoicesRes = await fetch('/api/invoices', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
-            const invoicesData = await invoicesRes.json()
-            const allInvoices = invoicesData.invoices || []
+            const data = await invoicesRes.json()
+            const allInvoices = Array.isArray(data.invoices) ? data.invoices : []
 
             // Calculate stats
             const totalRevenue = allInvoices
-                .filter((i: any) => i.status === 'PAID')
-                .reduce((sum: number, i: any) => sum + i.total, 0)
+                .filter((i: any) => i && i.status === 'PAID')
+                .reduce((sum: number, i: any) => sum + (i.total || 0), 0)
 
             const unpaidRevenue = allInvoices
-                .filter((i: any) => i.status !== 'PAID')
-                .reduce((sum: number, i: any) => sum + i.total, 0)
+                .filter((i: any) => i && i.status !== 'PAID')
+                .reduce((sum: number, i: any) => sum + (i.total || 0), 0)
 
             const upcoming = allBookings.filter((b: any) =>
                 ['SUBMITTED', 'ACCEPTED', 'CONFIRMED'].includes(b.bookingStatus)

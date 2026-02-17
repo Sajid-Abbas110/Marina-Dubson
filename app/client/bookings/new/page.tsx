@@ -55,7 +55,7 @@ export default function NewBookingPage() {
 
                 if (res.ok) {
                     const data = await res.json()
-                    const servicesList = data.services || []
+                    const servicesList = Array.isArray(data.services) ? data.services : []
                     setServices(servicesList)
                     if (servicesList.length > 0) {
                         setFormData(prev => ({ ...prev, serviceId: servicesList[0].id }))

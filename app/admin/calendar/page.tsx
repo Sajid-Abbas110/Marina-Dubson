@@ -41,7 +41,7 @@ export default function VisualCalendarPage() {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
                 const data = await res.json()
-                setBookings(data.bookings)
+                setBookings(Array.isArray(data.bookings) ? data.bookings : [])
             } catch (error) {
                 console.error('Failed to fetch bookings:', error)
             } finally {
@@ -108,7 +108,7 @@ export default function VisualCalendarPage() {
         return (
             <div className="grid grid-cols-7 gap-px bg-gray-100 dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl">
                 {allDays.map((d, i) => {
-                    const dayBookings = bookings.filter(b => isSameDay(new Date(b.bookingDate), d))
+                    const dayBookings = (bookings || []).filter(b => b && b.bookingDate && isSameDay(new Date(b.bookingDate), d))
                     const hasTimeConflict = dayBookings.some((b1, idx1) =>
                         dayBookings.some((b2, idx2) => idx1 !== idx2 && b1.bookingTime === b2.bookingTime)
                     )
@@ -186,7 +186,7 @@ export default function VisualCalendarPage() {
                         </div>
 
                         <div className="space-y-4">
-                            {bookings.filter(b => isSameDay(new Date(b.bookingDate), selectedDate)).map(b => (
+                            {(bookings || []).filter(b => b && b.bookingDate && isSameDay(new Date(b.bookingDate), selectedDate)).map(b => (
                                 <div key={b.id} className="p-6 rounded-2xl bg-white dark:bg-white/5 border border-gray-50 dark:border-white/5 hover:border-primary/20 transition-all group">
                                     <div className="flex justify-between items-start mb-4">
                                         <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border ${b.bookingStatus === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
@@ -211,7 +211,7 @@ export default function VisualCalendarPage() {
                                     </button>
                                 </div>
                             ))}
-                            {bookings.filter(b => isSameDay(new Date(b.bookingDate), selectedDate)).length === 0 && (
+                            {((bookings || []).filter(b => b && b.bookingDate && isSameDay(new Date(b.bookingDate), selectedDate))).length === 0 && (
                                 <div className="py-12 text-center">
                                     <CalendarIcon className="h-10 w-10 text-gray-100 dark:text-white/10 mx-auto mb-4" />
                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">No deployments<br />scheduled for this node.</p>
