@@ -25,6 +25,7 @@ model User {
   sentMessages     Message[] @relation("SentMessages")
   createdTasks     Task[]    @relation("CreatedTasks")
   assignedTasks    Task[]    @relation("AssignedTasks")
+  contact          Contact?  @relation(fields: [email], references: [email])
 }
 
 model Contact {
@@ -48,6 +49,7 @@ model Contact {
   customPricing        CustomPricing[]
   invoices             Invoice[]
   messages             Message[]
+  user                 User?
 
   @@index([email])
   @@index([clientType])

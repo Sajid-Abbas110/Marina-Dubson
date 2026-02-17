@@ -5,8 +5,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this'
 
 export interface TokenPayload {
     userId: string
+    id: string
     email: string
     role: string
+    firstName?: string
 }
 
 export async function hashPassword(password: string): Promise<string> {

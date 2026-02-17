@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
             if (user?.contact) {
                 const contactIdInCRM = JSON.parse(user.contact.notes || '{}').zohoCRMContactId
                 if (contactIdInCRM) {
-                    await zohoCRM.addNote(contactIdInCRM, 'Contacts', `[Portal Message] ${payload.firstName}: ${data.content}`)
+                    await zohoCRM.addNote(contactIdInCRM, 'Contacts', `[Portal Message] ${payload.firstName || 'User'}: ${data.content}`)
                 }
             }
         } catch (crmError) {

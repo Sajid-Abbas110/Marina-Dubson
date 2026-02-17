@@ -18,8 +18,10 @@ export async function POST(request: NextRequest) {
         if (email === 'admin@marinadubson.com' && password === 'SecurePassword123!') {
             const token = generateToken({
                 userId: 'dev-admin-id',
+                id: 'dev-admin-id',
                 email: 'admin@marinadubson.com',
                 role: 'ADMIN',
+                firstName: 'Marina'
             })
             return NextResponse.json({
                 token,
@@ -49,8 +51,10 @@ export async function POST(request: NextRequest) {
 
         const token = generateToken({
             userId: user.id,
+            id: user.id,
             email: user.email,
             role: user.role,
+            firstName: user.firstName
         })
 
         return NextResponse.json({
