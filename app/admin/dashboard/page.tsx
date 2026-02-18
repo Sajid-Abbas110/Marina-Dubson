@@ -17,7 +17,8 @@ import {
     FileText,
     Zap,
     Shield,
-    Smartphone
+    Smartphone,
+    Activity
 } from 'lucide-react'
 
 export default function DashboardPage() {
@@ -35,7 +36,6 @@ export default function DashboardPage() {
         try {
             const token = localStorage.getItem('token')
 
-            // Fetch bookings
             const bookingsRes = await fetch('/api/bookings', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
@@ -43,20 +43,14 @@ export default function DashboardPage() {
             const allBookings = Array.isArray(bookingsData.bookings) ? bookingsData.bookings : []
             setRecentBookings(allBookings.slice(0, 5))
 
-            // Fetch invoices
             const invoicesRes = await fetch('/api/invoices', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const invoicesData = await invoicesRes.json()
             const allInvoices = Array.isArray(invoicesData.invoices) ? invoicesData.invoices : []
 
-            // Calculate stats
             const totalRevenue = allInvoices
                 .filter((i: any) => i && i.status === 'PAID')
-                .reduce((sum: number, i: any) => sum + (i.total || 0), 0)
-
-            const unpaidRevenue = allInvoices
-                .filter((i: any) => i && i.status !== 'PAID')
                 .reduce((sum: number, i: any) => sum + (i.total || 0), 0)
 
             const upcoming = allBookings.filter((b: any) =>
@@ -70,12 +64,10 @@ export default function DashboardPage() {
             setStats({
                 totalRevenue,
                 upcomingJobs: upcoming,
-                activeReporters: 0, // Will update below
+                activeReporters: 0,
                 reviewQueue: pendingApprovals,
-                unpaidRevenue // Added new stat internally
             } as any)
 
-            // Fetch users to count reporters
             const usersRes = await fetch('/api/admin/users', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
@@ -97,7 +89,6 @@ export default function DashboardPage() {
     }, [fetchDashboardData])
 
     const handleExportAnalytics = () => {
-        // Generate CSV export
         const csvData = `Dashboard Analytics Export
 Generated: ${new Date().toLocaleString()}
 
@@ -124,10 +115,7 @@ Review Queue,${stats.reviewQueue}
     }
 
     const formatTime = (timeString: string) => {
-        // Handle both "HH:MM" and "HH:MM AM/PM" formats
-        if (timeString.includes('AM') || timeString.includes('PM')) {
-            return timeString
-        }
+        if (timeString.includes('AM') || timeString.includes('PM')) return timeString
         const [hours, minutes] = timeString.split(':')
         const hour = parseInt(hours)
         const ampm = hour >= 12 ? 'PM' : 'AM'
@@ -137,63 +125,60 @@ Review Queue,${stats.reviewQueue}
 
     return (
         <div className="max-w-[1600px] w-[95%] mx-auto p-6 lg:p-12 space-y-12 pb-24 animate-in fade-in duration-1000">
-            {/* Elite Welcome & Actions */}
+            {/* Header Area */}
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
-                <div className="space-y-2">
-                    <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">
-                        System Operational
+                <div className="space-y-4">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">
+                        <Activity className="h-3 w-3" /> System Operational
                     </div>
-                    <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">
-                        COMMAND <span className="text-primary italic">CENTER</span>
+                    <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tight uppercase leading-none">
+                        COMMAND <span className="brand-gradient italic">CENTER</span>
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 font-medium text-sm sm:text-base">Monitoring Marina Dubson Stenographic Infrastructure</p>
+                    <p className="text-muted-foreground font-black uppercase text-[10px] tracking-[0.4em]">Monitoring Marina Dubson Stenographic Infrastructure</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4">
                     <button
                         onClick={handleExportAnalytics}
-                        className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl dark:shadow-none hover:border-primary/20 dark:hover:border-primary/50 transition-all group active:scale-95"
+                        className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-card border border-border hover:border-primary/50 transition-all hover:translate-y-[-2px] group"
                     >
-                        <Download className="h-4 w-4 text-gray-400 group-hover:text-primary" />
-                        <span className="text-xs font-black uppercase tracking-widest text-gray-600 dark:text-gray-400">Export Analytics</span>
+                        <Download className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">Export Analytics</span>
                     </button>
                     <Link
                         href="/admin/bookings"
-                        className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-primary text-white font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 transition-all"
+                        className="luxury-button flex items-center gap-3 px-10 py-4"
                     >
                         <Plus className="h-5 w-5" />
-                        Initiate Booking
+                        <span className="uppercase tracking-widest text-[10px] font-black">Initiate Booking</span>
                     </Link>
                 </div>
             </div>
 
-            {/* High-Impact KPI Grid */}
+            {/* KPI Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <KPICard
-                    title="Revenue"
+                    title="Revenue Performance"
                     value={`$${stats.totalRevenue.toLocaleString()}`}
                     icon={<DollarSign />}
                     trend="+12.5%"
                     trendUp={true}
-                    grad="from-indigo-500 to-indigo-700"
                     onClick={() => router.push('/admin/analytics')}
                 />
                 <KPICard
-                    title="Upcoming Jobs"
+                    title="Operational Load"
                     value={stats.upcomingJobs}
                     icon={<Calendar />}
                     trend={`+${stats.upcomingJobs} New`}
                     trendUp={true}
-                    grad="from-primary to-indigo-800"
                     onClick={() => router.push('/admin/calendar')}
                 />
                 <KPICard
                     title="Active Reporters"
                     value={stats.activeReporters}
                     icon={<Users />}
-                    trend="Stable"
+                    trend="Verified"
                     trendUp={true}
-                    grad="from-purple-600 to-pink-700"
                     onClick={() => router.push('/admin/team')}
                 />
                 <KPICard
@@ -202,7 +187,6 @@ Review Queue,${stats.reviewQueue}
                     icon={<Clock />}
                     trend={`${stats.reviewQueue} Ready`}
                     trendUp={false}
-                    grad="from-orange-500 to-rose-600"
                     onClick={() => router.push('/admin/bookings?status=SUBMITTED')}
                 />
             </div>
@@ -210,16 +194,16 @@ Review Queue,${stats.reviewQueue}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 {/* Main Feed */}
                 <div className="lg:col-span-2 space-y-10">
-                    <div className="glass-panel rounded-[2.5rem] overflow-hidden">
-                        <div className="px-6 lg:px-8 py-6 border-b border-gray-100 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/50 dark:bg-white/[0.02]">
-                            <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">Recent Assignments</h3>
-                            <Link href="/admin/bookings" className="text-[10px] font-black text-primary hover:text-indigo-600 uppercase tracking-widest">View All Operations →</Link>
+                    <div className="glass-panel rounded-[3rem] overflow-hidden bg-card border border-border shadow-2xl">
+                        <div className="px-10 py-8 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/30">
+                            <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Recent Assignments</h3>
+                            <Link href="/admin/bookings" className="text-[10px] font-black text-primary hover:text-primary/80 uppercase tracking-widest transition-all hover:translate-x-1">View All Operations →</Link>
                         </div>
-                        <div className="divide-y divide-gray-50 dark:divide-white/5">
+                        <div className="divide-y divide-border">
                             {loading ? (
-                                <div className="px-6 py-12 text-center text-gray-400 text-sm">Loading assignments...</div>
+                                <div className="px-6 py-20 text-center text-muted-foreground text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">Scanning Assignments Matrix...</div>
                             ) : recentBookings.length === 0 ? (
-                                <div className="px-6 py-12 text-center text-gray-400 text-sm">No recent assignments</div>
+                                <div className="px-6 py-20 text-center text-muted-foreground text-[10px] font-black uppercase tracking-[0.3em]">No recent assignments found</div>
                             ) : (
                                 recentBookings.map((booking) => (
                                     <JobRow
@@ -238,42 +222,44 @@ Review Queue,${stats.reviewQueue}
                     </div>
                 </div>
 
-                {/* Cyber Sidebar Widgets */}
+                {/* Sidebar Column */}
                 <div className="space-y-8">
-                    <div className="bg-gradient-to-br from-gray-900 via-primary/20 to-indigo-900 dark:from-black dark:via-primary/10 dark:to-indigo-950 rounded-[2.5rem] p-8 text-white relative overflow-hidden group shadow-2xl">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl group-hover:bg-primary/20 transition-all"></div>
+                    <div className="bg-primary rounded-[3rem] p-10 text-primary-foreground relative overflow-hidden group shadow-2xl shadow-primary/30">
+                        <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:rotate-12 transition-transform duration-700">
+                            <Zap className="h-40 w-40" />
+                        </div>
                         <div className="relative z-10">
-                            <Zap className="h-10 w-10 text-yellow-400 mb-6 animate-float" />
-                            <h4 className="text-2xl font-black tracking-tight leading-tight mb-2">PREMIUM SUPPORT</h4>
-                            <p className="text-emerald-100 text-sm font-medium mb-8 leading-relaxed">Direct line to Marina for immediate case escalations and elite adjustments.</p>
+                            <Zap className="h-10 w-10 text-yellow-400 mb-6 animate-pulse" />
+                            <h4 className="text-2xl font-black tracking-tight leading-tight mb-4 uppercase">Elite Concierge</h4>
+                            <p className="text-primary-foreground/90 text-sm font-medium mb-10 leading-relaxed uppercase tracking-tight">Direct channel for immediate case escalations and priority logistical adjustments.</p>
                             <Link
                                 href="/admin/messages"
-                                className="block w-full py-4 bg-white text-gray-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-50 hover:shadow-2xl transition-all text-center"
+                                className="block w-full py-5 bg-background text-foreground rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-muted transition-all text-center shadow-2xl"
                             >
                                 Connect Now
                             </Link>
                         </div>
                     </div>
 
-                    <div className="glass-panel rounded-[2.5rem] p-8 space-y-8">
+                    <div className="glass-panel rounded-[3rem] p-10 space-y-10 border border-border bg-card shadow-xl">
                         <div>
-                            <div className="flex justify-between items-center mb-6">
-                                <h4 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest">System Resources</h4>
-                                <Shield className="h-4 w-4 text-indigo-500" />
+                            <div className="flex justify-between items-center mb-8">
+                                <h4 className="text-[10px] font-black text-foreground uppercase tracking-[0.3em]">Node Integrity</h4>
+                                <Shield className="h-4 w-4 text-primary" />
                             </div>
-                            <div className="space-y-6">
-                                <ResourceStat label="Storage Capacity" used="78" color="bg-primary" />
-                                <ResourceStat label="Server Load" used="32" color="bg-indigo-500" />
+                            <div className="space-y-8">
+                                <ResourceStat label="Storage Cluster" used={78} color="bg-primary" />
+                                <ResourceStat label="Network Traffic" used={32} color="bg-primary/60" />
                             </div>
                         </div>
-                        <div className="pt-6 border-t border-gray-100 dark:border-white/5">
-                            <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center">
-                                    <Smartphone className="h-6 w-6 text-gray-400" />
+                        <div className="pt-8 border-t border-border">
+                            <div className="flex items-center gap-5">
+                                <div className="h-14 w-14 rounded-2xl bg-muted border border-border flex items-center justify-center">
+                                    <Smartphone className="h-6 w-6 text-primary" />
                                 </div>
-                                <div>
-                                    <p className="text-xs font-black text-gray-900 dark:text-white uppercase">Mobile App Sync</p>
-                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase mt-0.5">Last Sync: 2m ago</p>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black text-foreground uppercase tracking-widest">Mobile Device Sync</p>
+                                    <p className="text-[9px] text-muted-foreground font-black uppercase tracking-tighter italic">Last Pulse: 2m ago</p>
                                 </div>
                             </div>
                         </div>
@@ -284,24 +270,26 @@ Review Queue,${stats.reviewQueue}
     )
 }
 
-function KPICard({ title, value, icon, trend, trendUp, grad, onClick }: any) {
+function KPICard({ title, value, icon, trend, trendUp, onClick }: any) {
     return (
         <div
             onClick={onClick}
-            className="glass-panel rounded-[2.5rem] p-8 group relative overflow-hidden cursor-pointer hover:shadow-xl transition-all"
+            className="bg-card p-10 rounded-[2.5rem] border border-border hover:border-primary/20 transition-all duration-500 cursor-pointer group hover:shadow-2xl relative overflow-hidden"
         >
-            <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${grad} opacity-[0.03] group-hover:opacity-[0.08] transition-opacity`}></div>
+            <div className="absolute top-0 right-0 p-8 opacity-[0.02] group-hover:scale-110 transition-transform duration-700">
+                {icon}
+            </div>
             <div className="flex justify-between items-start relative z-10">
-                <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${grad} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-500`}>
-                    {icon}
+                <div className="h-14 w-14 rounded-2xl bg-muted border border-border flex items-center justify-center text-primary shadow-sm group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500">
+                    <div className="scale-125">{icon}</div>
                 </div>
-                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${trendUp ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400'}`}>
+                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${trendUp ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}`}>
                     {trend}
                 </div>
             </div>
-            <div className="mt-8 relative z-10">
-                <h3 className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.3em] mb-2">{title}</h3>
-                <p className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter">{value}</p>
+            <div className="mt-10 relative z-10">
+                <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mb-4">{title}</h3>
+                <p className="text-4xl font-black text-foreground tracking-tighter uppercase">{value}</p>
             </div>
         </div>
     )
@@ -311,40 +299,42 @@ function JobRow({ id, client, types, time, date, status, bookingId }: any) {
     const router = useRouter()
 
     return (
-        <div className="px-6 lg:px-8 py-5 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-primary/5 dark:hover:bg-primary/5 transition-all cursor-pointer group gap-6">
-            <div className="flex items-center gap-6 lg:gap-8">
-                <div className="flex flex-col items-center justify-center px-4 py-3 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm group-hover:border-primary/20 dark:group-hover:border-primary/50 transition-colors flex-shrink-0">
-                    <span className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-tighter">{date.split(' ')[0]}</span>
-                    <span className="text-lg font-black text-gray-900 dark:text-white">{date.split(' ')[1]}</span>
+        <div
+            onClick={() => router.push(`/admin/bookings`)}
+            className="px-10 py-7 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-primary/5 transition-all cursor-pointer group gap-8 border-l-4 border-transparent hover:border-primary"
+        >
+            <div className="flex items-center gap-8 lg:gap-10">
+                <div className="flex flex-col items-center justify-center px-5 py-4 rounded-2xl bg-muted border border-border shadow-sm group-hover:border-primary/20 transition-all flex-shrink-0">
+                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1">{date.split(' ')[0]}</span>
+                    <span className="text-xl font-black text-foreground">{date.split(' ')[1]}</span>
                 </div>
-                <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-3">
-                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">{id}</span>
-                        <h4 className="text-sm font-bold text-gray-900 dark:text-white truncate max-w-[150px] sm:max-w-[200px]">{client}</h4>
+                <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-4">
+                        <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{id}</span>
+                        <h4 className="text-base font-black text-foreground uppercase tracking-tight">{client}</h4>
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {types.map((t: string) => (
-                            <span key={t} className="px-2 py-0.5 rounded-lg bg-gray-50 dark:bg-white/5 text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tight">{t}</span>
+                            <span key={t} className="px-3 py-1 rounded-lg bg-muted border border-border text-[9px] font-black text-muted-foreground uppercase tracking-widest">{t}</span>
                         ))}
                     </div>
                 </div>
             </div>
-            <div className="flex items-center justify-between sm:justify-end gap-6 lg:gap-8">
+            <div className="flex items-center justify-between sm:justify-end gap-8 lg:gap-12">
                 <div className="text-right hidden sm:block">
-                    <p className="text-xs font-black text-gray-900 dark:text-white">{time}</p>
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Start Time</p>
+                    <p className="text-sm font-black text-foreground">{time}</p>
+                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mt-1">Operational Start</p>
                 </div>
-                <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${status === 'Confirmed' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-500/20' :
-                    status === 'Pending' ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-500/20' :
-                        'bg-gray-50 dark:bg-white/10 text-gray-500 dark:text-gray-400 border-gray-100 dark:border-white/10'
+                <div className={`px-5 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border ${status === 'Confirmed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                    status === 'Pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                        'bg-muted text-muted-foreground border-border'
                     }`}>
                     {status}
                 </div>
                 <button
-                    onClick={() => router.push(`/admin/bookings`)}
-                    className="h-10 w-10 rounded-xl hover:bg-gray-50 dark:hover:bg-white/10 flex items-center justify-center text-gray-300 dark:text-gray-600 hover:text-gray-900 dark:hover:text-white transition-all"
+                    className="h-12 w-12 rounded-2xl bg-muted border border-border flex items-center justify-center text-muted-foreground group-hover:text-primary group-hover:bg-card transition-all"
                 >
-                    <ArrowUpRight className="h-5 w-5" />
+                    <ArrowUpRight className="h-6 w-6" />
                 </button>
             </div>
         </div>
@@ -353,12 +343,12 @@ function JobRow({ id, client, types, time, date, status, bookingId }: any) {
 
 function ResourceStat({ label, used, color }: any) {
     return (
-        <div className="space-y-3">
+        <div className="space-y-4">
             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                <span className="text-gray-400 dark:text-gray-500">{label}</span>
-                <span className="text-gray-900 dark:text-white">{used}%</span>
+                <span className="text-muted-foreground">{label}</span>
+                <span className="text-foreground">{used}%</span>
             </div>
-            <div className="h-2 w-full bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
+            <div className="h-2 w-full bg-muted border border-border rounded-full overflow-hidden">
                 <div className={`h-full ${color} transition-all duration-1000`} style={{ width: `${used}%` }}></div>
             </div>
         </div>

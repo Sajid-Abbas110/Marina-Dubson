@@ -4,200 +4,154 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 224 71% 4%;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
-    --card-foreground: 224 71% 4%;
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
-    --primary: 235 85% 60%;
-    /* Optimized Deep Indigo */
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 235 50% 96%;
-    --secondary-foreground: 235 40% 10%;
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 10% 45%;
-    --accent: 235 85% 60%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 84% 60%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 235 85% 60%;
-    --radius: 1.5rem;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 222 47% 4%;
-    /* Deeper Midnight */
-    --foreground: 210 40% 98%;
-    --card: 222 47% 6%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 6%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 235 85% 60%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 222 47% 10%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 222 47% 10%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 222 47% 10%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 222 47% 12%;
-    --input: 222 47% 12%;
-    --ring: 235 85% 60%;
+    --background: 240 10% 2%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 240 3.7% 12%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 12%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 12%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 12%;
+    --input: 240 3.7% 12%;
+    --ring: 240 4.9% 83.9%;
   }
 }
 
-* {
-  @apply border-border;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground transition-colors duration-300 antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
 }
 
-body {
-  @apply bg-background text-foreground font-sans antialiased transition-colors duration-300;
+/* Custom Utilities for Premium Look */
+@layer components {
+  .glass-panel {
+    @apply bg-white/70 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl;
+  }
+
+  .glass-card {
+    @apply bg-white/50 dark:bg-white/[0.03] backdrop-blur-md border border-white/20 dark:border-white/5 shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
+  .brand-gradient {
+    @apply bg-gradient-to-br from-blue-600 to-indigo-700 dark:from-blue-400 dark:to-indigo-500 bg-clip-text text-transparent;
+  }
+
+  .luxury-button {
+    @apply relative overflow-hidden transition-all duration-300 active:scale-[0.98] bg-primary text-primary-foreground hover:opacity-90 rounded-xl px-6 py-2.5 font-semibold shadow-lg shadow-primary/20;
+  }
+
+  .luxury-button::before {
+    content: '';
+    @apply absolute inset-0 bg-white/10 opacity-0 transition-opacity duration-300;
+  }
+
+  .luxury-button:hover::before {
+    @apply opacity-100;
+  }
+
+  .dashboard-card {
+    @apply bg-card text-card-foreground rounded-2xl border border-border p-6 shadow-sm hover:shadow-md transition-all duration-300;
+  }
 }
 
-.font-poppins {
-  font-family: var(--font-poppins), sans-serif;
+/* Animations */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
 }
 
-/* Luxury Mesh Gradients */
-.mesh-gradient {
-  background-color: #f8fafc;
-  background-image:
-    radial-gradient(at 0% 0%, hsla(250, 89%, 98%, 1) 0, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(220, 100%, 98%, 1) 0, transparent 50%),
-    radial-gradient(at 100% 100%, hsla(250, 89%, 97%, 1) 0, transparent 50%),
-    radial-gradient(at 0% 100%, hsla(210, 100%, 98%, 1) 0, transparent 50%);
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
 }
 
-.dark .mesh-gradient {
-  background-color: #020617;
-  background-image:
-    radial-gradient(at 0% 0%, hsla(235, 89%, 15%, 1) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(222, 47%, 8%, 1) 0px, transparent 50%);
-}
-
-.glass-panel {
-  @apply bg-white/90 dark:bg-[#0f172a]/40 backdrop-blur-xl border border-gray-100 dark:border-white/5 shadow-2xl shadow-gray-200/50 dark:shadow-none transition-all duration-300;
-}
-
-.glass-card {
-  @apply bg-white/40 dark:bg-white/[0.02] backdrop-blur-md border border-white/50 dark:border-white/5 hover:bg-white/60 dark:hover:bg-white/5 transition-all duration-500 hover:shadow-xl hover:shadow-primary/5;
-}
-
-/* Elite UI Elements */
-.luxury-btn {
-  @apply relative overflow-hidden bg-gray-900 dark:bg-primary text-white font-black text-[9px] uppercase tracking-[0.2em] px-6 py-3 rounded-xl transition-all duration-500 hover:bg-primary dark:hover:bg-primary/90 active:scale-95 flex items-center justify-center gap-2;
-}
-
-.luxury-btn::after {
+.animate-shimmer::after {
   content: '';
-  @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full skew-x-12 transition-transform duration-1000;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.05),
+      transparent);
+  animation: shimmer 2s infinite;
 }
 
-.luxury-btn:hover::after {
-  @apply translate-x-[200%];
-}
-
-.luxury-input {
-  @apply w-full bg-gray-50/50 dark:bg-white/5 backdrop-blur-sm border border-transparent focus:border-primary/20 dark:focus:border-primary/50 focus:bg-white dark:focus:bg-white/10 focus:ring-2 focus:ring-primary/10 dark:focus:ring-primary/10 rounded-xl px-5 py-3 outline-none transition-all duration-300 font-medium text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 placeholder:font-bold placeholder:uppercase placeholder:text-[9px] placeholder:tracking-widest;
-}
-
-.glass-dropdown {
-  @apply bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-xl border border-gray-100 dark:border-white/5 shadow-2xl shadow-gray-200/50 dark:shadow-none transition-all duration-300;
-}
-
-/* Custom Scrollbars */
+/* Scrollbar Customization */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  @apply bg-transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-200 dark:bg-white/10 rounded-full hover:bg-primary/40 dark:hover:bg-primary/50 transition-colors;
+  @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/30 transition-colors;
 }
 
-/* Utility to hide scrollbar */
-@layer utilities {
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
-  }
+/* Smooth Transitions */
+.transition-theme {
+  @apply transition-all duration-500 ease-in-out;
 }
 
-.vibrant-collage {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 25%, #2563eb 50%, #9333ea 75%, #4f46e5 100%);
-  background-size: 400% 400%;
-  animation: collage-shift 15s ease infinite;
+/* Sidebar Specific */
+.sidebar-item {
+  @apply flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20;
 }
 
-@keyframes collage-shift {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
+.sidebar-item-active {
+  @apply bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary hover:text-primary-foreground;
 }
 
-@keyframes float {
-  0% {
-    transform: translateY(0px) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(-10px) rotate(1deg);
-  }
-
-  100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-}
-
-@keyframes pulse-soft {
-
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.8;
-    transform: scale(0.98);
-  }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-pulse-soft {
-  animation: pulse-soft 4s ease-in-out infinite;
-}
-
-.card {
-  @apply bg-white dark:bg-white/[0.03] rounded-3xl shadow-sm border border-gray-100 dark:border-white/5 p-6 transition-all duration-300 hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-none;
-}
-
-.badge {
-  @apply inline-flex items-center px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest;
+/* Custom Grid Background for Dark Mode */
+.dark .grid-bg {
+  background-image: radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+  background-size: 24px 24px;
 }

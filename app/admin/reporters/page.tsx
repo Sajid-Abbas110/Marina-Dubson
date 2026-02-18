@@ -70,10 +70,10 @@ export default function ReportersPage() {
         <div className="max-w-[1600px] w-[95%] mx-auto p-6 lg:p-12 space-y-12 pb-24 animate-in fade-in duration-700">
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
                 <div className="space-y-2">
-                    <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
-                        Master <span className="text-primary italic">Stenographers</span>
+                    <h1 className="text-4xl font-black text-foreground tracking-tight uppercase">
+                        Master <span className="brand-gradient italic">Stenographers</span>
                     </h1>
-                    <p className="text-gray-500 font-medium font-poppins">
+                    <p className="text-muted-foreground font-medium font-poppins">
                         Highly certified court reporters and digital specialists in the MD Elite network.
                         {!loading && ` • ${users.length} Certified Reporters`}
                     </p>
@@ -84,7 +84,7 @@ export default function ReportersPage() {
                         <input
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full sm:min-w-[320px] px-12 py-4 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 text-xs font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/10 dark:text-white transition-all"
+                            className="w-full sm:min-w-[320px] px-12 py-4 rounded-2xl bg-muted/50 border border-border text-xs font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/10 text-foreground transition-all"
                             placeholder="Search Professional RSR..."
                         />
                     </div>
@@ -101,10 +101,10 @@ export default function ReportersPage() {
                     </div>
                 </div>
             ) : filteredUsers.length === 0 ? (
-                <div className="text-center py-32 glass-panel rounded-[3rem] border-2 border-dashed border-gray-100 dark:border-white/5">
-                    <User className="h-20 w-20 text-gray-200 mx-auto mb-6" />
-                    <p className="font-black text-xs uppercase tracking-widest text-gray-400 mb-2">No professionals found</p>
-                    <p className="text-[10px] text-gray-400">Broaden your search criteria or register new stenography assets.</p>
+                <div className="text-center py-32 glass-panel rounded-[3rem] border border-border">
+                    <User className="h-20 w-20 text-muted-foreground/20 mx-auto mb-6" />
+                    <p className="font-black text-xs uppercase tracking-widest text-muted-foreground mb-2">No professionals found</p>
+                    <p className="text-[10px] text-muted-foreground/60">Broaden your search criteria or register new stenography assets.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
@@ -124,10 +124,10 @@ function ReporterCard({ user }: { user: any }) {
     const joined = format(new Date(user.createdAt), 'MMM yyyy').toUpperCase()
 
     return (
-        <div className="glass-panel group p-8 rounded-[2.5rem] hover:shadow-2xl transition-all relative overflow-hidden border border-gray-100 dark:border-white/5 bg-white dark:bg-white/5">
+        <div className="glass-panel group p-8 rounded-[2.5rem] hover:shadow-2xl transition-all relative overflow-hidden bg-card">
             <div className="flex items-start justify-between relative z-10">
                 <div className="flex items-center gap-5">
-                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-indigo-800 flex items-center justify-center text-white font-black text-xl shadow-lg transition-transform group-hover:scale-110 duration-500 overflow-hidden">
+                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-indigo-800 flex items-center justify-center text-primary-foreground font-black text-xl shadow-lg transition-transform group-hover:scale-110 duration-500 overflow-hidden relative">
                         {user.avatar ? (
                             <Image src={user.avatar} alt={name} fill className="object-cover" />
                         ) : (
@@ -135,20 +135,20 @@ function ReporterCard({ user }: { user: any }) {
                         )}
                     </div>
                     <div>
-                        <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight line-clamp-1">{name}</h3>
+                        <h3 className="text-lg font-black text-foreground uppercase tracking-tight line-clamp-1">{name}</h3>
                         <div className="flex items-center gap-2 mt-1">
                             <span className="px-2 py-0.5 rounded-md bg-primary/10 text-[8px] font-black text-primary uppercase tracking-widest border border-primary/20">Reporter</span>
-                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{user.certification || 'CSR-RPR'}</span>
+                            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{user.certification || 'CSR-RPR'}</span>
                         </div>
                     </div>
                 </div>
-                <button className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-300 hover:text-primary transition-colors">
+                <button className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:text-primary transition-colors">
                     <MoreHorizontal className="h-4 w-4" />
                 </button>
             </div>
 
             <div className="mt-8 space-y-4 relative z-10">
-                <div className="flex items-center justify-between text-gray-500">
+                <div className="flex items-center justify-between text-muted-foreground">
                     <div className="flex items-center gap-3">
                         <Mail className="h-3.5 w-3.5 text-primary/50" />
                         <span className="text-[11px] font-bold truncate max-w-[150px]">{user.email}</span>
@@ -158,25 +158,25 @@ function ReporterCard({ user }: { user: any }) {
                         <span className="text-[7px] font-black text-indigo-600 uppercase tracking-widest">Verified</span>
                     </div>
                 </div>
-                <div className="flex items-center gap-3 text-gray-500">
+                <div className="flex items-center gap-3 text-muted-foreground">
                     <Calendar className="h-3.5 w-3.5 text-primary/50" />
                     <span className="text-[11px] font-bold uppercase tracking-tight">Active since {joined}</span>
                 </div>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-gray-50 dark:border-white/5 flex items-center justify-between relative z-10">
+            <div className="mt-8 pt-6 border-t border-border flex items-center justify-between relative z-10">
                 <div className="flex flex-col">
-                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Load Balance</span>
+                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1">Load Balance</span>
                     <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-24 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-1.5 w-24 bg-muted rounded-full overflow-hidden">
                             <div className="h-full bg-primary w-1/3 rounded-full animate-pulse"></div>
                         </div>
-                        <span className="text-[10px] font-black text-gray-900 dark:text-white">Low</span>
+                        <span className="text-[10px] font-black text-foreground">Low</span>
                     </div>
                 </div>
                 <button
                     onClick={() => router.push(`/admin/reporters/${user.id}`)}
-                    className="flex items-center gap-2 px-5 py-3 rounded-xl bg-primary text-white font-black text-[9px] uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 transition-all"
+                    className="luxury-button flex items-center gap-2 px-5 py-3 text-[9px]"
                 >
                     View History <ArrowRight className="h-3.5 w-3.5" />
                 </button>

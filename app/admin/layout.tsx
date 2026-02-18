@@ -16,9 +16,9 @@ export default function AdminLayout({
 
     return (
         <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'SUPER_ADMIN', 'STAFF', 'REPORTER']}>
-            <div className="flex h-screen overflow-hidden bg-white dark:bg-[#00120d] transition-colors duration-500 font-sans selection:bg-primary/10 selection:text-primary relative">
+            <div className="flex h-screen overflow-hidden bg-background transition-colors duration-500 font-sans selection:bg-primary/20 selection:text-primary relative font-poppins">
                 {/* Background elements */}
-                <div className="absolute inset-0 mesh-gradient opacity-100 dark:opacity-30 pointer-events-none"></div>
+                <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none"></div>
 
                 {/* Sidebar */}
                 <AdminSidebar
@@ -39,7 +39,7 @@ export default function AdminLayout({
                 {/* Global Overlay for mobile sidebar */}
                 {sidebarOpen && (
                     <div
-                        className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-30 lg:hidden transition-all duration-500"
+                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 lg:hidden transition-all duration-500"
                         onClick={() => setSidebarOpen(false)}
                     />
                 )}

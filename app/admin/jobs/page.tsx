@@ -231,28 +231,28 @@ export default function AdministrativeJobNexus() {
     ]
 
     return (
-        <div className="max-w-[1600px] w-[95%] mx-auto p-6 lg:p-12 space-y-12 pb-24 animate-in fade-in duration-700 font-poppins">
+        <div className="max-w-[1600px] w-[95%] mx-auto p-6 lg:p-12 space-y-12 pb-24 animate-in fade-in duration-700 font-poppins selection:bg-primary/10 selection:text-primary">
             {/* Elite Header */}
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
                 <div className="space-y-2">
-                    <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter uppercase leading-none">
-                        Protocol <span className="text-primary italic">Inventory</span>
+                    <h1 className="text-3xl font-black text-foreground tracking-tighter uppercase leading-none">
+                        Protocol <span className="brand-gradient italic">Inventory</span>
                     </h1>
-                    <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-[0.5em] mt-3">Monitoring Job Lifecycle & Resource Matrix</p>
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.5em] mt-3">Monitoring Job Lifecycle & Resource Matrix</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
                     <div className="relative group w-full sm:w-auto">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                         <input
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full sm:w-64 pl-10 pr-6 py-3 rounded-xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 outline-none text-[10px] font-black uppercase tracking-widest focus:ring-4 focus:ring-primary/10 transition-all dark:text-white"
+                            className="w-full sm:w-64 pl-10 pr-6 py-3 rounded-xl bg-muted/50 border border-border outline-none text-[10px] font-black uppercase tracking-widest focus:ring-4 focus:ring-primary/10 transition-all text-foreground"
                             placeholder="IDENTIFY JOB_ID..."
                         />
                     </div>
                     <button
                         onClick={() => setShowAddModal(true)}
-                        className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-primary text-white font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 transition-all w-full sm:w-auto justify-center"
+                        className="luxury-button flex items-center gap-3 px-8 py-4 text-[10px] w-full sm:w-auto justify-center"
                     >
                         <Plus className="h-5 w-5" /> Initiate Job Node
                     </button>
@@ -261,8 +261,8 @@ export default function AdministrativeJobNexus() {
 
             {/* Matrix View Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <JobStat label="Total Nodes" value={bookings.length.toString()} trend="Global Registry" icon={<Zap />} color="text-yellow-500" />
-                <JobStat label="Unassigned" value={bookings.filter(b => !b.reporterId).length.toString()} trend="Priority alert" icon={<Users />} color="text-rose-500" />
+                <JobStat label="Total Nodes" value={bookings.length.toString()} trend="Global Registry" icon={<Zap />} color="text-primary" />
+                <JobStat label="Unassigned" value={bookings.filter(b => !b.reporterId).length.toString()} trend="Priority alert" icon={<Users />} color="text-primary/60" />
                 <JobStat label="Active Pool" value={bookings.filter(b => b.bookingStatus === 'ACCEPTED' || b.bookingStatus === 'CONFIRMED').length.toString()} trend="Logistics Live" icon={<Shield />} color="text-primary" />
                 <JobStat label="Market Live" value={bookings.filter(b => b.isMarketplace).length.toString()} trend="Open Channels" icon={<TrendingUp />} color="text-primary" />
             </div>
@@ -279,9 +279,9 @@ export default function AdministrativeJobNexus() {
                             </div>
                             <div className="space-y-6 min-h-[200px]">
                                 {sectorBookings.length === 0 ? (
-                                    <div className="py-12 text-center glass-panel rounded-3xl border-dashed border-2 border-gray-100 dark:border-white/5">
-                                        <AlertCircle className="h-8 w-8 text-gray-200 mx-auto mb-3" />
-                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Sector Empty</p>
+                                    <div className="py-12 text-center glass-panel rounded-3xl border-dashed border-2 border-border">
+                                        <AlertCircle className="h-8 w-8 text-muted/30 mx-auto mb-3" />
+                                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Sector Empty</p>
                                     </div>
                                 ) : (
                                     sectorBookings.map(job => (
@@ -301,18 +301,18 @@ export default function AdministrativeJobNexus() {
 
             {/* Add Job Modal */}
             {showAddModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-12 overflow-hidden">
-                    <div className="absolute inset-0 bg-gray-900/60 dark:bg-[#00120d]/80 backdrop-blur-md" onClick={() => setShowAddModal(false)}></div>
-                    <div className="relative w-full max-w-2xl bg-white dark:bg-[#020617] rounded-[2.5rem] sm:rounded-[3.5rem] p-6 sm:p-12 shadow-2xl border border-white/10 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto scrollbar-hide">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-12 sm:lg:pl-80 overflow-hidden">
+                    <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setShowAddModal(false)}></div>
+                    <div className="relative w-full max-w-2xl bg-card rounded-[2.5rem] sm:rounded-[3.5rem] p-6 sm:p-12 shadow-2xl border border-border animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar">
                         <div className="flex items-center gap-6 mb-10">
-                            <div className="h-14 w-14 rounded-2xl bg-primary flex items-center justify-center text-white">
+                            <div className="h-14 w-14 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground">
                                 <Plus className="h-8 w-8" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Initiate Job Node</h2>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">Manual Deployment Protocol</p>
+                                <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Initiate Job Node</h2>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1">Manual Deployment Protocol</p>
                             </div>
-                            <button onClick={() => setShowAddModal(false)} className="ml-auto h-12 w-12 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                            <button onClick={() => setShowAddModal(false)} className="ml-auto h-12 w-12 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground">
                                 <X className="h-6 w-6" />
                             </button>
                         </div>
@@ -320,7 +320,7 @@ export default function AdministrativeJobNexus() {
                         <form onSubmit={handleCreateJob} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Target Contact</label>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Target Contact</label>
                                     <select
                                         required
                                         className="luxury-input"
@@ -334,7 +334,7 @@ export default function AdministrativeJobNexus() {
                                     </select>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Service Node</label>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Service Node</label>
                                     <select
                                         required
                                         className="luxury-input"
@@ -351,7 +351,7 @@ export default function AdministrativeJobNexus() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Proceeding Type</label>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Proceeding Type</label>
                                     <input
                                         required
                                         className="luxury-input"
@@ -361,7 +361,7 @@ export default function AdministrativeJobNexus() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Appearance Logistics</label>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Appearance Logistics</label>
                                     <select
                                         className="luxury-input"
                                         value={formData.appearanceType}
@@ -375,7 +375,7 @@ export default function AdministrativeJobNexus() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Deployment Date</label>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Deployment Date</label>
                                     <input
                                         type="date"
                                         required
@@ -385,7 +385,7 @@ export default function AdministrativeJobNexus() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Operational Time</label>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Operational Time</label>
                                     <input
                                         type="time"
                                         required
@@ -397,7 +397,7 @@ export default function AdministrativeJobNexus() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Location / Venue Intelligence</label>
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Location / Venue Intelligence</label>
                                 <input
                                     className="luxury-input"
                                     placeholder="e.g. Zoom Link or Physical Address"
@@ -410,14 +410,14 @@ export default function AdministrativeJobNexus() {
                                 <button
                                     type="button"
                                     onClick={() => setShowAddModal(false)}
-                                    className="flex-1 py-5 rounded-2xl bg-gray-50 dark:bg-white/5 text-[10px] font-black uppercase text-gray-400 hover:text-gray-900 transition-all"
+                                    className="flex-1 py-5 rounded-2xl bg-muted text-[10px] font-black uppercase text-muted-foreground hover:text-foreground transition-all"
                                 >
                                     Abort
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={saving}
-                                    className="flex-[2] luxury-btn py-5 vibrant-collage shadow-xl shadow-primary/20 flex items-center justify-center gap-3"
+                                    className="flex-[2] luxury-button py-5 shadow-xl shadow-primary/20 flex items-center justify-center gap-3"
                                 >
                                     {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Authorize Deployment <ArrowRight className="h-4 w-4" /></>}
                                 </button>
@@ -429,25 +429,25 @@ export default function AdministrativeJobNexus() {
 
             {/* Edit Job Modal */}
             {showEditModal && selectedJob && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-12 overflow-hidden">
-                    <div className="absolute inset-0 bg-gray-900/60 dark:bg-[#00120d]/80 backdrop-blur-md" onClick={() => setShowEditModal(false)}></div>
-                    <div className="relative w-full max-w-xl bg-white dark:bg-[#020617] rounded-[2.5rem] sm:rounded-[3.5rem] p-6 sm:p-12 shadow-2xl border border-white/10 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto scrollbar-hide">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-12 sm:lg:pl-80 overflow-hidden">
+                    <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setShowEditModal(false)}></div>
+                    <div className="relative w-full max-w-xl bg-card rounded-[2.5rem] sm:rounded-[3.5rem] p-6 sm:p-12 shadow-2xl border border-border animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar">
                         <div className="flex items-center gap-6 mb-10">
-                            <div className={`h-14 w-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white`}>
+                            <div className={`h-14 w-14 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground`}>
                                 <Edit3 className="h-8 w-8" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Reconfigure Node</h2>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">{selectedJob.bookingNumber}</p>
+                                <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Reconfigure Node</h2>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1">{selectedJob.bookingNumber}</p>
                             </div>
-                            <button onClick={() => setShowEditModal(false)} className="ml-auto h-12 w-12 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                            <button onClick={() => setShowEditModal(false)} className="ml-auto h-12 w-12 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground">
                                 <X className="h-6 w-6" />
                             </button>
                         </div>
 
                         <form onSubmit={handleUpdateJob} className="space-y-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Job Status</label>
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Job Status</label>
                                 <select
                                     className="luxury-input"
                                     value={editFormData.bookingStatus}
@@ -465,7 +465,7 @@ export default function AdministrativeJobNexus() {
 
                             <div className="space-y-4 py-4 px-6 rounded-2xl bg-primary/5 border border-primary/20">
                                 <label className="flex items-center gap-4 cursor-pointer group">
-                                    <div className={`h-6 w-6 rounded-lg border-2 flex items-center justify-center transition-all ${editFormData.isMarketplace ? 'bg-primary border-primary text-white' : 'border-gray-200 bg-white dark:bg-transparent'}`}>
+                                    <div className={`h-6 w-6 rounded-lg border-2 flex items-center justify-center transition-all ${editFormData.isMarketplace ? 'bg-primary border-primary text-primary-foreground' : 'border-border bg-card'}`}>
                                         {editFormData.isMarketplace && <Check className="h-4 w-4" />}
                                     </div>
                                     <input
@@ -474,12 +474,12 @@ export default function AdministrativeJobNexus() {
                                         checked={editFormData.isMarketplace}
                                         onChange={(e) => setEditFormData({ ...editFormData, isMarketplace: e.target.checked })}
                                     />
-                                    <span className="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest">Push to Logistics Marketplace</span>
+                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Push to Logistics Marketplace</span>
                                 </label>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Assigned Operative</label>
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Assigned Operative</label>
                                 <select
                                     className="luxury-input"
                                     value={editFormData.reporterId}
@@ -493,7 +493,7 @@ export default function AdministrativeJobNexus() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Operational Notes</label>
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Operational Notes</label>
                                 <textarea
                                     className="luxury-input min-h-[100px] py-4"
                                     value={editFormData.notes}
@@ -505,14 +505,14 @@ export default function AdministrativeJobNexus() {
                                 <button
                                     type="button"
                                     onClick={() => setShowEditModal(false)}
-                                    className="flex-1 py-5 rounded-2xl bg-gray-50 dark:bg-white/5 text-[10px] font-black uppercase text-gray-400 hover:text-gray-900 transition-all"
+                                    className="flex-1 py-5 rounded-2xl bg-muted text-[10px] font-black uppercase text-muted-foreground hover:text-foreground transition-all"
                                 >
                                     Abort
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={saving}
-                                    className="flex-[2] luxury-btn py-5 vibrant-collage shadow-xl transition-all"
+                                    className="flex-[2] luxury-button py-5 shadow-xl transition-all"
                                 >
                                     {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Update Job Node'}
                                 </button>
@@ -527,8 +527,8 @@ export default function AdministrativeJobNexus() {
 
 function JobOperationalCard({ job, onDelete, onEdit }: { job: any, onDelete: () => void, onEdit: () => void }) {
     return (
-        <div className="glass-panel p-8 rounded-[3rem] group hover:-translate-y-2 transition-all duration-500 relative border border-gray-100 dark:border-white/5 bg-white dark:bg-white/5">
-            <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-all">
+        <div className="glass-panel p-8 rounded-[3rem] group hover:-translate-y-2 transition-all duration-500 relative border border-border bg-card">
+            <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-10 transition-all">
                 <Briefcase className="h-16 w-16 text-primary" />
             </div>
 
@@ -537,51 +537,51 @@ function JobOperationalCard({ job, onDelete, onEdit }: { job: any, onDelete: () 
                 <div className="flex gap-2">
                     <button
                         onClick={onEdit}
-                        className="h-8 w-8 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-primary transition-all opacity-0 group-hover:opacity-100 shadow-sm"
+                        className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-primary transition-all opacity-0 group-hover:opacity-100 shadow-sm"
                     >
                         <Edit3 className="h-3.5 w-3.5" />
                     </button>
                     <button
                         onClick={onDelete}
-                        className="h-8 w-8 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-rose-500 transition-all opacity-0 group-hover:opacity-100 shadow-sm"
+                        className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-rose-500 transition-all opacity-0 group-hover:opacity-100 shadow-sm"
                     >
                         <Trash2 className="h-3.5 w-3.5" />
                     </button>
                     <div className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-tighter ${job.priority === 'URGENT' ? 'bg-rose-500 text-white animate-pulse' :
                         job.priority === 'HIGH' ? 'bg-amber-500 text-white' :
-                            job.bookingStatus === 'COMPLETED' ? 'bg-indigo-500 text-white' :
-                                'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400'
+                            job.bookingStatus === 'COMPLETED' ? 'bg-primary/20 text-primary border border-primary/30' :
+                                'bg-muted text-muted-foreground border border-border'
                         }`}>
                         {job.bookingStatus}
                     </div>
                 </div>
             </div>
 
-            <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight mb-2 group-hover:text-primary transition-colors">{job.proceedingType}</h3>
-            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+            <h3 className="text-lg font-black text-foreground uppercase tracking-tight mb-2 group-hover:text-primary transition-colors">{job.proceedingType}</h3>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-6 flex items-center gap-2">
                 <Building2 className="h-3 w-3" />
                 {job.contact?.companyName || `${job.contact?.firstName} ${job.contact?.lastName}`}
             </p>
 
-            <div className="flex items-center justify-between pt-6 border-t border-gray-50 dark:border-white/5">
+            <div className="flex items-center justify-between pt-6 border-t border-border">
                 <div className="flex items-center gap-3">
                     {job.reporter ? (
                         <div className="flex items-center gap-2">
                             <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
                                 <UserCheck className="h-4 w-4 text-primary" />
                             </div>
-                            <span className="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase">{job.reporter.firstName} {job.reporter.lastName}</span>
+                            <span className="text-[10px] font-black text-muted-foreground uppercase">{job.reporter.firstName} {job.reporter.lastName}</span>
                         </div>
                     ) : (
                         <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-lg bg-orange-600/10 flex items-center justify-center">
-                                <Users className="h-4 w-4 text-orange-600" />
+                            <div className="h-8 w-8 rounded-lg bg-primary-foreground text-primary flex items-center justify-center border border-primary">
+                                <Users className="h-4 w-4" />
                             </div>
-                            <span className="text-[10px] font-black text-orange-600 uppercase italic">Unassigned</span>
+                            <span className="text-[10px] font-black text-primary uppercase italic">Unassigned</span>
                         </div>
                     )}
                 </div>
-                <div className="flex items-center gap-2 text-gray-400">
+                <div className="flex items-center gap-2 text-muted-foreground/30">
                     <Calendar className="h-3 w-3" />
                     <span className="text-[10px] font-black uppercase tracking-tighter">{format(new Date(job.bookingDate), 'MMM dd')}</span>
                 </div>
@@ -592,13 +592,13 @@ function JobOperationalCard({ job, onDelete, onEdit }: { job: any, onDelete: () 
 
 function JobStat({ label, value, trend, icon, color }: any) {
     return (
-        <div className="glass-panel p-8 rounded-[2.5rem] relative overflow-hidden group border border-gray-100 dark:border-white/5 bg-white dark:bg-white/5">
-            <div className={`absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity ${color}`}>
+        <div className="glass-panel p-8 rounded-[2.5rem] relative overflow-hidden group border border-border bg-card">
+            <div className={`absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity ${color}`}>
                 {icon}
             </div>
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">{label}</p>
-            <div className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase mb-2">{value}</div>
-            <p className={`text-[9px] font-black uppercase tracking-widest ${trend.includes('Priority') || trend.includes('+') ? 'text-primary' : 'text-gray-400'}`}>{trend}</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">{label}</p>
+            <div className="text-3xl font-black text-foreground tracking-tighter uppercase mb-2">{value}</div>
+            <p className={`text-[9px] font-black uppercase tracking-widest ${trend.includes('Priority') || trend.includes('+') ? 'text-primary' : 'text-muted-foreground/40'}`}>{trend}</p>
         </div>
     )
 }

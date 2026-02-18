@@ -185,16 +185,16 @@ export default function TeamManagementPage() {
             {/* Command Header */}
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
                 <div className="space-y-2">
-                    <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
-                        Service <span className="text-primary italic">Squadrons</span>
+                    <h1 className="text-4xl font-black text-foreground tracking-tight uppercase">
+                        Service <span className="brand-gradient italic">Squadrons</span>
                     </h1>
-                    <p className="text-gray-500 font-medium font-poppins">Managing the elite internal personnel handling operations.</p>
+                    <p className="text-muted-foreground font-medium font-poppins">Managing the elite internal personnel handling operations.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
                     <div className="relative group w-full sm:w-auto font-poppins">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
                         <input
-                            className="w-full sm:min-w-[320px] px-12 py-4 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 text-xs font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/10 dark:text-white"
+                            className="w-full sm:min-w-[320px] px-12 py-4 rounded-2xl bg-muted/50 border border-border text-xs font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/10 text-foreground"
                             placeholder="Search Personnel..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -202,9 +202,9 @@ export default function TeamManagementPage() {
                     </div>
                     <button
                         onClick={() => setShowMemberModal(true)}
-                        className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-primary text-white font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 transition-all"
+                        className="flex-1 sm:flex-none luxury-button flex items-center justify-center gap-3 px-8 py-4"
                     >
-                        <UserPlus className="h-4 w-4" /> Add Team Member
+                        <UserPlus className="h-4 w-4" /> <span>Add Team Member</span>
                     </button>
                 </div>
             </div>
@@ -213,9 +213,9 @@ export default function TeamManagementPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Team Roster */}
                 <div className="lg:col-span-2 space-y-8">
-                    <div className="glass-panel rounded-[2.5rem] overflow-hidden border border-gray-100 dark:border-white/5">
-                        <div className="px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-white/50 dark:bg-white/5 flex items-center justify-between">
-                            <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-[0.2em] flex items-center gap-3">
+                    <div className="glass-panel rounded-[2.5rem] overflow-hidden">
+                        <div className="px-8 py-6 border-b border-border bg-card/50 flex items-center justify-between">
+                            <h3 className="text-sm font-black text-foreground uppercase tracking-[0.2em] flex items-center gap-3">
                                 <Users className="h-4 w-4 text-primary" /> Active Personnel
                             </h3>
                             <button
@@ -225,19 +225,19 @@ export default function TeamManagementPage() {
                                 <Plus className="h-5 w-5" />
                             </button>
                         </div>
-                        <div className="divide-y divide-gray-50 dark:divide-white/5">
+                        <div className="divide-y divide-border">
                             {loading ? (
-                                <div className="p-20 text-center font-black text-xs uppercase tracking-widest text-gray-400">Synchronizing Squadrons...</div>
+                                <div className="p-20 text-center font-black text-xs uppercase tracking-widest text-muted-foreground">Synchronizing Squadrons...</div>
                             ) : team.length === 0 ? (
                                 <div className="p-20 text-center">
-                                    <User className="h-16 w-16 text-gray-200 mx-auto mb-6" />
-                                    <p className="font-black text-xs uppercase tracking-widest text-gray-400 mb-2">No Team Members</p>
-                                    <p className="text-[10px] text-gray-400">Team members will appear here once registered</p>
+                                    <User className="h-16 w-16 text-muted-foreground/20 mx-auto mb-6" />
+                                    <p className="font-black text-xs uppercase tracking-widest text-muted-foreground mb-2">No Team Members</p>
+                                    <p className="text-[10px] text-muted-foreground opacity-60">Team members will appear here once registered</p>
                                 </div>
                             ) : team.map(member => (
                                 <div key={member.id} className="p-8 hover:bg-primary/5 transition-all group flex items-center justify-between">
                                     <div className="flex items-center gap-6">
-                                        <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl sm:text-2xl shadow-xl transition-transform group-hover:scale-110 duration-500 overflow-hidden">
+                                        <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl sm:text-2xl shadow-xl transition-transform group-hover:scale-110 duration-500 overflow-hidden relative">
                                             {member.avatar ? (
                                                 <Image src={member.avatar} alt={member.firstName} fill className="object-cover" />
                                             ) : (
@@ -246,24 +246,24 @@ export default function TeamManagementPage() {
                                         </div>
                                         <div>
                                             <div className="flex flex-wrap items-center gap-3 mb-1">
-                                                <h3 className="text-base sm:text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">{member.firstName} {member.lastName}</h3>
+                                                <h3 className="text-base sm:text-lg font-black text-foreground uppercase tracking-tight">{member.firstName} {member.lastName}</h3>
                                                 <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[8px] font-black uppercase tracking-widest border border-primary/20">{member.position || member.role || 'MEMBER'}</span>
                                             </div>
-                                            <div className="flex items-center gap-3 text-gray-400">
-                                                <span className="text-[10px] font-bold text-gray-500 truncate max-w-[150px] sm:max-w-none uppercase tracking-widest">{member.email}</span>
+                                            <div className="flex items-center gap-3 text-muted-foreground">
+                                                <span className="text-[10px] font-bold truncate max-w-[150px] sm:max-w-none uppercase tracking-widest">{member.email}</span>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-8">
                                         <div className="text-right">
-                                            <p className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Load Balance</p>
-                                            <p className="text-xl font-black text-gray-900 dark:text-white tracking-tighter">
+                                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">Load Balance</p>
+                                            <p className="text-xl font-black text-foreground tracking-tighter">
                                                 {(member.assignedTasks || []).length} Active
                                             </p>
                                         </div>
                                         <button
                                             onClick={() => openTaskModal(member)}
-                                            className="h-12 px-6 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-white hover:border-primary transition-all"
+                                            className="h-12 px-6 rounded-2xl bg-muted border border-border text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
                                         >
                                             Assign Task
                                         </button>
@@ -276,37 +276,37 @@ export default function TeamManagementPage() {
 
                 {/* Task Stream */}
                 <div className="space-y-8">
-                    <div className="glass-panel rounded-[2.5rem] overflow-hidden border border-gray-100 dark:border-white/5 h-full">
-                        <div className="px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-white/50 dark:bg-white/5">
-                            <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-[0.2em] flex items-center gap-3">
+                    <div className="glass-panel rounded-[2.5rem] overflow-hidden h-full">
+                        <div className="px-8 py-6 border-b border-border bg-card/50">
+                            <h3 className="text-sm font-black text-foreground uppercase tracking-[0.2em] flex items-center gap-3">
                                 <Briefcase className="h-4 w-4 text-primary" /> Active Task Grid
                             </h3>
                         </div>
                         <div className="p-8 space-y-4">
                             {tasks.filter(t => t.status !== 'COMPLETED').map(task => (
-                                <div key={task.id} className="p-5 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:border-primary/20 transition-all group">
+                                <div key={task.id} className="p-5 rounded-2xl bg-card border border-border hover:border-primary/20 transition-all group">
                                     <div className="flex justify-between items-start mb-3">
-                                        <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border ${task.priority === 'URGENT' ? 'bg-rose-50 text-rose-600 border-rose-100' :
-                                            task.priority === 'HIGH' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                                'bg-indigo-50 text-indigo-600 border-indigo-100'
+                                        <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border ${task.priority === 'URGENT' ? 'bg-destructive/10 text-destructive border-destructive/20' :
+                                            task.priority === 'HIGH' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                                                'bg-primary/10 text-primary border-primary/20'
                                             }`}>
                                             {task.priority}
                                         </span>
-                                        <span className="text-[9px] font-black text-gray-400 uppercase">{new Date(task.createdAt).toLocaleDateString()}</span>
+                                        <span className="text-[9px] font-black text-muted-foreground uppercase">{new Date(task.createdAt).toLocaleDateString()}</span>
                                     </div>
-                                    <h5 className="text-sm font-black text-gray-900 dark:text-white uppercase mb-2">{task.title}</h5>
+                                    <h5 className="text-sm font-black text-foreground uppercase mb-2">{task.title}</h5>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary">
                                                 {(task.assignedToTeam?.firstName?.[0] || task.assignedToUser?.firstName?.[0] || '?').toUpperCase()}
                                             </div>
-                                            <span className="text-[10px] font-bold text-gray-500 uppercase">
+                                            <span className="text-[10px] font-bold text-muted-foreground uppercase">
                                                 {task.assignedToTeam ? `${task.assignedToTeam.firstName} ${task.assignedToTeam.lastName}` :
                                                     task.assignedToUser ? `${task.assignedToUser.firstName} ${task.assignedToUser.lastName}` :
                                                         'Unassigned'}
                                             </span>
                                         </div>
-                                        <button className="h-8 w-8 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-300 hover:text-primary transition-colors">
+                                        <button className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-primary transition-colors">
                                             <ArrowRight className="h-4 w-4" />
                                         </button>
                                     </div>
@@ -314,8 +314,8 @@ export default function TeamManagementPage() {
                             ))}
                             {tasks.filter(t => t.status !== 'COMPLETED').length === 0 && (
                                 <div className="py-12 text-center">
-                                    <CheckCircle className="h-10 w-10 text-gray-100 dark:text-white/10 mx-auto mb-4" />
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-loose">Matrix Clear.<br />No pending deployments.</p>
+                                    <CheckCircle className="h-10 w-10 text-muted-foreground/20 mx-auto mb-4" />
+                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-loose">Matrix Clear.<br />No pending deployments.</p>
                                 </div>
                             )}
                         </div>
@@ -325,22 +325,22 @@ export default function TeamManagementPage() {
 
             {/* Task Proposal Modal */}
             {showTaskModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-12 overflow-hidden">
-                    <div className="absolute inset-0 bg-gray-900/60 dark:bg-[#00120d]/80 backdrop-blur-md" onClick={() => setShowTaskModal(false)}></div>
-                    <div className="relative w-full max-w-xl bg-white dark:bg-[#020617] rounded-[2rem] sm:rounded-[3.5rem] p-6 sm:p-12 shadow-2xl border border-white/10 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto scrollbar-hide">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-12 lg:pl-80 overflow-hidden">
+                    <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setShowTaskModal(false)}></div>
+                    <div className="relative w-full max-w-xl bg-card rounded-[2rem] sm:rounded-[3.5rem] p-6 sm:p-12 shadow-2xl border border-border animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto scrollbar-hide">
                         <div className="flex items-center gap-6 mb-10">
                             <div className="h-14 w-14 rounded-2xl bg-primary flex items-center justify-center text-white">
                                 <Briefcase className="h-8 w-8" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Deploy Tasking</h2>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">Personnel Assignment Protocol</p>
+                                <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Deploy Tasking</h2>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1">Personnel Assignment Protocol</p>
                             </div>
                         </div>
 
                         <form onSubmit={handleCreateTask} className="space-y-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Objective Title</label>
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Objective Title</label>
                                 <input
                                     required
                                     className="luxury-input"
@@ -352,7 +352,7 @@ export default function TeamManagementPage() {
 
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Assignee Node</label>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Assignee Node</label>
                                     <select
                                         required
                                         className="luxury-input"
@@ -366,7 +366,7 @@ export default function TeamManagementPage() {
                                     </select>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Priority Level</label>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Priority Level</label>
                                     <select
                                         className="luxury-input"
                                         value={taskData.priority}
@@ -381,7 +381,7 @@ export default function TeamManagementPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Briefing Details</label>
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Briefing Details</label>
                                 <textarea
                                     className="luxury-input min-h-[120px] py-6 resize-none"
                                     placeholder="Enter complex task requirements..."
@@ -394,7 +394,7 @@ export default function TeamManagementPage() {
                                 <button
                                     type="button"
                                     onClick={() => setShowTaskModal(false)}
-                                    className="flex-1 py-5 rounded-2xl bg-gray-50 dark:bg-white/5 text-[10px] font-black uppercase text-gray-400 hover:text-gray-900 transition-all"
+                                    className="flex-1 py-5 rounded-2xl bg-muted text-[10px] font-black uppercase text-muted-foreground hover:text-foreground transition-all"
                                 >
                                     Abort
                                 </button>
@@ -421,23 +421,23 @@ export default function TeamManagementPage() {
             {/* Add Team Member Modal */}
             {
                 showMemberModal && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-12">
-                        <div className="absolute inset-0 bg-[#00120d]/80 backdrop-blur-xl" onClick={() => setShowMemberModal(false)}></div>
-                        <div className="relative w-full max-w-xl bg-white dark:bg-[#001c14] rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 shadow-2xl border border-white/10 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar">
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-12 lg:pl-80">
+                        <div className="absolute inset-0 bg-background/80 backdrop-blur-xl" onClick={() => setShowMemberModal(false)}></div>
+                        <div className="relative w-full max-w-xl bg-card rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 shadow-2xl border border-border animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar">
                             <div className="flex items-center gap-6 mb-10">
                                 <div className="h-14 w-14 rounded-2xl bg-primary flex items-center justify-center text-white">
                                     <UserPlus className="h-8 w-8" />
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">New Operative</h2>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">Internal Personnel Induction</p>
+                                    <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">New Operative</h2>
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1">Internal Personnel Induction</p>
                                 </div>
                             </div>
 
                             <form onSubmit={handleCreateMember} className="space-y-6">
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">First Name</label>
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">First Name</label>
                                         <input
                                             required
                                             className="luxury-input"
@@ -447,7 +447,7 @@ export default function TeamManagementPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Last Name</label>
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Last Name</label>
                                         <input
                                             required
                                             className="luxury-input"
@@ -459,7 +459,7 @@ export default function TeamManagementPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Email Identity</label>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Email Identity</label>
                                     <input
                                         required
                                         type="email"
@@ -472,7 +472,7 @@ export default function TeamManagementPage() {
 
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Role/Position</label>
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Role/Position</label>
                                         <input
                                             required
                                             className="luxury-input"
@@ -482,7 +482,7 @@ export default function TeamManagementPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Department</label>
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Department</label>
                                         <select
                                             className="luxury-input"
                                             value={memberData.department}
@@ -498,7 +498,7 @@ export default function TeamManagementPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Secure Line (Phone)</label>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Secure Line (Phone)</label>
                                     <input
                                         className="luxury-input"
                                         placeholder="+1 (555) 000-0000"
@@ -508,7 +508,7 @@ export default function TeamManagementPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Avatar URL (Profile Picture)</label>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Avatar URL (Profile Picture)</label>
                                     <input
                                         className="luxury-input"
                                         placeholder="https://images.unsplash.com/..."
@@ -521,7 +521,7 @@ export default function TeamManagementPage() {
                                     <button
                                         type="button"
                                         onClick={() => setShowMemberModal(false)}
-                                        className="flex-1 py-5 rounded-2xl bg-gray-50 dark:bg-white/5 text-[10px] font-black uppercase text-gray-400 hover:text-gray-900 transition-all"
+                                        className="flex-1 py-5 rounded-2xl bg-muted text-[10px] font-black uppercase text-muted-foreground hover:text-foreground transition-all"
                                     >
                                         Cancel
                                     </button>

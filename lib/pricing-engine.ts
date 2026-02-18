@@ -42,26 +42,26 @@ export class PricingEngine {
             throw new Error(`Service with ID ${serviceId} not found`)
         }
 
-        // Default rates from template
+        // Default rates from template - Enhanced for 'Fair Unified Formula'
         const rates: BookingRates = {
-            pageRate: service.pageRate || 4.00,
-            copyRate: 1.00,
-            appearanceFeeRemote: service.appearanceFeeRemote || 300,
-            appearanceFeeInPerson: service.appearanceFeeInPerson || 300,
-            congestionFee: 9.00,
+            pageRate: service.pageRate || 4.25,
+            copyRate: 1.50,
+            appearanceFeeRemote: service.appearanceFeeRemote || 350.00,
+            appearanceFeeInPerson: service.appearanceFeeInPerson || 400.00,
+            congestionFee: 15.00,
             realtimeFee: service.realtimeFee || 0,
-            realtimeDeviceRate: 1.50,
-            roughRate: 1.25,
-            videographerRate: 0.30,
-            interpreterRate: 0.30,
-            expertRate: 0.50,
-            afterHoursRate: 100.00,
+            realtimeDeviceRate: 2.50,
+            roughRate: 1.50,
+            videographerRate: 1.25,
+            interpreterRate: 1.25,
+            expertRate: 2.00,
+            afterHoursRate: 125.00,
             waitTimeRate: 100.00,
-            minimumFee: service.defaultMinimumFee || 400,
-            expediteImmediate: service.expediteImmediate,
-            expedite1Day: service.expedite1Day,
-            expedite2Day: service.expedite2Day,
-            expedite3Day: service.expedite3Day,
+            minimumFee: service.defaultMinimumFee || 500.00,
+            expediteImmediate: service.expediteImmediate || 2.0,
+            expedite1Day: service.expedite1Day || 1.75,
+            expedite2Day: service.expedite2Day || 1.5,
+            expedite3Day: service.expedite3Day || 1.25,
         }
 
         // Apply custom pricing if enabled and available

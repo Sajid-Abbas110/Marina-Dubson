@@ -56,15 +56,15 @@ export default function FinancialCenterPage() {
             {/* Financial Header */}
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
                 <div className="space-y-2">
-                    <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
-                        Financial <span className="text-primary italic">Nexus</span>
+                    <h1 className="text-4xl font-black text-foreground tracking-tight uppercase">
+                        Financial <span className="brand-gradient italic">Nexus</span>
                     </h1>
-                    <p className="text-gray-500 font-medium font-poppins text-xs uppercase tracking-widest">Global Revenue Command & Tactical Settlements.</p>
+                    <p className="text-muted-foreground font-medium font-poppins text-xs uppercase tracking-widest">Global Revenue Command & Tactical Settlements.</p>
                 </div>
                 <div className="flex items-center gap-4">
-                    <button className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl transition-all group active:scale-95">
-                        <Download className="h-4 w-4 text-gray-400 group-hover:text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Audit Export</span>
+                    <button className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-card border border-border shadow-sm hover:shadow-xl transition-all group active:scale-95">
+                        <Download className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Audit Export</span>
                     </button>
                 </div>
             </div>
@@ -73,17 +73,17 @@ export default function FinancialCenterPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <FinanceCard label="Gross Revenue Matrix" value={`$${totalRevenue.toLocaleString()}`} sub="+18.4% vs LMTD" icon={<TrendingUp className="text-primary" />} />
                 <FinanceCard label="Outstanding Ledger" value={`$${unpaidRevenue.toLocaleString()}`} sub={`${invoices.filter(inv => inv.status !== 'PAID').length} Pending Payments`} icon={<Briefcase className="text-amber-500" />} />
-                <FinanceCard label="Settlement Node" value="Nominal" sub="Instant Sync Active" icon={<ShieldCheck className="text-indigo-500" />} />
+                <FinanceCard label="Settlement Node" value="Nominal" sub="Instant Sync Active" icon={<ShieldCheck className="text-primary" />} />
             </div>
 
             {/* Transaction Ledger */}
-            <div className="glass-panel rounded-[3rem] overflow-hidden border border-gray-100 dark:border-white/5">
-                <div className="px-10 py-8 border-b border-gray-100 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 dark:bg-white/5">
+            <div className="glass-panel rounded-[3rem] overflow-hidden bg-card border border-border">
+                <div className="px-10 py-8 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/20">
                     <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white">
+                        <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
                             <CreditCard className="h-5 w-5" />
                         </div>
-                        <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Financial Transaction Ledger</h3>
+                        <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Financial Transaction Ledger</h3>
                     </div>
                 </div>
 
@@ -91,25 +91,25 @@ export default function FinancialCenterPage() {
                 <div className="hidden lg:block overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
-                            <tr className="bg-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-white/5">
-                                <th className="px-10 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Reference</th>
-                                <th className="px-10 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Entity / Participant</th>
-                                <th className="px-10 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</th>
-                                <th className="px-10 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status Matrix</th>
-                                <th className="px-10 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                            <tr className="bg-muted/50 border-b border-border">
+                                <th className="px-10 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-center">Reference</th>
+                                <th className="px-10 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Entity / Participant</th>
+                                <th className="px-10 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Amount</th>
+                                <th className="px-10 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Status Matrix</th>
+                                <th className="px-10 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-50 dark:divide-white/5">
+                        <tbody className="divide-y divide-border">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={5} className="py-20 text-center text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Synchronizing Financial Nodes...</td>
+                                    <td colSpan={5} className="py-20 text-center text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Synchronizing Financial Nodes...</td>
                                 </tr>
                             ) : invoices.map(inv => (
-                                <tr key={inv.id} className="hover:bg-primary/5 transition-all cursor-pointer group" onClick={() => router.push(`/admin/invoices/${inv.id}`)}>
-                                    <td className="px-10 py-8 text-center text-gray-900 dark:text-white">
+                                <tr key={inv.id} className="hover:bg-muted transition-all cursor-pointer group" onClick={() => router.push(`/admin/invoices/${inv.id}`)}>
+                                    <td className="px-10 py-8 text-center text-foreground">
                                         <div className="flex flex-col items-center">
                                             <span className="text-[11px] font-black uppercase tracking-tight">{inv.invoiceNumber}</span>
-                                            <span className="text-[8px] font-black text-gray-400 uppercase mt-1">{format(new Date(inv.invoiceDate), 'MMM dd, yyyy')}</span>
+                                            <span className="text-[8px] font-black text-muted-foreground uppercase mt-1">{format(new Date(inv.invoiceDate), 'MMM dd, yyyy')}</span>
                                         </div>
                                     </td>
                                     <td className="px-10 py-8">
@@ -118,22 +118,22 @@ export default function FinancialCenterPage() {
                                                 <ArrowDownLeft className="h-5 w-5" />
                                             </div>
                                             <div className="flex flex-col">
-                                                <span className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{inv.contact.companyName || `${inv.contact.firstName} ${inv.contact.lastName}`}</span>
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase">Case: {inv.booking.proceedingType}</span>
+                                                <span className="text-sm font-black text-foreground uppercase tracking-tight">{inv.contact.companyName || `${inv.contact.firstName} ${inv.contact.lastName}`}</span>
+                                                <span className="text-[9px] font-bold text-muted-foreground uppercase">Case: {inv.booking.proceedingType}</span>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-10 py-8">
-                                        <span className="text-lg font-black tracking-tighter text-gray-900 dark:text-white">${inv.total.toLocaleString()}</span>
+                                        <span className="text-lg font-black tracking-tighter text-foreground">${inv.total.toLocaleString()}</span>
                                     </td>
                                     <td className="px-10 py-8">
-                                        <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${inv.status === 'PAID' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
-                                            <div className={`h-1.5 w-1.5 rounded-full ${inv.status === 'PAID' ? 'bg-indigo-500' : 'bg-current opacity-40'}`}></div>
+                                        <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${inv.status === 'PAID' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>
+                                            <div className={`h-1.5 w-1.5 rounded-full ${inv.status === 'PAID' ? 'bg-primary' : 'bg-destructive'}`}></div>
                                             {inv.status}
                                         </div>
                                     </td>
                                     <td className="px-10 py-8 text-right">
-                                        <button className="h-10 w-10 rounded-xl hover:bg-white dark:hover:bg-white/10 hover:shadow-lg transition-all flex items-center justify-center text-gray-300 hover:text-primary">
+                                        <button className="h-10 w-10 rounded-xl hover:bg-background hover:shadow-lg transition-all flex items-center justify-center text-muted-foreground hover:text-primary">
                                             <FileText className="h-4 w-4" />
                                         </button>
                                     </td>
@@ -146,37 +146,37 @@ export default function FinancialCenterPage() {
                 {/* Mobile/Tablet View (Card-based) */}
                 <div className="lg:hidden">
                     {loading ? (
-                        <div className="py-20 text-center text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Synchronizing Financial Nodes...</div>
+                        <div className="py-20 text-center text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Synchronizing Financial Nodes...</div>
                     ) : (
-                        <div className="divide-y divide-gray-50 dark:divide-white/5">
+                        <div className="divide-y divide-border">
                             {invoices.map(inv => (
-                                <div key={inv.id} className="p-6 space-y-4 hover:bg-primary/5 transition-all" onClick={() => router.push(`/admin/invoices/${inv.id}`)}>
+                                <div key={inv.id} className="p-6 space-y-4 hover:bg-muted transition-all" onClick={() => router.push(`/admin/invoices/${inv.id}`)}>
                                     <div className="flex justify-between items-start">
                                         <div className="flex items-center gap-3">
                                             <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                                                 <ArrowDownLeft className="h-5 w-5" />
                                             </div>
                                             <div className="flex flex-col">
-                                                <span className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight">{inv.contact.companyName || `${inv.contact.firstName} ${inv.contact.lastName}`}</span>
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">REF: {inv.invoiceNumber}</span>
+                                                <span className="text-xs font-black text-foreground uppercase tracking-tight">{inv.contact.companyName || `${inv.contact.firstName} ${inv.contact.lastName}`}</span>
+                                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">REF: {inv.invoiceNumber}</span>
                                             </div>
                                         </div>
-                                        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border text-[8px] font-black uppercase tracking-widest ${inv.status === 'PAID' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                                        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border text-[8px] font-black uppercase tracking-widest ${inv.status === 'PAID' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>
                                             {inv.status}
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-end pt-2">
                                         <div className="flex flex-col">
-                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</span>
-                                            <span className="text-xl font-black text-gray-900 dark:text-white tracking-tighter">${inv.total.toLocaleString()}</span>
+                                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Amount</span>
+                                            <span className="text-xl font-black text-foreground tracking-tighter">${inv.total.toLocaleString()}</span>
                                         </div>
                                         <div className="flex flex-col items-end">
-                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</span>
-                                            <span className="text-[10px] font-black text-gray-900 dark:text-white uppercase">{format(new Date(inv.invoiceDate), 'MMM dd, yyyy')}</span>
+                                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Date</span>
+                                            <span className="text-[10px] font-black text-foreground uppercase">{format(new Date(inv.invoiceDate), 'MMM dd, yyyy')}</span>
                                         </div>
                                     </div>
-                                    <div className="pt-4 border-t border-gray-50 dark:border-white/5">
-                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.1em]">Case: {inv.booking.proceedingType}</p>
+                                    <div className="pt-4 border-t border-border">
+                                        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.1em]">Case: {inv.booking.proceedingType}</p>
                                     </div>
                                 </div>
                             ))}
@@ -190,15 +190,15 @@ export default function FinancialCenterPage() {
 
 function FinanceCard({ label, value, sub, icon }: any) {
     return (
-        <div className="bg-white dark:bg-white/5 p-10 rounded-[3rem] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-2xl transition-all relative overflow-hidden group">
+        <div className="bg-card p-10 rounded-[3rem] border border-border shadow-sm hover:shadow-2xl transition-all relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:scale-110 transition-transform duration-700">
                 {icon}
             </div>
-            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4">{label}</h4>
-            <p className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter uppercase mb-6">{value}</p>
+            <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-4">{label}</h4>
+            <p className="text-4xl font-black text-foreground tracking-tighter uppercase mb-6">{value}</p>
             <div className="flex items-center gap-2">
-                <CheckCircle className="h-3 w-3 text-indigo-500" />
-                <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">{sub}</span>
+                <CheckCircle className="h-3 w-3 text-primary" />
+                <span className="text-[9px] font-black text-primary uppercase tracking-widest">{sub}</span>
             </div>
         </div>
     )

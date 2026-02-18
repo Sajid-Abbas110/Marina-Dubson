@@ -41,17 +41,17 @@ export default function AdaptiveContentPortal() {
             {/* Intel Deck Header */}
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
                 <div className="space-y-2">
-                    <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter uppercase leading-none">
-                        Content <span className="text-primary italic">Vault</span>
+                    <h1 className="text-3xl font-black text-foreground tracking-tighter uppercase leading-none">
+                        Content <span className="brand-gradient italic">Vault</span>
                     </h1>
-                    <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-[0.4em] mt-3">Monitoring Decentralized Asset Nodes & P2P Stream</p>
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mt-3">Monitoring Decentralized Asset Nodes & P2P Stream</p>
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <input className="pl-10 pr-6 py-3 rounded-xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 outline-none text-[10px] font-black uppercase tracking-widest w-64 focus:ring-4 focus:ring-blue-500/10 transition-all" placeholder="DECRYPT ASSET_ID..." />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                        <input className="pl-10 pr-6 py-3 rounded-xl bg-card border border-border outline-none text-[10px] font-black uppercase tracking-widest w-64 focus:ring-4 focus:ring-primary/10 transition-all font-medium" placeholder="DECRYPT ASSET_ID..." />
                     </div>
-                    <button className="luxury-btn py-4 shadow-xl shadow-primary/20">
+                    <button className="luxury-button py-4 shadow-xl shadow-primary/20">
                         <Zap className="h-5 w-5" /> Sync Node Relay
                     </button>
                 </div>
@@ -68,10 +68,10 @@ export default function AdaptiveContentPortal() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 {/* Asset Management */}
                 <div className="lg:col-span-2 space-y-8">
-                    <div className="flex items-center gap-4 p-2 bg-gray-50 dark:bg-white/5 rounded-2xl w-fit">
-                        <button className="px-6 py-2 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg">All Assets</button>
-                        <button className="px-6 py-2 rounded-xl text-gray-400 hover:text-primary text-[10px] font-black uppercase tracking-widest transition-all">Transcripts</button>
-                        <button className="px-6 py-2 rounded-xl text-gray-400 hover:text-primary text-[10px] font-black uppercase tracking-widest transition-all">Renders</button>
+                    <div className="flex items-center gap-4 p-2 bg-muted rounded-2xl w-fit">
+                        <button className="px-6 py-2 rounded-xl bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-lg">All Assets</button>
+                        <button className="px-6 py-2 rounded-xl text-muted-foreground hover:text-primary text-[10px] font-black uppercase tracking-widest transition-all">Transcripts</button>
+                        <button className="px-6 py-2 rounded-xl text-muted-foreground hover:text-primary text-[10px] font-black uppercase tracking-widest transition-all">Renders</button>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -79,12 +79,12 @@ export default function AdaptiveContentPortal() {
                             <AssetCard key={asset.id} asset={asset} />
                         ))}
                         {/* Prototype Node */}
-                        <button className="h-full min-h-[220px] border-2 border-dashed border-gray-100 dark:border-white/10 rounded-[2.5rem] flex flex-col items-center justify-center gap-4 group hover:border-primary/30 transition-all">
-                            <div className="h-14 w-14 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-primary group-hover:bg-primary/10 transition-all">
+                        <button className="h-full min-h-[220px] border-2 border-dashed border-border rounded-[2.5rem] flex flex-col items-center justify-center gap-4 group hover:border-primary/30 transition-all bg-card/30">
+                            <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground group-hover:text-primary group-hover:bg-primary/10 transition-all">
                                 <Layers className="h-6 w-6" />
                             </div>
                             <div className="text-center">
-                                <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Init New Node</p>
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Init New Node</p>
                             </div>
                         </button>
                     </div>
@@ -92,22 +92,22 @@ export default function AdaptiveContentPortal() {
 
                 {/* Cyber Intel Column */}
                 <div className="space-y-8">
-                    <div className="glass-panel p-8 rounded-[2.5rem] space-y-8 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform">
+                    <div className="glass-panel p-8 rounded-[2.5rem] space-y-8 relative overflow-hidden group border border-border bg-card">
+                        <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-110 transition-transform">
                             <Shield className="h-24 w-24 text-primary" />
                         </div>
-                        <h4 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">Node Security</h4>
-                        <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest leading-relaxed">System protocols verified. Vault integrity at 100%. RSA-4096 handshake complete for all VAULT_nodes.</p>
-                        <button className="w-full py-4 bg-gray-900 dark:bg-white/5 text-white rounded-2xl font-black text-[9px] uppercase tracking-widest hover:bg-primary transition-all">Audit Protocols</button>
+                        <h4 className="text-lg font-black text-foreground uppercase tracking-tight">Node Security</h4>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">System protocols verified. Vault integrity at 100%. RSA-4096 handshake complete for all VAULT_nodes.</p>
+                        <button className="w-full py-4 bg-muted text-foreground rounded-2xl font-black text-[9px] uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-all">Audit Protocols</button>
                     </div>
 
-                    <div className="bg-gradient-to-br from-emerald-800 to-primary rounded-[2.5rem] p-8 text-white relative overflow-hidden group shadow-2xl">
+                    <div className="bg-gradient-to-br from-emerald-800 to-primary rounded-[2.5rem] p-8 text-primary-foreground relative overflow-hidden group shadow-2xl">
                         <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:rotate-12 transition-transform duration-700">
                             <Activity className="h-40 w-40" />
                         </div>
                         <p className="text-[9px] font-black uppercase tracking-widest mb-4 opacity-60">P2P Matrix</p>
                         <h4 className="text-xl font-black uppercase tracking-tight mb-8">Asset Delivery Optimization</h4>
-                        <button className="w-full py-4 bg-white text-gray-900 rounded-2xl font-black text-[9px] uppercase tracking-[0.3em] hover:bg-emerald-50 transition-all flex items-center justify-center gap-3">
+                        <button className="w-full py-4 bg-background text-foreground rounded-2xl font-black text-[9px] uppercase tracking-[0.3em] hover:bg-muted transition-all flex items-center justify-center gap-3">
                             Launch Sync <Sparkles className="h-4 w-4" />
                         </button>
                     </div>
@@ -119,22 +119,22 @@ export default function AdaptiveContentPortal() {
 
 function AssetCard({ asset }: { asset: any }) {
     return (
-        <div className="glass-panel p-8 rounded-[2.5rem] group hover:-translate-y-1 transition-all duration-500 cursor-pointer overflow-hidden relative border border-gray-100 dark:border-white/5">
-            <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-all">
+        <div className="glass-panel p-8 rounded-[2.5rem] group hover:-translate-y-1 transition-all duration-500 cursor-pointer overflow-hidden relative border border-border bg-card">
+            <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-10 transition-all">
                 <Box className="h-20 w-20 text-primary" />
             </div>
 
             <div className="flex justify-between items-start mb-6 font-black uppercase tracking-widest text-[8px]">
-                <span className="text-primary dark:text-primary">{asset.type}</span>
-                <span className="text-gray-400">{asset.date}</span>
+                <span className="text-primary font-bold">{asset.type}</span>
+                <span className="text-muted-foreground">{asset.date}</span>
             </div>
 
-            <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight mb-6 group-hover:text-primary dark:group-hover:text-primary transition-colors">{asset.title}</h3>
+            <h3 className="text-lg font-black text-foreground uppercase tracking-tight mb-6 group-hover:text-primary transition-colors">{asset.title}</h3>
 
-            <div className="flex items-center justify-between pt-6 border-t border-gray-50 dark:border-white/5 mt-auto">
+            <div className="flex items-center justify-between pt-6 border-t border-border mt-auto">
                 <div className="flex flex-col gap-1">
-                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Node Location</span>
-                    <span className="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase">{asset.node}</span>
+                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Node Location</span>
+                    <span className="text-[10px] font-black text-foreground uppercase">{asset.node}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <CheckCircle2 className={`h-3 w-3 ${asset.status === 'SYNCHRONIZED' ? 'text-primary' : 'text-emerald-500'}`} />
@@ -147,13 +147,13 @@ function AssetCard({ asset }: { asset: any }) {
 
 function ContentStat({ label, value, trend, icon, color }: any) {
     return (
-        <div className="glass-panel p-8 rounded-[2rem] relative overflow-hidden group">
-            <div className={`absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform ${color}`}>
+        <div className="glass-panel p-8 rounded-[2rem] relative overflow-hidden group border border-border bg-card">
+            <div className={`absolute top-0 right-0 p-6 opacity-[0.03] group-hover:scale-110 transition-transform ${color}`}>
                 {icon}
             </div>
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">{label}</p>
-            <div className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter uppercase mb-2">{value}</div>
-            <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em]">{trend}</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">{label}</p>
+            <div className="text-2xl font-black text-foreground tracking-tighter uppercase mb-2">{value}</div>
+            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em]">{trend}</p>
         </div>
     )
 }
