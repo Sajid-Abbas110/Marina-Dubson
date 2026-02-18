@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { format } from 'date-fns'
 import {
@@ -48,11 +48,7 @@ export default function UserProfilePage() {
         return () => { document.body.style.overflow = '' }
     }, [showTaskModal])
 
-    useEffect(() => {
-        if (id) fetchUser()
-    }, [id])
-
-    const fetchUser = async () => {
+    const fetchUser = useCallback(async () => {
         try {
             const token = localStorage.getItem('token')
             const res = await fetch(`/api/admin/users/${id}`, {
@@ -67,7 +63,11 @@ export default function UserProfilePage() {
         } finally {
             setLoading(false)
         }
-    }
+    }, [id])
+
+    useEffect(() => {
+        if (id) fetchUser()
+    }, [id, fetchUser])
 
     const handleUpdateProfile = async () => {
         try {

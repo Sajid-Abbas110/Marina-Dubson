@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -35,7 +35,7 @@ export default function ReporterPortal() {
     const [payouts, setPayouts] = useState<any[]>([])
     const [shouldScroll, setShouldScroll] = useState(false)
 
-    const fetchUserData = async (isPoll = false) => {
+    const fetchUserData = useCallback(async (isPoll = false) => {
         try {
             const token = localStorage.getItem('token')
             if (!token) {
@@ -68,14 +68,14 @@ export default function ReporterPortal() {
         } finally {
             if (!isPoll) setLoading(false)
         }
-    }
+    }, [router])
 
     useEffect(() => {
         fetchUserData()
         // Establish real-time pulse for marketplace jobs
         const interval = setInterval(() => fetchUserData(true), 15000)
         return () => clearInterval(interval)
-    }, [router])
+    }, [fetchUserData])
 
     useEffect(() => {
         if (shouldScroll && activeTab === 'jobs') {

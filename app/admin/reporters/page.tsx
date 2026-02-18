@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -27,11 +27,7 @@ export default function ReportersPage() {
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
 
-    useEffect(() => {
-        fetchUsers()
-    }, [])
-
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         try {
             const token = localStorage.getItem('token')
             if (!token) {
@@ -53,7 +49,11 @@ export default function ReportersPage() {
         } finally {
             setLoading(false)
         }
-    }
+    }, [router])
+
+    useEffect(() => {
+        fetchUsers()
+    }, [fetchUsers])
 
     const filteredUsers = users.filter(u => {
         if (!searchQuery) return true

@@ -18,7 +18,10 @@ export async function GET(request: NextRequest) {
             firstUserEmail: firstUser?.email || "NONE",
             dbUrl: process.env.DATABASE_URL
         })
-    } catch (error) {
-        return NextResponse.json({ error: error.message, stack: error.stack }, { status: 500 })
+    } catch (error: any) {
+        return NextResponse.json({
+            error: error.message || "Unknown error",
+            stack: error.stack
+        }, { status: 500 })
     }
 }

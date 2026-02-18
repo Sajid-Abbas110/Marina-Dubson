@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
     Mail,
     Lock,
@@ -65,10 +66,12 @@ export default function LoginPortal() {
         <div className="min-h-screen bg-white dark:bg-[#00120d] flex overflow-hidden font-poppins">
             {/* Left Side: Stunning Visuals (Hidden on mobile) */}
             <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-primary">
-                <img
+                <Image
                     src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=2070"
                     alt="Courtroom"
+                    fill
                     className="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-multiply scale-110 hover:scale-100 transition-transform duration-[10s] ease-out"
+                    priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
                 <div className="relative z-10 p-20 flex flex-col justify-between w-full">
@@ -110,9 +113,10 @@ export default function LoginPortal() {
             <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 md:p-16 relative bg-[#00120d] lg:bg-transparent">
                 {/* Mobile Background (Courtroom image background for mobile) */}
                 <div className="lg:hidden absolute inset-0 z-0">
-                    <img
+                    <Image
                         src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=2070"
                         alt="Courtroom"
+                        fill
                         className="w-full h-full object-cover opacity-20"
                     />
                     <div className="absolute inset-0 bg-[#00120d]/80"></div>
