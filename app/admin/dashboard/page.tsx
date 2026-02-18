@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
@@ -31,11 +31,7 @@ export default function DashboardPage() {
     const [recentBookings, setRecentBookings] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        fetchDashboardData()
-    }, [])
-
-    const fetchDashboardData = async () => {
+    const fetchDashboardData = useCallback(async () => {
         try {
             const token = localStorage.getItem('token')
 
@@ -94,7 +90,11 @@ export default function DashboardPage() {
         } finally {
             setLoading(false)
         }
-    }
+    }, [])
+
+    useEffect(() => {
+        fetchDashboardData()
+    }, [fetchDashboardData])
 
     const handleExportAnalytics = () => {
         // Generate CSV export

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { format } from 'date-fns'
 import {
     Search,
@@ -128,7 +129,7 @@ function ReporterCard({ user }: { user: any }) {
                 <div className="flex items-center gap-5">
                     <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-indigo-800 flex items-center justify-center text-white font-black text-xl shadow-lg transition-transform group-hover:scale-110 duration-500 overflow-hidden">
                         {user.avatar ? (
-                            <img src={user.avatar} alt={name} className="h-full w-full object-cover" />
+                            <Image src={user.avatar} alt={name} fill className="object-cover" />
                         ) : (
                             initials
                         )}

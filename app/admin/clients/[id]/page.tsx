@@ -207,7 +207,7 @@ export default function UserProfilePage() {
                             <div className={`absolute inset-0 bg-gradient-to-br ${isClient ? 'from-primary to-indigo-800' : 'from-indigo-500 to-blue-800'} rounded-[2.5rem] blur-xl opacity-20 group-hover:opacity-40 transition-opacity`}></div>
                             <div className={`relative h-full w-full rounded-[2.5rem] bg-white dark:bg-[#001c14] border-2 border-white dark:border-white/10 flex items-center justify-center overflow-hidden shadow-2xl transition-transform group-hover:scale-[1.02] duration-500`}>
                                 {user.avatar ? (
-                                    <img src={user.avatar} alt={name} className="h-full w-full object-cover" />
+                                    <Image src={user.avatar} alt={name} fill className="object-cover" />
                                 ) : (
                                     <span className={`text-4xl font-black ${isClient ? 'text-primary' : 'text-indigo-500'}`}>{initials}</span>
                                 )}

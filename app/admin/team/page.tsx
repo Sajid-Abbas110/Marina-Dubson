@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import {
     Users,
     UserPlus,
@@ -238,7 +239,7 @@ export default function TeamManagementPage() {
                                     <div className="flex items-center gap-6">
                                         <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl sm:text-2xl shadow-xl transition-transform group-hover:scale-110 duration-500 overflow-hidden">
                                             {member.avatar ? (
-                                                <img src={member.avatar} alt={member.firstName} className="h-full w-full object-cover" />
+                                                <Image src={member.avatar} alt={member.firstName} fill className="object-cover" />
                                             ) : (
                                                 <>{(member.firstName?.[0] || member.email?.[0] || '?').toUpperCase()}{(member.lastName?.[0] || '').toUpperCase()}</>
                                             )}
