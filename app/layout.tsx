@@ -15,7 +15,7 @@ const poppins = Poppins({
 })
 
 export const viewport: Viewport = {
-    themeColor: '#059669',
+    themeColor: '#4f46e5',
     width: 'device-width',
     initialScale: 1,
     maximumScale: 1,
@@ -43,16 +43,13 @@ export default function RootLayout({
                 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
                 <link rel="apple-touch-icon" href="/favicon.svg" />
             </head>
-            <body className="font-sans antialiased text-gray-900 dark:text-gray-100 bg-white dark:bg-[#00120d] transition-colors duration-300">
+            <body className="font-sans antialiased text-gray-900 dark:text-gray-100 bg-white dark:bg-[#020617] transition-colors duration-300">
                 <ThemeProvider>
                     <main className="min-h-screen">
                         {children}
                     </main>
-                    <DeepFooter />
                 </ThemeProvider>
             </body>
         </html>
     )
 }
-
-import DeepFooter from '@/app/components/Footer'

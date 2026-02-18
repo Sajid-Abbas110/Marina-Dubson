@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
                     select: { firstName: true, lastName: true, role: true }
                 }
             },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'asc' }
         })
 
         return NextResponse.json({ messages })
@@ -57,11 +57,11 @@ export async function POST(request: NextRequest) {
         const body = await request.json()
         const data = messageSchema.parse(body)
 
-        // If client is sending, find an admin if recipientId not provided
+        // If client or reporter is sending, find an admin if recipientId not provided
         let recipientId = data.recipientId
-        if (!recipientId && payload.role === 'CLIENT') {
+        if (!recipientId && (payload.role === 'CLIENT' || payload.role === 'REPORTER')) {
             const admin = await prisma.user.findFirst({
-                where: { role: 'ADMIN' }
+                where: { role: { in: ['ADMIN', 'SUPER_ADMIN'] } }
             })
             recipientId = admin?.id
         }

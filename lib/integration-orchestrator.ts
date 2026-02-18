@@ -309,7 +309,7 @@ export class IntegrationOrchestrator {
                     localInvoice.invoiceNumber,
                     localInvoice.total,
                     `${process.env.NEXT_PUBLIC_APP_URL}/client/invoices/${localInvoice.id}`,
-                    `${process.env.NEXT_PUBLIC_APP_URL}/client/invoices/${localInvoice.id}`
+                    `${process.env.NEXT_PUBLIC_APP_URL}/client/invoices/${localInvoice.id}` // Using same link for payment for now
                 )
                 await sendEmail({
                     to: booking.contact.email,

@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
         const marketplaceJobs = await prisma.booking.findMany({
             where: {
                 isMarketplace: true,
-                bookingStatus: 'SUBMITTED', // Only show open jobs
+                bookingStatus: { in: ['SUBMITTED', 'PENDING'] },
                 reporterId: null // Not yet assigned
             },
             include: {

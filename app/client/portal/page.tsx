@@ -21,11 +21,13 @@ import {
     Bell,
     Settings,
     LayoutDashboard,
-    Cpu,
-    Activity,
     Upload,
-    Send
+    Send,
+    Layout,
+    Cpu
 } from 'lucide-react'
+import ClientCalendar from '../components/ClientCalendar'
+import BookingRequest from '../components/BookingRequest'
 
 export default function ClientPortal() {
     const router = useRouter()
@@ -40,6 +42,13 @@ export default function ClientPortal() {
     const [loading, setLoading] = useState(true)
     const [messageContent, setMessageContent] = useState('')
     const [sendingMessage, setSendingMessage] = useState(false)
+    const [scrolled, setScrolled] = useState(false)
+
+    useEffect(() => {
+        const handleScroll = () => setScrolled(window.scrollY > 10)
+        window.addEventListener('scroll', handleScroll)
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
 
     useEffect(() => {
         const fetchAllData = async () => {
@@ -142,13 +151,13 @@ export default function ClientPortal() {
     return (
         <div className="min-h-screen bg-[#fcfdfc] dark:bg-[#00120d] dark:text-gray-100 font-poppins selection:bg-primary/10 selection:text-primary pb-24">
             {/* Elite Client Header */}
-            <header className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-2xl border-b border-gray-100 px-4 md:px-8 py-4 md:py-5 flex items-center justify-between">
+            <header className={`sticky top-0 z-40 w-full px-4 md:px-8 py-4 md:py-5 flex items-center justify-between transition-all duration-300 ${scrolled ? 'bg-white/80 dark:bg-[#00120d]/80 backdrop-blur-2xl border-b border-gray-100/50 dark:border-white/5 shadow-xl' : 'bg-transparent'}`}>
                 <div className="flex items-center gap-3 md:gap-6">
-                    <div className="h-8 w-8 md:h-10 md:w-10 rounded-xl bg-primary flex items-center justify-center text-white font-black shadow-lg shadow-primary/20">
+                    <div className="h-8 w-8 md:h-10 md:w-10 rounded-xl bg-gradient-to-br from-primary to-indigo-800 flex items-center justify-center text-white font-black shadow-lg shadow-primary/20">
                         MD
                     </div>
                     <div>
-                        <h1 className="text-lg md:text-xl font-black text-gray-900 tracking-tight flex items-center gap-2 uppercase">
+                        <h1 className="text-lg md:text-xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2 uppercase">
                             Client <span className="text-primary italic hidden xs:inline">Portal</span>
                         </h1>
                         <p className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mt-1">Stenographic Solutions</p>
@@ -156,15 +165,15 @@ export default function ClientPortal() {
                 </div>
 
                 <div className="flex items-center gap-4 md:gap-8">
-                    <div className="hidden lg:flex items-center gap-3 px-4 py-2 rounded-xl bg-gray-50 border border-gray-100">
-                        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Enterprise Connection Active</span>
+                    <div className="hidden lg:flex items-center gap-3 px-4 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10">
+                        <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></div>
+                        <span className="text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">Enterprise Connection Active</span>
                     </div>
                     <div className="flex items-center gap-2 md:gap-4">
-                        <button className="h-10 w-10 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-colors">
+                        <button className="h-10 w-10 flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                             <Bell className="h-5 w-5" />
                         </button>
-                        <button onClick={handleLogout} className="flex items-center gap-2 h-9 md:h-10 px-3 md:px-4 rounded-xl bg-gray-50 text-gray-400 hover:text-red-500 transition-all font-black text-[9px] md:text-[10px] uppercase tracking-widest border border-transparent hover:border-red-100">
+                        <button onClick={handleLogout} className="flex items-center gap-2 h-9 md:h-10 px-3 md:px-4 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-red-500 transition-all font-black text-[9px] md:text-[10px] uppercase tracking-widest border border-transparent hover:border-red-100 dark:hover:border-red-500/20">
                             <LogOut className="h-4 w-4" /> <span className="hidden sm:inline">Exit</span>
                         </button>
                     </div>
@@ -216,22 +225,32 @@ export default function ClientPortal() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Navigation Sidebar */}
-                    <aside className="lg:col-span-1 space-y-4">
-                        <nav className="flex flex-col gap-2">
-                            <NavItem active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} icon={<LayoutDashboard />} label="Intelligence Overview" />
-                            <NavItem active={activeTab === 'bookings'} onClick={() => setActiveTab('bookings')} icon={<Calendar />} label="My Booking Registry" />
-                            <NavItem active={activeTab === 'nodes'} onClick={() => setActiveTab('nodes')} icon={<Cpu />} label="Service Node Network" />
-                            <NavItem active={activeTab === 'transcripts'} onClick={() => setActiveTab('transcripts')} icon={<FileText />} label="Transcript Vault" />
-                            <NavItem active={activeTab === 'financials'} onClick={() => setActiveTab('financials')} icon={<CreditCard />} label="Financial Ledger" />
-                            <NavItem active={activeTab === 'messages'} onClick={() => setActiveTab('messages')} icon={<MessageSquare />} label="Direct Secure Messaging" />
-                        </nav>
+                    <aside className="lg:col-span-1 space-y-4 h-fit sticky top-28">
+                        <div className="bg-white/80 dark:bg-[#001a12]/80 backdrop-blur-xl border border-gray-100 dark:border-white/5 rounded-[2rem] p-6 shadow-sm">
+                            <nav className="flex flex-col gap-2">
+                                <NavItem active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} icon={<LayoutDashboard />} label="Intelligence Overview" />
+                                <NavItem active={activeTab === 'bookings'} onClick={() => setActiveTab('bookings')} icon={<Calendar />} label="My Booking Registry" />
+                                <NavItem active={activeTab === 'scheduler'} onClick={() => setActiveTab('scheduler')} icon={<Layout />} label={user.role === 'CLIENT' ? "Deployment Request" : "Visual Case Scheduler"} />
+                                <NavItem active={activeTab === 'nodes'} onClick={() => setActiveTab('nodes')} icon={<Cpu />} label="Service Node Network" />
+                                <NavItem active={activeTab === 'transcripts'} onClick={() => setActiveTab('transcripts')} icon={<FileText />} label="Transcript Vault" />
+                                <NavItem active={activeTab === 'financials'} onClick={() => setActiveTab('financials')} icon={<CreditCard />} label="Financial Ledger" />
+                                <NavItem active={activeTab === 'messages'} onClick={() => setActiveTab('messages')} icon={<MessageSquare />} label="Direct Secure Messaging" />
+                            </nav>
+                        </div>
 
-                        <div className="bg-gradient-to-br from-gray-900 to-[#001a12] rounded-[2rem] p-6 text-white relative overflow-hidden group mt-10">
+                        <div className="bg-gradient-to-br from-gray-900 to-[#001a12] rounded-[2rem] p-6 text-white relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 blur-3xl group-hover:bg-primary/20 transition-all"></div>
                             <ShieldCheck className="h-8 w-8 text-primary mb-4" />
                             <h4 className="text-sm font-black uppercase tracking-widest mb-2">Priority Support</h4>
                             <p className="text-[10px] text-gray-500 font-bold uppercase leading-relaxed mb-6 tracking-tight">Access direct escalation path to Marina for critical case management.</p>
-                            <button className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Secure Call</button>
+                            <button
+                                onClick={() => {
+                                    alert('Priority Support Activated\n\nConnecting you to Marina Dubson\'s direct line...\n\nPhone: (555) 123-4567\nEmail: marina@marinadubson.com');
+                                }}
+                                className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                            >
+                                Secure Call
+                            </button>
                         </div>
                     </aside>
 
@@ -240,14 +259,37 @@ export default function ClientPortal() {
                         {activeTab === 'overview' && (
                             <>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <StatsCard label="Active Cases" value={String(stats.active).padStart(2, '0')} icon={<TrendingUp className="text-emerald-500" />} />
-                                    <StatsCard label="Unpaid Ledger" value={`$${stats.unpaid.toLocaleString()}`} icon={<CreditCard className="text-primary" />} />
-                                    <StatsCard label="Vault Files" value={String(stats.files).padStart(2, '0')} icon={<FileText className="text-purple-500" />} />
+                                    <StatsCard
+                                        label="Active Cases"
+                                        value={String(stats.active).padStart(2, '0')}
+                                        icon={<TrendingUp className="text-primary" />}
+                                        onClick={() => setActiveTab('bookings')}
+                                    />
+                                    <StatsCard
+                                        label="Unpaid Ledger"
+                                        value={`$${stats.unpaid.toLocaleString()}`}
+                                        icon={<CreditCard className="text-primary" />}
+                                        onClick={() => setActiveTab('invoices')}
+                                    />
+                                    <StatsCard
+                                        label="Vault Files"
+                                        value={String(stats.files).padStart(2, '0')}
+                                        icon={<FileText className="text-purple-500" />}
+                                        onClick={() => setActiveTab('documents')}
+                                    />
                                 </div>
                                 <div className="glass-panel rounded-[2.5rem] p-10 overflow-hidden">
                                     <div className="flex items-center justify-between mb-10">
                                         <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">Recent Activity Feed</h3>
-                                        <button className="text-[10px] font-black text-primary uppercase tracking-widest px-4 py-2 bg-primary/5 rounded-xl">Historical Archive</button>
+                                        <button
+                                            onClick={() => {
+                                                const allBookings = bookings.map(b => `${b.bookingNumber}: ${b.proceedingType} - ${format(new Date(b.bookingDate), 'MMM dd, yyyy')}`).join('\n');
+                                                alert(`Historical Archive\n\nAll Bookings:\n${allBookings || 'No bookings found'}`);
+                                            }}
+                                            className="text-[10px] font-black text-primary uppercase tracking-widest px-4 py-2 bg-primary/5 rounded-xl hover:bg-primary/10 transition-all"
+                                        >
+                                            Historical Archive
+                                        </button>
                                     </div>
                                     <div className="space-y-2">
                                         {bookings.length > 0 ? (
@@ -258,6 +300,7 @@ export default function ClientPortal() {
                                                     title={`${booking.proceedingType} - ${booking.service.serviceName}`}
                                                     date={format(new Date(booking.bookingDate), 'MMM dd, yyyy').toUpperCase()}
                                                     status={booking.bookingStatus}
+                                                    reporter={booking.reporter}
                                                     onClick={() => booking.bookingStatus === 'ACCEPTED' && router.push(`/client/confirm/${booking.id}`)}
                                                 />
                                             ))
@@ -298,7 +341,7 @@ export default function ClientPortal() {
                                                 </div>
                                                 <div className="flex flex-col items-end gap-3">
                                                     <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-colors
-                                                        ${booking.bookingStatus === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                        ${booking.bookingStatus === 'COMPLETED' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
                                                             booking.bookingStatus === 'ACCEPTED' ? 'bg-rose-50 text-rose-600 border-rose-100 animate-pulse' :
                                                                 booking.bookingStatus === 'CONFIRMED' ? 'bg-primary/5 text-primary border-primary/10' :
                                                                     'bg-gray-50 text-gray-500 border-gray-100'}`}>
@@ -316,6 +359,34 @@ export default function ClientPortal() {
                                 </div>
                             </div>
                         )}
+
+                        {activeTab === 'scheduler' && (
+                            <div className="glass-panel rounded-[2.5rem] p-10">
+                                {user.role === 'CLIENT' ? (
+                                    <BookingRequest
+                                        services={services}
+                                        onBookingCreated={() => {
+                                            const token = localStorage.getItem('token')
+                                            fetch('/api/bookings', { headers: { 'Authorization': `Bearer ${token}` } })
+                                                .then(res => res.json())
+                                                .then(data => setBookings(Array.isArray(data.bookings) ? data.bookings : []))
+                                        }}
+                                    />
+                                ) : (
+                                    <ClientCalendar
+                                        bookings={bookings}
+                                        services={services}
+                                        onBookingCreated={() => {
+                                            const token = localStorage.getItem('token')
+                                            fetch('/api/bookings', { headers: { 'Authorization': `Bearer ${token}` } })
+                                                .then(res => res.json())
+                                                .then(data => setBookings(Array.isArray(data.bookings) ? data.bookings : []))
+                                        }}
+                                    />
+                                )}
+                            </div>
+                        )}
+
 
                         {activeTab === 'transcripts' && (
                             <div className="glass-panel rounded-[2.5rem] p-10">
@@ -413,7 +484,7 @@ export default function ClientPortal() {
                                                     </div>
                                                     <div className="flex flex-col items-end gap-3">
                                                         <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border
-                                                            ${invoice.status === 'PAID' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                                                            ${invoice.status === 'PAID' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
                                                             {invoice.status}
                                                         </span>
                                                         {invoice.status !== 'PAID' && (
@@ -441,8 +512,8 @@ export default function ClientPortal() {
                                         <div>
                                             <p className="text-sm font-black text-gray-900 uppercase">Marina Dubson Support</p>
                                             <div className="flex items-center gap-2">
-                                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                                <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Active Channels Open</p>
+                                                <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
+                                                <p className="text-[9px] font-black text-indigo-500 uppercase tracking-widest">Active Channels Open</p>
                                             </div>
                                         </div>
                                     </div>
@@ -454,7 +525,7 @@ export default function ClientPortal() {
                                 </div>
                                 <div className="flex-1 p-8 overflow-y-auto space-y-6 bg-gray-50/30">
                                     {messages.length > 0 ? (
-                                        [...messages].reverse().map(msg => (
+                                        messages.map(msg => (
                                             <div key={msg.id} className={`flex ${msg.senderId === user.id ? 'justify-end' : 'justify-start'}`}>
                                                 <div className={`max-w-[80%] p-6 rounded-[1.5rem] shadow-sm ${msg.senderId === user.id
                                                     ? 'bg-gray-900 text-white rounded-tr-none'
@@ -505,7 +576,7 @@ export default function ClientPortal() {
                                                 <div className="h-12 w-12 rounded-xl bg-primary/5 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
                                                     <Cpu className="h-6 w-6" />
                                                 </div>
-                                                <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest rounded-full border border-emerald-100">Operational</span>
+                                                <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-widest rounded-full border border-indigo-100">Operational</span>
                                             </div>
                                             <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-2 group-hover:text-primary transition-colors">{service.serviceName}</h3>
                                             <p className="text-xs text-gray-500 font-medium mb-8 leading-relaxed line-clamp-2">{service.description || 'Enterprise-grade stenographic data processing node.'}</p>
@@ -554,9 +625,12 @@ function NavItem({ icon, label, active, onClick }: any) {
     )
 }
 
-function StatsCard({ label, value, icon }: any) {
+function StatsCard({ label, value, icon, onClick }: any) {
     return (
-        <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
+        <button
+            onClick={onClick}
+            className="w-full text-left bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all group outline-none focus:ring-2 focus:ring-primary/20"
+        >
             <div className="flex justify-between items-start mb-6">
                 <div className="h-12 w-12 rounded-2xl bg-gray-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
                     {icon}
@@ -564,11 +638,11 @@ function StatsCard({ label, value, icon }: any) {
             </div>
             <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{label}</h3>
             <p className="text-3xl font-black text-gray-900 tracking-tighter uppercase">{value}</p>
-        </div>
+        </button>
     )
 }
 
-function ActivityRow({ id, title, date, status, onClick }: any) {
+function ActivityRow({ id, title, date, status, reporter, onClick }: any) {
     return (
         <div
             onClick={onClick}
@@ -581,7 +655,15 @@ function ActivityRow({ id, title, date, status, onClick }: any) {
                 </div>
                 <div>
                     <h4 className="text-sm font-black text-gray-900 uppercase tracking-tight group-hover:text-primary transition-colors">{title}</h4>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase mt-0.5">{id} • Processed via Global Node</p>
+                    <div className="flex items-center gap-3 mt-0.5">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase">{id} • Processed via Global Node</p>
+                        {reporter && (
+                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-indigo-50 rounded-md border border-indigo-100">
+                                <User className="h-3 w-3 text-indigo-600" />
+                                <span className="text-[8px] font-black text-indigo-600 uppercase">Assigned: {reporter.firstName} {reporter.lastName}</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
             <div className="flex items-center gap-4">
@@ -589,7 +671,7 @@ function ActivityRow({ id, title, date, status, onClick }: any) {
                     <span className="text-[9px] font-black text-rose-600 uppercase tracking-widest animate-pulse">Action Required</span>
                 )}
                 <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-colors
-                    ${status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                    ${status === 'COMPLETED' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
                         status === 'ACCEPTED' ? 'bg-rose-600 text-white border-rose-600' :
                             status === 'CONFIRMED' ? 'bg-primary/5 text-primary border-primary/10' :
                                 'bg-gray-50 text-gray-500 border-gray-100'

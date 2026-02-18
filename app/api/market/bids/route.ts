@@ -68,15 +68,38 @@ export async function GET(request: NextRequest) {
         const token = extractTokenFromHeader(request.headers.get('Authorization'))
         const payload = token ? verifyToken(token) : null
 
-        if (!payload || (payload.role !== 'ADMIN' && payload.role !== 'MANAGER')) {
+        if (!payload) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
         const { searchParams } = new URL(request.url)
         const bookingId = searchParams.get('bookingId')
 
+        if (payload.role === 'REPORTER') {
+            const bids = await prisma.bid.findMany({
+                where: {
+                    reporterId: payload.userId,
+                    ...(bookingId ? { bookingId } : {})
+                },
+                include: {
+                    booking: {
+                        include: {
+                            service: true,
+                            contact: true
+                        }
+                    }
+                },
+                orderBy: { createdAt: 'desc' }
+            })
+            return NextResponse.json({ bids })
+        }
+
+        if (payload.role !== 'ADMIN' && payload.role !== 'MANAGER') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
         if (!bookingId) {
-            return NextResponse.json({ error: 'Booking ID required' }, { status: 400 })
+            return NextResponse.json({ error: 'Booking ID required for administrative view' }, { status: 400 })
         }
 
         const bids = await prisma.bid.findMany({

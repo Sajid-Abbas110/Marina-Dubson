@@ -412,109 +412,148 @@ export default function BookingManagementPage() {
 
             {/* Billing Completion Modal */}
             {showCompleteModal && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 lg:pl-80 lg:pr-12">
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
                     <div className="absolute inset-0 bg-white/80 dark:bg-[#00120d]/80 backdrop-blur-md" onClick={() => setShowCompleteModal(false)}></div>
-                    <div className="relative w-full max-w-2xl bg-white dark:bg-[#001c14] rounded-[3rem] p-12 shadow-2xl border border-gray-200 dark:border-white/10">
-                        <div className="flex items-center gap-6 mb-10">
-                            <div className="h-14 w-14 rounded-2xl bg-gray-900 flex items-center justify-center text-white">
+                    <div className="relative w-full max-w-3xl bg-white dark:bg-[#001c14] rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-white/10 flex flex-col max-h-[90vh]">
+
+                        {/* Modal Header */}
+                        <div className="p-8 pb-4 flex items-center gap-6 flex-shrink-0">
+                            <div className="h-14 w-14 rounded-2xl bg-gray-900 flex items-center justify-center text-white flex-shrink-0">
                                 <DollarSign className="h-8 w-8" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Finalize & Bill Job</h2>
+                                <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Finalize & Bill Job</h2>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Populate logistical data for automated invoice generation</p>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-8 mb-10">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Pages</label>
-                                <input
-                                    type="number"
-                                    className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-white/5 border-none outline-none font-black text-lg focus:ring-2 focus:ring-primary/10"
-                                    value={billingData.pages}
-                                    onChange={(e) => setBillingData({ ...billingData, pages: parseInt(e.target.value) || 0 })}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Additional Copies</label>
-                                <input
-                                    type="number"
-                                    className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-white/5 border-none outline-none font-black text-lg focus:ring-2 focus:ring-primary/10"
-                                    value={billingData.additionalCopies}
-                                    onChange={(e) => setBillingData({ ...billingData, additionalCopies: parseInt(e.target.value) || 0 })}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Realtime Devices</label>
-                                <input
-                                    type="number"
-                                    className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-white/5 border-none outline-none font-black text-lg focus:ring-2 focus:ring-primary/10"
-                                    value={billingData.realtimeDevices}
-                                    onChange={(e) => setBillingData({ ...billingData, realtimeDevices: parseInt(e.target.value) || 0 })}
-                                />
-                            </div>
-                            <div className="flex flex-col gap-4 col-span-2">
-                                <label className="flex items-center gap-4 cursor-pointer">
+                        {/* Scrollable Content */}
+                        <div className="p-8 pt-4 overflow-y-auto custom-scrollbar space-y-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Total Pages</label>
                                     <input
-                                        type="checkbox"
-                                        className="h-6 w-6 rounded-lg text-primary focus:ring-primary ring-offset-0"
-                                        checked={billingData.hasRough}
-                                        onChange={(e) => setBillingData({ ...billingData, hasRough: e.target.checked })}
+                                        type="number"
+                                        className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-transparent focus:border-primary/20 outline-none font-black text-lg focus:ring-4 focus:ring-primary/5 transition-all"
+                                        value={billingData.pages}
+                                        onChange={(e) => setBillingData({ ...billingData, pages: parseInt(e.target.value) || 0 })}
                                     />
-                                    <span className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-widest">Rough Draft Included</span>
-                                </label>
-                                <label className="flex items-center gap-4 cursor-pointer">
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Additional Copies</label>
                                     <input
-                                        type="checkbox"
-                                        className="h-6 w-6 rounded-lg text-primary focus:ring-primary ring-offset-0"
-                                        checked={billingData.hasVideographer}
-                                        onChange={(e) => setBillingData({ ...billingData, hasVideographer: e.target.checked })}
+                                        type="number"
+                                        className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-transparent focus:border-primary/20 outline-none font-black text-lg focus:ring-4 focus:ring-primary/5 transition-all"
+                                        value={billingData.additionalCopies}
+                                        onChange={(e) => setBillingData({ ...billingData, additionalCopies: parseInt(e.target.value) || 0 })}
                                     />
-                                    <span className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-widest">Videographer Included</span>
-                                </label>
-                                <label className="flex items-center gap-4 cursor-pointer">
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Realtime Devices</label>
                                     <input
-                                        type="checkbox"
-                                        className="h-6 w-6 rounded-lg text-primary focus:ring-primary ring-offset-0"
-                                        checked={billingData.hasInterpreter}
-                                        onChange={(e) => setBillingData({ ...billingData, hasInterpreter: e.target.checked })}
+                                        type="number"
+                                        className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-transparent focus:border-primary/20 outline-none font-black text-lg focus:ring-4 focus:ring-primary/5 transition-all"
+                                        value={billingData.realtimeDevices}
+                                        onChange={(e) => setBillingData({ ...billingData, realtimeDevices: parseInt(e.target.value) || 0 })}
                                     />
-                                    <span className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-widest">Interpreter Included</span>
-                                </label>
-                                <label className="flex items-center gap-4 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        className="h-6 w-6 rounded-lg text-primary focus:ring-primary ring-offset-0"
-                                        checked={billingData.hasExpert}
-                                        onChange={(e) => setBillingData({ ...billingData, hasExpert: e.target.checked })}
-                                    />
-                                    <span className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-widest">Expert/Technical Presence</span>
-                                </label>
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Afterhours Hours</label>
-                                <input
-                                    type="number"
-                                    className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-white/5 border-none outline-none font-black text-lg focus:ring-2 focus:ring-primary/10"
-                                    value={billingData.afterHoursCount}
-                                    onChange={(e) => setBillingData({ ...billingData, afterHoursCount: parseInt(e.target.value) || 0 })}
-                                />
+
+                            <div className="bg-gray-50 dark:bg-white/5 rounded-2xl p-6 border border-gray-100 dark:border-white/5">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 block">Additional Services</label>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <div className={`h-6 w-6 rounded-lg border-2 flex items-center justify-center transition-all ${billingData.hasRough ? 'bg-primary border-primary text-white' : 'border-gray-200 dark:border-white/10 bg-white dark:bg-transparent group-hover:border-primary/50'}`}>
+                                            {billingData.hasRough && <CheckCircle className="h-4 w-4" />}
+                                        </div>
+                                        <input
+                                            type="checkbox"
+                                            className="hidden"
+                                            checked={billingData.hasRough}
+                                            onChange={(e) => setBillingData({ ...billingData, hasRough: e.target.checked })}
+                                        />
+                                        <span className="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest group-hover:text-primary transition-colors">Rough Draft</span>
+                                    </label>
+
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <div className={`h-6 w-6 rounded-lg border-2 flex items-center justify-center transition-all ${billingData.hasVideographer ? 'bg-primary border-primary text-white' : 'border-gray-200 dark:border-white/10 bg-white dark:bg-transparent group-hover:border-primary/50'}`}>
+                                            {billingData.hasVideographer && <CheckCircle className="h-4 w-4" />}
+                                        </div>
+                                        <input
+                                            type="checkbox"
+                                            className="hidden"
+                                            checked={billingData.hasVideographer}
+                                            onChange={(e) => setBillingData({ ...billingData, hasVideographer: e.target.checked })}
+                                        />
+                                        <span className="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest group-hover:text-primary transition-colors">Videographer</span>
+                                    </label>
+
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <div className={`h-6 w-6 rounded-lg border-2 flex items-center justify-center transition-all ${billingData.hasInterpreter ? 'bg-primary border-primary text-white' : 'border-gray-200 dark:border-white/10 bg-white dark:bg-transparent group-hover:border-primary/50'}`}>
+                                            {billingData.hasInterpreter && <CheckCircle className="h-4 w-4" />}
+                                        </div>
+                                        <input
+                                            type="checkbox"
+                                            className="hidden"
+                                            checked={billingData.hasInterpreter}
+                                            onChange={(e) => setBillingData({ ...billingData, hasInterpreter: e.target.checked })}
+                                        />
+                                        <span className="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest group-hover:text-primary transition-colors">Interpreter</span>
+                                    </label>
+
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <div className={`h-6 w-6 rounded-lg border-2 flex items-center justify-center transition-all ${billingData.hasExpert ? 'bg-primary border-primary text-white' : 'border-gray-200 dark:border-white/10 bg-white dark:bg-transparent group-hover:border-primary/50'}`}>
+                                            {billingData.hasExpert && <CheckCircle className="h-4 w-4" />}
+                                        </div>
+                                        <input
+                                            type="checkbox"
+                                            className="hidden"
+                                            checked={billingData.hasExpert}
+                                            onChange={(e) => setBillingData({ ...billingData, hasExpert: e.target.checked })}
+                                        />
+                                        <span className="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest group-hover:text-primary transition-colors">Expert Presence</span>
+                                    </label>
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Wait Time Hours</label>
-                                <input
-                                    type="number"
-                                    className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-white/5 border-none outline-none font-black text-lg focus:ring-2 focus:ring-primary/10"
-                                    value={billingData.waitTimeCount}
-                                    onChange={(e) => setBillingData({ ...billingData, waitTimeCount: parseInt(e.target.value) || 0 })}
-                                />
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Afterhours (Hrs)</label>
+                                    <input
+                                        type="number"
+                                        className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-transparent focus:border-primary/20 outline-none font-black text-lg focus:ring-4 focus:ring-primary/5 transition-all"
+                                        value={billingData.afterHoursCount}
+                                        onChange={(e) => setBillingData({ ...billingData, afterHoursCount: parseInt(e.target.value) || 0 })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Wait Time (Hrs)</label>
+                                    <input
+                                        type="number"
+                                        className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-transparent focus:border-primary/20 outline-none font-black text-lg focus:ring-4 focus:ring-primary/5 transition-all"
+                                        value={billingData.waitTimeCount}
+                                        onChange={(e) => setBillingData({ ...billingData, waitTimeCount: parseInt(e.target.value) || 0 })}
+                                    />
+                                </div>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-4">
-                            <button onClick={() => setShowCompleteModal(false)} className="flex-1 py-4 px-6 rounded-2xl bg-gray-100 text-gray-500 font-black uppercase text-[10px] tracking-widest">Abort</button>
-                            <button onClick={() => handleComplete(selectedBookingId!)} className="flex-[2] py-4 px-6 rounded-2xl bg-gray-900 text-white font-black uppercase text-[10px] tracking-widest shadow-2xl hover:scale-[1.02] transition-all">Generate & Synchronize Invoice</button>
+                        {/* Modal Actions */}
+                        <div className="p-8 pt-4 flex-shrink-0 flex items-center gap-4">
+                            <button
+                                onClick={() => setShowCompleteModal(false)}
+                                className="flex-1 py-4 px-6 rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-500 font-black uppercase text-[10px] tracking-widest hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"
+                            >
+                                Cancel Operation
+                            </button>
+                            <button
+                                onClick={() => handleComplete(selectedBookingId!)}
+                                className="flex-[2] py-4 px-6 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black uppercase text-[10px] tracking-widest shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                            >
+                                Generate Invoice
+                            </button>
                         </div>
+
                     </div>
                 </div>
             )}

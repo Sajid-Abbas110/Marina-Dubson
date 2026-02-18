@@ -52,7 +52,7 @@ export default function FinancialCenterPage() {
     const unpaidRevenue = invoices.filter(inv => inv.status !== 'PAID').reduce((sum, inv) => sum + inv.total, 0)
 
     return (
-        <div className="space-y-10 animate-in fade-in duration-700">
+        <div className="p-6 lg:p-12 space-y-10 animate-in fade-in duration-700">
             {/* Financial Header */}
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
                 <div className="space-y-2">
@@ -73,12 +73,12 @@ export default function FinancialCenterPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <FinanceCard label="Gross Revenue Matrix" value={`$${totalRevenue.toLocaleString()}`} sub="+18.4% vs LMTD" icon={<TrendingUp className="text-primary" />} />
                 <FinanceCard label="Outstanding Ledger" value={`$${unpaidRevenue.toLocaleString()}`} sub={`${invoices.filter(inv => inv.status !== 'PAID').length} Pending Payments`} icon={<Briefcase className="text-amber-500" />} />
-                <FinanceCard label="Settlement Node" value="Nominal" sub="Instant Sync Active" icon={<ShieldCheck className="text-emerald-500" />} />
+                <FinanceCard label="Settlement Node" value="Nominal" sub="Instant Sync Active" icon={<ShieldCheck className="text-indigo-500" />} />
             </div>
 
             {/* Transaction Ledger */}
             <div className="glass-panel rounded-[3rem] overflow-hidden border border-gray-100 dark:border-white/5">
-                <div className="px-10 py-8 border-b border-gray-100 dark:border-white/5 flex items-center justify-between bg-white/50 dark:bg-white/5">
+                <div className="px-10 py-8 border-b border-gray-100 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 dark:bg-white/5">
                     <div className="flex items-center gap-4">
                         <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white">
                             <CreditCard className="h-5 w-5" />
@@ -87,7 +87,8 @@ export default function FinancialCenterPage() {
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
+                {/* Desktop View */}
+                <div className="hidden lg:block overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-white/5">
@@ -104,7 +105,7 @@ export default function FinancialCenterPage() {
                                     <td colSpan={5} className="py-20 text-center text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Synchronizing Financial Nodes...</td>
                                 </tr>
                             ) : invoices.map(inv => (
-                                <tr key={inv.id} className="hover:bg-primary/5 transition-all cursor-pointer group" onClick={() => router.push(`/client/invoices/${inv.id}`)}>
+                                <tr key={inv.id} className="hover:bg-primary/5 transition-all cursor-pointer group" onClick={() => router.push(`/admin/invoices/${inv.id}`)}>
                                     <td className="px-10 py-8 text-center text-gray-900 dark:text-white">
                                         <div className="flex flex-col items-center">
                                             <span className="text-[11px] font-black uppercase tracking-tight">{inv.invoiceNumber}</span>
@@ -126,8 +127,8 @@ export default function FinancialCenterPage() {
                                         <span className="text-lg font-black tracking-tighter text-gray-900 dark:text-white">${inv.total.toLocaleString()}</span>
                                     </td>
                                     <td className="px-10 py-8">
-                                        <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${inv.status === 'PAID' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
-                                            <div className={`h-1.5 w-1.5 rounded-full ${inv.status === 'PAID' ? 'bg-emerald-500' : 'bg-current opacity-40'}`}></div>
+                                        <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${inv.status === 'PAID' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                                            <div className={`h-1.5 w-1.5 rounded-full ${inv.status === 'PAID' ? 'bg-indigo-500' : 'bg-current opacity-40'}`}></div>
                                             {inv.status}
                                         </div>
                                     </td>
@@ -140,6 +141,47 @@ export default function FinancialCenterPage() {
                             ))}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Mobile/Tablet View (Card-based) */}
+                <div className="lg:hidden">
+                    {loading ? (
+                        <div className="py-20 text-center text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Synchronizing Financial Nodes...</div>
+                    ) : (
+                        <div className="divide-y divide-gray-50 dark:divide-white/5">
+                            {invoices.map(inv => (
+                                <div key={inv.id} className="p-6 space-y-4 hover:bg-primary/5 transition-all" onClick={() => router.push(`/admin/invoices/${inv.id}`)}>
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                                                <ArrowDownLeft className="h-5 w-5" />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight">{inv.contact.companyName || `${inv.contact.firstName} ${inv.contact.lastName}`}</span>
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">REF: {inv.invoiceNumber}</span>
+                                            </div>
+                                        </div>
+                                        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border text-[8px] font-black uppercase tracking-widest ${inv.status === 'PAID' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                                            {inv.status}
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between items-end pt-2">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</span>
+                                            <span className="text-xl font-black text-gray-900 dark:text-white tracking-tighter">${inv.total.toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</span>
+                                            <span className="text-[10px] font-black text-gray-900 dark:text-white uppercase">{format(new Date(inv.invoiceDate), 'MMM dd, yyyy')}</span>
+                                        </div>
+                                    </div>
+                                    <div className="pt-4 border-t border-gray-50 dark:border-white/5">
+                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.1em]">Case: {inv.booking.proceedingType}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
@@ -155,8 +197,8 @@ function FinanceCard({ label, value, sub, icon }: any) {
             <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4">{label}</h4>
             <p className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter uppercase mb-6">{value}</p>
             <div className="flex items-center gap-2">
-                <CheckCircle className="h-3 w-3 text-emerald-500" />
-                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">{sub}</span>
+                <CheckCircle className="h-3 w-3 text-indigo-500" />
+                <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">{sub}</span>
             </div>
         </div>
     )

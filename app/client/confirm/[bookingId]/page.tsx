@@ -279,7 +279,6 @@ function TermSection({ icon, title, content, checked, onChange, label, highlight
 
             <label className="flex items-center gap-4 cursor-pointer group">
                 <div
-                    onClick={() => onChange(!checked)}
                     className={`h-7 w-7 rounded-xl border-2 flex items-center justify-center transition-all ${checked ? 'bg-primary border-primary rotate-12 shadow-lg shadow-primary/30' : 'border-gray-200 group-hover:border-primary'}`}
                 >
                     {checked && <CheckCircle2 className="h-4 w-4 text-white" />}

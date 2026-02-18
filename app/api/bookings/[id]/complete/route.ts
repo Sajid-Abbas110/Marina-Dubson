@@ -11,7 +11,14 @@ export async function POST(
         const token = extractTokenFromHeader(request.headers.get('Authorization'))
         const payload = token ? verifyToken(token) : null
 
-        if (!payload || (payload.role !== 'ADMIN' && payload.role !== 'MANAGER')) {
+        if (!payload) {
+            console.error('Auth failed: No valid token payload')
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        const userRole = payload.role?.toUpperCase() || ''
+        if (userRole !== 'ADMIN' && userRole !== 'MANAGER' && userRole !== 'SUPER_ADMIN') {
+            console.error(`Auth failed: Insufficient role '${userRole}'`)
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 

@@ -16,7 +16,8 @@ import {
     Plus,
     Calendar,
     ArrowRight,
-    User
+    User,
+    Loader2
 } from 'lucide-react'
 
 export default function TeamManagementPage() {
@@ -35,29 +36,73 @@ export default function TeamManagementPage() {
         assignedToId: ''
     })
 
+    const [showMemberModal, setShowMemberModal] = useState(false)
+    const [memberData, setMemberData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        position: '',
+        department: 'Operations',
+        avatar: ''
+    })
+    const [saving, setSaving] = useState(false)
+
+    useEffect(() => {
+        if (showTaskModal || showMemberModal) {
+            document.body.style.overflow = 'hidden'
+        } else {
+            document.body.style.overflow = ''
+        }
+        return () => { document.body.style.overflow = '' }
+    }, [showTaskModal, showMemberModal])
+
     const fetchTeam = async () => {
         try {
             const token = localStorage.getItem('token')
-            const res = await fetch('/api/team', {
+            if (!token) {
+                console.error('No token found')
+                setLoading(false)
+                return
+            }
+
+            const res = await fetch('/api/admin/team', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
+
+            if (!res.ok) {
+                throw new Error('Failed to fetch team')
+            }
+
             const data = await res.json()
-            setTeam(data)
+            setTeam(data || [])
         } catch (error) {
             console.error('Failed to fetch team:', error)
+            setTeam([])
         }
     }
 
     const fetchTasks = async () => {
         try {
             const token = localStorage.getItem('token')
-            const res = await fetch('/api/tasks', {
+            if (!token) {
+                setLoading(false)
+                return
+            }
+
+            const res = await fetch('/api/admin/tasks', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
+
+            if (!res.ok) {
+                throw new Error('Failed to fetch tasks')
+            }
+
             const data = await res.json()
-            setTasks(data)
+            setTasks(data || [])
         } catch (error) {
             console.error('Failed to fetch tasks:', error)
+            setTasks([])
         } finally {
             setLoading(false)
         }
@@ -68,11 +113,46 @@ export default function TeamManagementPage() {
         fetchTasks()
     }, [])
 
-    const handleCreateTask = async (e: React.FormEvent) => {
+    const handleCreateMember = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
             const token = localStorage.getItem('token')
-            const res = await fetch('/api/tasks', {
+            const res = await fetch('/api/admin/team', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(memberData)
+            })
+
+            if (res.ok) {
+                setShowMemberModal(false)
+                fetchTeam()
+                setMemberData({
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    phone: '',
+                    position: '',
+                    department: 'Operations',
+                    avatar: ''
+                })
+            } else {
+                const err = await res.json()
+                alert(err.error || 'Failed to create team member')
+            }
+        } catch (error) {
+            console.error('Failed to create team member:', error)
+        }
+    }
+
+    const handleCreateTask = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setSaving(true)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/admin/tasks', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -88,6 +168,8 @@ export default function TeamManagementPage() {
             }
         } catch (error) {
             console.error('Failed to create task:', error)
+        } finally {
+            setSaving(false)
         }
     }
 
@@ -105,9 +187,9 @@ export default function TeamManagementPage() {
                     <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
                         Service <span className="text-primary italic">Squadrons</span>
                     </h1>
-                    <p className="text-gray-500 font-medium font-poppins">Managing the elite personnel handling client service deployments.</p>
+                    <p className="text-gray-500 font-medium font-poppins">Managing the elite internal personnel handling operations.</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-4">
                     <div className="relative group w-full sm:w-auto font-poppins">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
                         <input
@@ -117,6 +199,12 @@ export default function TeamManagementPage() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
+                    <button
+                        onClick={() => setShowMemberModal(true)}
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-primary text-white font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 transition-all"
+                    >
+                        <UserPlus className="h-4 w-4" /> Add Team Member
+                    </button>
                 </div>
             </div>
 
@@ -139,23 +227,29 @@ export default function TeamManagementPage() {
                         <div className="divide-y divide-gray-50 dark:divide-white/5">
                             {loading ? (
                                 <div className="p-20 text-center font-black text-xs uppercase tracking-widest text-gray-400">Synchronizing Squadrons...</div>
+                            ) : team.length === 0 ? (
+                                <div className="p-20 text-center">
+                                    <User className="h-16 w-16 text-gray-200 mx-auto mb-6" />
+                                    <p className="font-black text-xs uppercase tracking-widest text-gray-400 mb-2">No Team Members</p>
+                                    <p className="text-[10px] text-gray-400">Team members will appear here once registered</p>
+                                </div>
                             ) : team.map(member => (
                                 <div key={member.id} className="p-8 hover:bg-primary/5 transition-all group flex items-center justify-between">
                                     <div className="flex items-center gap-6">
-                                        <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-emerald-700 flex items-center justify-center text-white font-black text-lg">
-                                            {member.firstName[0]}{member.lastName[0]}
+                                        <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl sm:text-2xl shadow-xl transition-transform group-hover:scale-110 duration-500 overflow-hidden">
+                                            {member.avatar ? (
+                                                <img src={member.avatar} alt={member.firstName} className="h-full w-full object-cover" />
+                                            ) : (
+                                                <>{(member.firstName?.[0] || member.email?.[0] || '?').toUpperCase()}{(member.lastName?.[0] || '').toUpperCase()}</>
+                                            )}
                                         </div>
-                                        <div className="space-y-1">
-                                            <h4 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tighter">
-                                                {member.firstName} {member.lastName}
-                                            </h4>
-                                            <div className="flex items-center gap-4">
-                                                <span className="text-[10px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded-md uppercase border border-primary/20">
-                                                    {member.role}
-                                                </span>
-                                                <span className="text-[10px] font-medium text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                                                    <Mail className="h-3 w-3" /> {member.email}
-                                                </span>
+                                        <div>
+                                            <div className="flex flex-wrap items-center gap-3 mb-1">
+                                                <h3 className="text-base sm:text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">{member.firstName} {member.lastName}</h3>
+                                                <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[8px] font-black uppercase tracking-widest border border-primary/20">{member.position || member.role || 'MEMBER'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-3 text-gray-400">
+                                                <span className="text-[10px] font-bold text-gray-500 truncate max-w-[150px] sm:max-w-none uppercase tracking-widest">{member.email}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -163,7 +257,7 @@ export default function TeamManagementPage() {
                                         <div className="text-right">
                                             <p className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Load Balance</p>
                                             <p className="text-xl font-black text-gray-900 dark:text-white tracking-tighter">
-                                                {member.assignedTasks.length} Active
+                                                {(member.assignedTasks || []).length} Active
                                             </p>
                                         </div>
                                         <button
@@ -192,8 +286,8 @@ export default function TeamManagementPage() {
                                 <div key={task.id} className="p-5 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:border-primary/20 transition-all group">
                                     <div className="flex justify-between items-start mb-3">
                                         <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border ${task.priority === 'URGENT' ? 'bg-rose-50 text-rose-600 border-rose-100' :
-                                                task.priority === 'HIGH' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                                    'bg-emerald-50 text-emerald-600 border-emerald-100 text-primary'
+                                            task.priority === 'HIGH' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                                'bg-indigo-50 text-indigo-600 border-indigo-100'
                                             }`}>
                                             {task.priority}
                                         </span>
@@ -203,9 +297,13 @@ export default function TeamManagementPage() {
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary">
-                                                {task.assignedTo?.firstName[0]}
+                                                {(task.assignedToTeam?.firstName?.[0] || task.assignedToUser?.firstName?.[0] || '?').toUpperCase()}
                                             </div>
-                                            <span className="text-[10px] font-bold text-gray-500 uppercase">{task.assignedTo?.firstName} {task.assignedTo?.lastName}</span>
+                                            <span className="text-[10px] font-bold text-gray-500 uppercase">
+                                                {task.assignedToTeam ? `${task.assignedToTeam.firstName} ${task.assignedToTeam.lastName}` :
+                                                    task.assignedToUser ? `${task.assignedToUser.firstName} ${task.assignedToUser.lastName}` :
+                                                        'Unassigned'}
+                                            </span>
                                         </div>
                                         <button className="h-8 w-8 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-300 hover:text-primary transition-colors">
                                             <ArrowRight className="h-4 w-4" />
@@ -226,9 +324,9 @@ export default function TeamManagementPage() {
 
             {/* Task Proposal Modal */}
             {showTaskModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-12">
-                    <div className="absolute inset-0 bg-[#00120d]/80 backdrop-blur-xl" onClick={() => setShowTaskModal(false)}></div>
-                    <div className="relative w-full max-w-xl bg-white dark:bg-[#001c14] rounded-[3rem] p-10 shadow-2xl border border-white/10 animate-in zoom-in-95 duration-300">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-12 overflow-hidden">
+                    <div className="absolute inset-0 bg-gray-900/60 dark:bg-[#00120d]/80 backdrop-blur-md" onClick={() => setShowTaskModal(false)}></div>
+                    <div className="relative w-full max-w-xl bg-white dark:bg-[#020617] rounded-[2rem] sm:rounded-[3.5rem] p-6 sm:p-12 shadow-2xl border border-white/10 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto scrollbar-hide">
                         <div className="flex items-center gap-6 mb-10">
                             <div className="h-14 w-14 rounded-2xl bg-primary flex items-center justify-center text-white">
                                 <Briefcase className="h-8 w-8" />
@@ -255,13 +353,14 @@ export default function TeamManagementPage() {
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Assignee Node</label>
                                     <select
+                                        required
                                         className="luxury-input"
                                         value={taskData.assignedToId}
                                         onChange={(e) => setTaskData({ ...taskData, assignedToId: e.target.value })}
                                     >
                                         <option value="">Select Personnel...</option>
                                         {team.map(m => (
-                                            <option key={m.id} value={m.id}>{m.firstName} {m.lastName}</option>
+                                            <option key={m.id} value={m.id}>{m.firstName} {m.lastName} ({m.position})</option>
                                         ))}
                                     </select>
                                 </div>
@@ -300,15 +399,144 @@ export default function TeamManagementPage() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-[2] luxury-btn py-5 shadow-2xl shadow-primary/20"
+                                    disabled={saving}
+                                    className="flex-[2] luxury-btn py-6 vibrant-collage shadow-2xl shadow-primary/20 flex items-center justify-center gap-4 group disabled:opacity-50"
                                 >
-                                    Authorize Assignment <ArrowRight className="h-5 w-5" />
+                                    {saving ? (
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                    ) : (
+                                        <>
+                                            Authorize Assignment <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+
+            {/* Add Team Member Modal */}
+            {
+                showMemberModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-12">
+                        <div className="absolute inset-0 bg-[#00120d]/80 backdrop-blur-xl" onClick={() => setShowMemberModal(false)}></div>
+                        <div className="relative w-full max-w-xl bg-white dark:bg-[#001c14] rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 shadow-2xl border border-white/10 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar">
+                            <div className="flex items-center gap-6 mb-10">
+                                <div className="h-14 w-14 rounded-2xl bg-primary flex items-center justify-center text-white">
+                                    <UserPlus className="h-8 w-8" />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">New Operative</h2>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">Internal Personnel Induction</p>
+                                </div>
+                            </div>
+
+                            <form onSubmit={handleCreateMember} className="space-y-6">
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">First Name</label>
+                                        <input
+                                            required
+                                            className="luxury-input"
+                                            placeholder="James"
+                                            value={memberData.firstName}
+                                            onChange={(e) => setMemberData({ ...memberData, firstName: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Last Name</label>
+                                        <input
+                                            required
+                                            className="luxury-input"
+                                            placeholder="Logan"
+                                            value={memberData.lastName}
+                                            onChange={(e) => setMemberData({ ...memberData, lastName: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Email Identity</label>
+                                    <input
+                                        required
+                                        type="email"
+                                        className="luxury-input"
+                                        placeholder="j.logan@md-elite.com"
+                                        value={memberData.email}
+                                        onChange={(e) => setMemberData({ ...memberData, email: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Role/Position</label>
+                                        <input
+                                            required
+                                            className="luxury-input"
+                                            placeholder="Operations Lead"
+                                            value={memberData.position}
+                                            onChange={(e) => setMemberData({ ...memberData, position: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Department</label>
+                                        <select
+                                            className="luxury-input"
+                                            value={memberData.department}
+                                            onChange={(e) => setMemberData({ ...memberData, department: e.target.value })}
+                                        >
+                                            <option value="Operations">Operations</option>
+                                            <option value="Client Relations">Client Relations</option>
+                                            <option value="Finance">Finance</option>
+                                            <option value="Legal">Legal</option>
+                                            <option value="Sales">Sales</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Secure Line (Phone)</label>
+                                    <input
+                                        className="luxury-input"
+                                        placeholder="+1 (555) 000-0000"
+                                        value={memberData.phone}
+                                        onChange={(e) => setMemberData({ ...memberData, phone: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Avatar URL (Profile Picture)</label>
+                                    <input
+                                        className="luxury-input"
+                                        placeholder="https://images.unsplash.com/..."
+                                        value={memberData.avatar}
+                                        onChange={(e) => setMemberData({ ...memberData, avatar: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="flex gap-4 pt-6">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowMemberModal(false)}
+                                        className="flex-1 py-5 rounded-2xl bg-gray-50 dark:bg-white/5 text-[10px] font-black uppercase text-gray-400 hover:text-gray-900 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="flex-[2] luxury-btn py-5 shadow-2xl shadow-primary/20"
+                                    >
+                                        Confirm Induction <ArrowRight className="h-5 w-5" />
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     )
 }
+

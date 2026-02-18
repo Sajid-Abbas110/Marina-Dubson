@@ -47,7 +47,7 @@ export default function AdministrativeAnalyticsPage() {
 
             {/* Performance Pulse */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <PulseCard label="Network Uptime" value="99.98%" trend="+0.02%" color="text-emerald-500" icon={<Zap />} />
+                <PulseCard label="Network Uptime" value="99.98%" trend="+0.02%" color="text-indigo-500" icon={<Zap />} />
                 <PulseCard label="Avg Assignment Vel." value="24.2h" trend="-4.1h" color="text-primary" icon={<Clock />} />
                 <PulseCard label="Reporter Utilization" value="82%" trend="+12%" color="text-purple-600" icon={<Users />} />
                 <PulseCard label="Market Dominance" value="34.2%" trend="+2.1%" color="text-amber-500" icon={<TrendingUp />} />
@@ -57,7 +57,7 @@ export default function AdministrativeAnalyticsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Revenue Streams - Large */}
                 <div className="lg:col-span-2 glass-panel rounded-[3rem] p-6 lg:p-10 space-y-10 border border-gray-100 dark:border-white/5 relative overflow-hidden group">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-emerald-600"></div>
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-indigo-600"></div>
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-1">Global Revenue Flux</h3>
@@ -97,7 +97,7 @@ export default function AdministrativeAnalyticsPage() {
                     </div>
                     <div className="space-y-4">
                         <DistributionRow label="New York City" value="64%" color="bg-primary" />
-                        <DistributionRow label="Remote Global" value="22%" color="bg-emerald-400" />
+                        <DistributionRow label="Remote Global" value="22%" color="bg-indigo-400" />
                         <DistributionRow label="NJ/CT Node" value="14%" color="bg-gray-200 dark:bg-white/10" />
                     </div>
                 </div>
@@ -122,7 +122,7 @@ function PulseCard({ label, value, trend, color, icon }: any) {
             <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">{label}</p>
             <div className={`text-3xl font-black tracking-tighter uppercase ${color} mb-6`}>{value}</div>
             <div className="flex items-center gap-2">
-                <span className={`text-[10px] font-black uppercase tracking-widest ${trend.startsWith('+') ? 'text-emerald-500' : 'text-rose-500'}`}>{trend}</span>
+                <span className={`text-[10px] font-black uppercase tracking-widest ${trend.startsWith('+') ? 'text-indigo-500' : 'text-rose-500'}`}>{trend}</span>
                 <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Growth</span>
             </div>
         </div>
@@ -161,7 +161,7 @@ function InsightCard({ title, status, content, priority }: any) {
             <div className="flex justify-between items-start">
                 <h4 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight max-w-[150px] leading-tight group-hover:text-primary transition-colors">{title}</h4>
                 <div className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${priority === 'HIGH' ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600' :
-                    priority === 'EXCEPTIONAL' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600' :
+                    priority === 'EXCEPTIONAL' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600' :
                         'bg-primary/10 text-primary'
                     }`}>
                     {priority}

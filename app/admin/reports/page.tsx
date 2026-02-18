@@ -76,7 +76,7 @@ export default function ReportsPage() {
                 </div>
                 <div className="flex items-center gap-4">
                     <button onClick={() => handleExport('EXCEL')} className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
-                        <FileSpreadsheet className="h-4 w-4 text-emerald-500" />
+                        <FileSpreadsheet className="h-4 w-4 text-indigo-500" />
                         <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">Export XLSX</span>
                     </button>
                     <button onClick={() => handleExport('PDF')} className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-gray-900 text-white shadow-xl hover:scale-105 transition-all group">
@@ -92,7 +92,7 @@ export default function ReportsPage() {
                     icon={<PieChart className="text-primary" />}
                     stats={[
                         { label: 'Agency Channel', value: `$${agencyRevenue.toLocaleString()}`, color: 'text-primary' },
-                        { label: 'Direct Channel', value: `$${directRevenue.toLocaleString()}`, color: 'text-emerald-500' }
+                        { label: 'Direct Channel', value: `$${directRevenue.toLocaleString()}`, color: 'text-indigo-500' }
                     ]}
                 />
                 <ReportCard
@@ -157,7 +157,7 @@ export default function ReportsPage() {
                                             {b?.bookingDate ? format(new Date(b.bookingDate), 'MMM dd') : 'N/A'}
                                         </td>
                                         <td className="py-6 px-4 text-right">
-                                            <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase rounded-full">Elite</span>
+                                            <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase rounded-full">Elite</span>
                                         </td>
                                     </tr>
                                 )

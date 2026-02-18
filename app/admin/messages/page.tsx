@@ -22,6 +22,8 @@ import {
 } from 'lucide-react'
 
 export default function TacticalCommMatrix() {
+    const [searchQuery, setSearchQuery] = useState('')
+    const [searchResults, setSearchResults] = useState<any[]>([])
     const [activeChat, setActiveChat] = useState<string | null>(null)
     const [conversations, setConversations] = useState<any[]>([])
     const [messages, setMessages] = useState<any[]>([])
@@ -39,7 +41,10 @@ export default function TacticalCommMatrix() {
             const data = await res.json()
             setConversations(data.conversations || [])
             if (data.conversations?.length > 0 && !activeChat) {
-                setActiveChat(data.conversations[0].id)
+                // Only auto-select if we haven't selected one yet
+                // setActiveChat(data.conversations[0].id) 
+                // actually, let's not auto-select to allow "empty" state
+                if (!activeChat) setActiveChat(data.conversations[0].id)
             }
         } catch (error) {
             console.error('Failed to fetch conversations:', error)
@@ -54,35 +59,89 @@ export default function TacticalCommMatrix() {
             const res = await fetch(`/api/messages?recipientId=${recipientId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
+            if (!res.ok) throw new Error('Failed to fetch messages')
             const data = await res.json()
-            setMessages(data.messages || [])
+            setMessages(Array.isArray(data.messages) ? data.messages : [])
         } catch (error) {
             console.error('Failed to fetch messages:', error)
+            setMessages([])
         }
+    }
+
+    const handleSearch = async (query: string) => {
+        setSearchQuery(query)
+        if (query.length < 2) {
+            setSearchResults([])
+            return
+        }
+
+        try {
+            const res = await fetch(`/api/admin/users?search=${query}`)
+            const data = await res.json()
+            setSearchResults(data.users || [])
+        } catch (error) {
+            console.error('Search failed:', error)
+        }
+    }
+
+    const startConversation = (user: any) => {
+        // Check if conversation already exists
+        const existing = conversations.find(c => c.id === user.id)
+        if (existing) {
+            setActiveChat(existing.id)
+        } else {
+            // Create temporary conversation object
+            const newConv = {
+                id: user.id,
+                name: `${user.firstName} ${user.lastName}`,
+                role: user.role,
+                lastMsg: 'Drafting transmission...',
+                time: new Date().toISOString()
+            }
+            setConversations([newConv, ...conversations])
+            setActiveChat(user.id)
+        }
+        setSearchQuery('')
+        setSearchResults([])
     }
 
     const sendMessage = async (e?: React.FormEvent) => {
         if (e) e.preventDefault()
-        if (!newMessage.trim() || !activeChat) return
+
+        // Allow clients to send without active chat (defaults to admin)
+        // OR if there is an active chat
+        if (!newMessage.trim()) return
+
+        const isClientNoChat = currentUser?.role === 'CLIENT' && !activeChat
 
         try {
             const token = localStorage.getItem('token')
+            const body: any = { content: newMessage }
+
+            if (activeChat) {
+                body.recipientId = activeChat
+            }
+            // If client and no active chat, backend handles regular admin routing
+
             const res = await fetch('/api/messages', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    recipientId: activeChat,
-                    content: newMessage
-                })
+                body: JSON.stringify(body)
             })
+
             if (res.ok) {
                 const msg = await res.json()
                 setMessages([...messages, msg])
                 setNewMessage('')
                 fetchConversations() // Update sidebar
+
+                // If it was a generic client message, reload to find the admin conversation
+                if (isClientNoChat) {
+                    setTimeout(fetchConversations, 1000)
+                }
             }
         } catch (error) {
             console.error('Failed to send message:', error)
@@ -100,6 +159,13 @@ export default function TacticalCommMatrix() {
             } catch (e) { }
         }
     }, [fetchConversations])
+
+    // Auto-select Admin for empty clients
+    useEffect(() => {
+        if (!loading && conversations.length === 0 && currentUser?.role === 'CLIENT') {
+            // Optionally could auto-create a placeholder, but for now we rely on the generic send
+        }
+    }, [loading, conversations, currentUser])
 
     useEffect(() => {
         if (activeChat) {
@@ -134,9 +200,33 @@ export default function TacticalCommMatrix() {
                         </div>
                     </div>
 
-                    <div className="relative group">
+                    <div className="relative group z-50">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 dark:text-slate-500 group-focus-within:text-primary transition-colors" />
-                        <input className="luxury-input pl-12 py-3 placeholder:text-gray-300 dark:placeholder:text-slate-600 text-[10px] focus:ring-primary/20" placeholder="IDENTIFY NODE..." />
+                        <input
+                            className="luxury-input pl-12 py-3 placeholder:text-gray-300 dark:placeholder:text-slate-600 text-[10px] focus:ring-primary/20 w-full"
+                            placeholder="IDENTIFY NODE..."
+                            value={searchQuery}
+                            onChange={(e) => handleSearch(e.target.value)}
+                        />
+                        {searchResults.length > 0 && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#0f172a] rounded-xl shadow-2xl border border-gray-100 dark:border-white/10 max-h-60 overflow-y-auto custom-scrollbar p-2">
+                                {searchResults.map(user => (
+                                    <button
+                                        key={user.id}
+                                        onClick={() => startConversation(user)}
+                                        className="w-full p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-3 transition-colors text-left"
+                                    >
+                                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-black text-xs">
+                                            {user.firstName[0]}{user.lastName[0]}
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-gray-900 dark:text-white uppercase">{user.firstName} {user.lastName}</p>
+                                            <p className="text-[8px] font-bold text-gray-400 uppercase">{user.role}</p>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -150,7 +240,9 @@ export default function TacticalCommMatrix() {
                         {loading ? (
                             <div className="p-8 text-center text-[10px] uppercase font-black text-gray-400">Scanning Signal...</div>
                         ) : conversations.length === 0 ? (
-                            <div className="p-8 text-center text-[10px] uppercase font-black text-gray-400">No Active Channels Found</div>
+                            <div className="p-8 text-center text-[10px] uppercase font-black text-gray-400">
+                                {currentUser?.role === 'CLIENT' ? 'Ready to Transmit to HQ' : 'No Active Channels Found'}
+                            </div>
                         ) : conversations.map(c => (
                             <button
                                 key={c.id}
@@ -185,7 +277,7 @@ export default function TacticalCommMatrix() {
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-gray-100 dark:border-white/5 bg-white/50 dark:bg-white/[0.02] flex items-center justify-between backdrop-blur-3xl">
                     <div className="flex items-center gap-4">
-                        {activeConv && (
+                        {activeConv ? (
                             <>
                                 <div className="relative">
                                     <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-emerald-800 flex items-center justify-center text-white font-black text-xs shadow-lg">
@@ -203,6 +295,22 @@ export default function TacticalCommMatrix() {
                                     <p className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.4em]">Linked {activeConv.role} Node • Secure</p>
                                 </div>
                             </>
+                        ) : currentUser?.role === 'CLIENT' ? (
+                            <div className="flex items-center gap-4">
+                                <div className="h-10 w-10 rounded-xl bg-gray-200 flex items-center justify-center text-gray-500">?</div>
+                                <div>
+                                    <h3 className="text-lg font-black text-gray-400 uppercase tracking-widest">NO LINK ESTABLISHED</h3>
+                                    <p className="text-[9px] text-gray-400 uppercase">Send message to initiate connection with HQ</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-4">
+                                <div className="h-10 w-10 rounded-xl bg-gray-200 flex items-center justify-center text-gray-500">?</div>
+                                <div>
+                                    <h3 className="text-lg font-black text-gray-400 uppercase tracking-widest">NO LINK ESTABLISHED</h3>
+                                    <p className="text-[9px] text-gray-400 uppercase">Search and select a node to transmit</p>
+                                </div>
+                            </div>
                         )}
                     </div>
                     <div className="flex items-center gap-2">
@@ -222,11 +330,11 @@ export default function TacticalCommMatrix() {
 
                     {messages.map((m, idx) => (
                         <MessageBubble
-                            key={m.id}
+                            key={m.id || idx}
                             body={m.content}
-                            time={new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            isMe={m.senderId === currentUser?.userId}
-                            name={`${m.sender.firstName} ${m.sender.lastName}`}
+                            time={m.createdAt ? new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                            isMe={m.senderId === currentUser?.userId || m.senderId === currentUser?.id}
+                            name={m.sender ? `${m.sender.firstName} ${m.sender.lastName}` : 'Unknown User'}
                         />
                     ))}
                     {messages.length === 0 && (
@@ -245,7 +353,7 @@ export default function TacticalCommMatrix() {
                         </button>
                         <input
                             className="flex-1 bg-transparent border-none outline-none text-xs font-medium px-2 py-2 dark:text-white"
-                            placeholder="COMMUNICATE SECURE NODE TRANSMISSION..."
+                            placeholder={currentUser?.role === 'CLIENT' && !activeChat ? "TRANSMIT DIRECT TO HQ..." : "COMMUNICATE SECURE NODE TRANSMISSION..."}
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
                         />

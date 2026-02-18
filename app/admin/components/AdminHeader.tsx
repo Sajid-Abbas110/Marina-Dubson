@@ -1,23 +1,82 @@
 import { Bell, Search, MessageSquare, ChevronDown, Settings, LogOut, User, Command, Moon, Sun } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useTheme } from '@/lib/theme-context'
 
 export default function AdminHeader() {
+    const router = useRouter()
     const [isProfileOpen, setIsProfileOpen] = useState(false)
     const [scrolled, setScrolled] = useState(false)
     const { theme, toggleTheme } = useTheme()
+    const [user, setUser] = useState<any>(null)
+    const [stats, setStats] = useState({
+        unreadMessages: 0,
+        pendingBookings: 0
+    })
 
     useEffect(() => {
+        const storedUser = localStorage.getItem('user')
+        if (storedUser) {
+            setUser(JSON.parse(storedUser))
+        }
         const handleScroll = () => setScrolled(window.scrollY > 10)
         window.addEventListener('scroll', handleScroll)
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
 
+    const fetchNotifications = async () => {
+        try {
+            const token = localStorage.getItem('token')
+            if (!token) return
+
+            // 1. Fetch Submitted Bookings as Notifications
+            const bookingsRes = await fetch('/api/bookings?status=SUBMITTED', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            const bookingsData = await bookingsRes.json()
+            const pendingCount = bookingsData.total || 0
+
+            // 2. Fetch Unread Messages (using conversations endpoint for now as proxy or 0 if fails)
+            // Ideally we'd have a dedicated unread count endpoint.
+            // For now, we'll just check if there are any active conversations
+            const conversationsRes = await fetch('/api/messages/conversations', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            const conversationsData = await conversationsRes.json()
+            // Simple heuristic since we lack isRead on conversation summary: Just show count of recent convos
+            // Or ideally, update backend. For now, let's just show total active conversations as "messages"
+            const messageCount = conversationsData.conversations?.length || 0
+
+            setStats({
+                unreadMessages: messageCount,
+                pendingBookings: pendingCount
+            })
+
+        } catch (error) {
+            console.error('Failed to fetch header stats:', error)
+        }
+    }
+
+    useEffect(() => {
+        fetchNotifications()
+        // Poll every 30 seconds for "real-time" updates
+        const interval = setInterval(fetchNotifications, 30000)
+        return () => clearInterval(interval)
+    }, [])
+
+    const handleLogout = () => {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+        router.push('/login') // Assuming /login exists, or /auth/login
+    }
+
     return (
-        <header className={`sticky top-0 z-30 px-4 sm:px-6 py-3 flex items-center justify-between transition-all duration-300 ${scrolled ? 'bg-white/80 dark:bg-[#00120d]/80 backdrop-blur-2xl border-b border-gray-100/50 dark:border-white/5 shadow-xl py-2' : 'bg-transparent'
+        <header className={`sticky top-0 z-[110] px-4 sm:px-6 py-3 flex items-center justify-between transition-all duration-300 ${scrolled ? 'bg-white/80 dark:bg-[#00120d]/80 backdrop-blur-2xl border-b border-gray-100/50 dark:border-white/5 shadow-xl py-2' : 'bg-transparent'
             }`}>
             {/* Command Palette Vibe Search */}
-            <div className="flex-1 max-w-lg min-w-0 mr-4 md:mr-6 lg:mr-0">
+            <div className="flex-1 max-w-lg min-w-0 mr-4 md:mr-6 lg:mr-0 pl-14 lg:pl-0">
                 <div className="relative group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
                     <input
@@ -46,8 +105,19 @@ export default function AdminHeader() {
                         )}
                     </button>
                     <div className="hidden sm:flex items-center gap-1">
-                        <HeaderAction icon={<MessageSquare className="h-3.5 w-3.5" />} badge="2" />
-                        <HeaderAction icon={<Bell className="h-3.5 w-3.5" />} badge="8" pulse />
+                        <Link href="/admin/messages">
+                            <HeaderAction
+                                icon={<MessageSquare className="h-3.5 w-3.5" />}
+                                badge={stats.unreadMessages > 0 ? stats.unreadMessages.toString() : undefined}
+                            />
+                        </Link>
+                        <Link href="/admin/bookings?status=SUBMITTED">
+                            <HeaderAction
+                                icon={<Bell className="h-3.5 w-3.5" />}
+                                badge={stats.pendingBookings > 0 ? stats.pendingBookings.toString() : undefined}
+                                pulse={stats.pendingBookings > 0}
+                            />
+                        </Link>
                     </div>
                 </div>
 
@@ -59,14 +129,14 @@ export default function AdminHeader() {
                         className="group flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-white dark:hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-gray-100 dark:hover:border-white/10"
                     >
                         <div className="relative flex-shrink-0">
-                            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-emerald-700 flex items-center justify-center text-white font-black text-[10px] shadow-lg shadow-primary/30 transition-transform">
+                            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-indigo-800 flex items-center justify-center text-white font-black text-[10px] shadow-lg shadow-primary/30 transition-transform">
                                 MD
                             </div>
-                            <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-emerald-500 border-2 border-white dark:border-[#00120d] rounded-full"></div>
+                            <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-indigo-500 border-2 border-white dark:border-[#00120d] rounded-full"></div>
                         </div>
                         <div className="hidden lg:block text-left min-w-0">
-                            <p className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-wider leading-none truncate">Marina Dubson</p>
-                            <p className="text-[8px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-tighter truncate">Admin</p>
+                            <p className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-wider leading-none truncate">{user ? `${user.firstName} ${user.lastName}` : 'Marina Dubson'}</p>
+                            <p className="text-[8px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-tighter truncate">{user?.role || 'Loading...'}</p>
                         </div>
                         <ChevronDown className={`h-3.5 w-3.5 text-gray-300 transition-transform duration-500 flex-shrink-0 ${isProfileOpen ? 'rotate-180 text-primary' : 'group-hover:text-gray-900 dark:group-hover:text-white'}`} />
                     </button>
@@ -81,15 +151,22 @@ export default function AdminHeader() {
                                     <h4 className="font-black text-lg truncate">admin@mariadubson.com</h4>
                                     <div className="mt-4 flex items-center gap-2">
                                         <span className="px-2 py-1 bg-white/10 rounded-lg text-[10px] font-bold uppercase tracking-wider">Super Admin</span>
-                                        <span className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg text-[10px] font-bold uppercase tracking-wider">Active Now</span>
+                                        <span className="px-2 py-1 bg-indigo-500/20 text-indigo-400 rounded-lg text-[10px] font-bold uppercase tracking-wider">Active Now</span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-1">
-                                    <DropdownItem icon={<User className="h-4 w-4" />} label="Personal Profile" />
-                                    <DropdownItem icon={<Settings className="h-4 w-4" />} label="Security Settings" />
+                                    <Link href="/admin/settings" onClick={() => setIsProfileOpen(false)}>
+                                        <DropdownItem icon={<User className="h-4 w-4" />} label="Personal Profile" />
+                                    </Link>
+                                    <Link href="/admin/settings" onClick={() => setIsProfileOpen(false)}>
+                                        <DropdownItem icon={<Settings className="h-4 w-4" />} label="Security Settings" />
+                                    </Link>
                                     <div className="h-px bg-gray-50 dark:bg-white/5 my-2 mx-4"></div>
-                                    <button className="w-full flex items-center gap-4 px-5 py-4 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-2xl transition-all font-black uppercase tracking-widest group">
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full flex items-center gap-4 px-5 py-4 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-2xl transition-all font-black uppercase tracking-widest group"
+                                    >
                                         <div className="h-10 w-10 rounded-xl bg-red-100/50 dark:bg-red-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                                             <LogOut className="h-4 w-4" />
                                         </div>
@@ -107,7 +184,7 @@ export default function AdminHeader() {
 
 function HeaderAction({ icon, badge, pulse }: any) {
     return (
-        <button className="relative group p-3 rounded-2xl bg-white/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-gray-100 dark:border-white/10 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 active:scale-90">
+        <div className="relative group p-3 rounded-2xl bg-white/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-gray-100 dark:border-white/10 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 active:scale-90 cursor-pointer">
             <div className="text-gray-400 dark:text-gray-500 group-hover:text-primary dark:group-hover:text-primary transition-colors">
                 {icon}
             </div>
@@ -116,17 +193,17 @@ function HeaderAction({ icon, badge, pulse }: any) {
                     {badge}
                 </span>
             )}
-        </button>
+        </div>
     )
 }
 
 function DropdownItem({ icon, label }: any) {
     return (
-        <button className="w-full flex items-center gap-4 px-5 py-4 text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-2xl transition-all font-bold uppercase tracking-widest group text-left">
+        <div className="w-full flex items-center gap-4 px-5 py-4 text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-2xl transition-all font-bold uppercase tracking-widest group text-left">
             <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-white/5 group-hover:bg-primary/10 dark:group-hover:bg-primary/20 group-hover:text-primary dark:group-hover:text-primary flex items-center justify-center transition-all group-hover:scale-110">
                 {icon}
             </div>
             {label}
-        </button>
+        </div>
     )
 }

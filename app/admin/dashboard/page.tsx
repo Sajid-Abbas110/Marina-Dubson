@@ -175,7 +175,7 @@ Review Queue,${stats.reviewQueue}
                     icon={<DollarSign />}
                     trend="+12.5%"
                     trendUp={true}
-                    grad="from-emerald-500 to-teal-700"
+                    grad="from-indigo-500 to-indigo-700"
                     onClick={() => router.push('/admin/analytics')}
                 />
                 <KPICard
@@ -184,8 +184,8 @@ Review Queue,${stats.reviewQueue}
                     icon={<Calendar />}
                     trend={`+${stats.upcomingJobs} New`}
                     trendUp={true}
-                    grad="from-primary to-emerald-800"
-                    onClick={() => router.push('/admin/bookings')}
+                    grad="from-primary to-indigo-800"
+                    onClick={() => router.push('/admin/calendar')}
                 />
                 <KPICard
                     title="Active Reporters"
@@ -213,7 +213,7 @@ Review Queue,${stats.reviewQueue}
                     <div className="glass-panel rounded-[2.5rem] overflow-hidden">
                         <div className="px-6 lg:px-8 py-6 border-b border-gray-100 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/50 dark:bg-white/[0.02]">
                             <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">Recent Assignments</h3>
-                            <Link href="/admin/bookings" className="text-[10px] font-black text-primary hover:text-emerald-600 uppercase tracking-widest">View All Operations →</Link>
+                            <Link href="/admin/bookings" className="text-[10px] font-black text-primary hover:text-indigo-600 uppercase tracking-widest">View All Operations →</Link>
                         </div>
                         <div className="divide-y divide-gray-50 dark:divide-white/5">
                             {loading ? (
@@ -240,7 +240,7 @@ Review Queue,${stats.reviewQueue}
 
                 {/* Cyber Sidebar Widgets */}
                 <div className="space-y-8">
-                    <div className="bg-gradient-to-br from-gray-900 via-primary/20 to-emerald-900 dark:from-black dark:via-primary/10 dark:to-emerald-950 rounded-[2.5rem] p-8 text-white relative overflow-hidden group shadow-2xl">
+                    <div className="bg-gradient-to-br from-gray-900 via-primary/20 to-indigo-900 dark:from-black dark:via-primary/10 dark:to-indigo-950 rounded-[2.5rem] p-8 text-white relative overflow-hidden group shadow-2xl">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl group-hover:bg-primary/20 transition-all"></div>
                         <div className="relative z-10">
                             <Zap className="h-10 w-10 text-yellow-400 mb-6 animate-float" />
@@ -248,7 +248,7 @@ Review Queue,${stats.reviewQueue}
                             <p className="text-emerald-100 text-sm font-medium mb-8 leading-relaxed">Direct line to Marina for immediate case escalations and elite adjustments.</p>
                             <Link
                                 href="/admin/messages"
-                                className="block w-full py-4 bg-white text-gray-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-50 hover:shadow-2xl transition-all text-center"
+                                className="block w-full py-4 bg-white text-gray-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-50 hover:shadow-2xl transition-all text-center"
                             >
                                 Connect Now
                             </Link>
@@ -259,11 +259,11 @@ Review Queue,${stats.reviewQueue}
                         <div>
                             <div className="flex justify-between items-center mb-6">
                                 <h4 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest">System Resources</h4>
-                                <Shield className="h-4 w-4 text-emerald-500" />
+                                <Shield className="h-4 w-4 text-indigo-500" />
                             </div>
                             <div className="space-y-6">
                                 <ResourceStat label="Storage Capacity" used="78" color="bg-primary" />
-                                <ResourceStat label="Server Load" used="32" color="bg-emerald-500" />
+                                <ResourceStat label="Server Load" used="32" color="bg-indigo-500" />
                             </div>
                         </div>
                         <div className="pt-6 border-t border-gray-100 dark:border-white/5">
@@ -295,7 +295,7 @@ function KPICard({ title, value, icon, trend, trendUp, grad, onClick }: any) {
                 <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${grad} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-500`}>
                     {icon}
                 </div>
-                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${trendUp ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400'}`}>
+                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${trendUp ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400'}`}>
                     {trend}
                 </div>
             </div>
@@ -334,7 +334,7 @@ function JobRow({ id, client, types, time, date, status, bookingId }: any) {
                     <p className="text-xs font-black text-gray-900 dark:text-white">{time}</p>
                     <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Start Time</p>
                 </div>
-                <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${status === 'Confirmed' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/20' :
+                <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${status === 'Confirmed' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-500/20' :
                     status === 'Pending' ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-500/20' :
                         'bg-gray-50 dark:bg-white/10 text-gray-500 dark:text-gray-400 border-gray-100 dark:border-white/10'
                     }`}>

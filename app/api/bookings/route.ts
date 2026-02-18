@@ -26,14 +26,50 @@ const bookingSchema = z.object({
 // GET all bookings
 export async function GET(request: NextRequest) {
     try {
+        const token = extractTokenFromHeader(request.headers.get('Authorization'))
+        const payload = token ? verifyToken(token) : null
+
+        if (!payload) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
         const { searchParams } = new URL(request.url)
-        const contactId = searchParams.get('contactId')
+        const contactIdParam = searchParams.get('contactId')
         const status = searchParams.get('status')
         const limit = parseInt(searchParams.get('limit') || '50')
         const offset = parseInt(searchParams.get('offset') || '0')
 
         const where: any = {}
-        if (contactId) where.contactId = contactId
+
+        // Role-based filtering
+        const userRole = payload.role?.toUpperCase() || 'CLIENT' // Default to safest role
+
+        if (['ADMIN', 'MANAGER', 'SUPER_ADMIN'].includes(userRole)) {
+            // Admin can see all, or filter by specific contact
+            if (contactIdParam) where.contactId = contactIdParam
+        } else if (userRole === 'REPORTER') {
+            // Reporter only sees assigned bookings
+            where.reporterId = payload.userId
+        } else {
+            // Client/Standard User - MUST map to a Contact
+            // Find contact by email
+            const contact = await prisma.contact.findUnique({
+                where: { email: payload.email }
+            })
+
+            if (!contact) {
+                // If no linked contact found for this client user, return empty
+                return NextResponse.json({
+                    bookings: [],
+                    total: 0,
+                    limit,
+                    offset,
+                    message: "No associated contact record found."
+                })
+            }
+            where.contactId = contact.id
+        }
+
         if (status) where.bookingStatus = status
 
         const [bookings, total] = await Promise.all([
@@ -61,6 +97,14 @@ export async function GET(request: NextRequest) {
                             id: true,
                             firstName: true,
                             lastName: true,
+                        },
+                    },
+                    reporter: {
+                        select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            certification: true,
                         },
                     },
                 },
@@ -112,6 +156,42 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Contact identity required' }, { status: 400 })
         }
 
+        // Validate service existence
+        const serviceExists = await prisma.service.findUnique({
+            where: { id: data.serviceId }
+        })
+        if (!serviceExists) {
+            return NextResponse.json({ error: 'Invalid service selected' }, { status: 400 })
+        }
+
+        // Validate User existence & fallback
+        let validUserId = userId
+        if (userId === 'system' || userId === 'dev-admin-id') {
+            // Try to find a real admin user to assign this to
+            const firstAdmin = await prisma.user.findFirst({
+                where: { role: 'ADMIN' }
+            })
+            if (firstAdmin) {
+                validUserId = firstAdmin.id
+            }
+        } else {
+            // Verify the specific user exists
+            const userExists = await prisma.user.findUnique({
+                where: { id: userId }
+            })
+            if (!userExists) {
+                // Try to find a real admin user to assign this to
+                const firstAdmin = await prisma.user.findFirst({
+                    where: { role: 'ADMIN' }
+                })
+                if (firstAdmin) {
+                    validUserId = firstAdmin.id
+                } else {
+                    return NextResponse.json({ error: 'Invalid user identity' }, { status: 400 })
+                }
+            }
+        }
+
         // Generate booking number
         const count = await prisma.booking.count()
         const bookingNumber = `BK${String(count + 1).padStart(6, '0')}`
@@ -129,7 +209,7 @@ export async function POST(request: NextRequest) {
                 bookingNumber,
                 contactId: contactId,
                 serviceId: data.serviceId,
-                userId: userId,
+                userId: validUserId,
                 proceedingType: data.proceedingType,
                 jurisdiction: data.jurisdiction,
                 state: data.state,

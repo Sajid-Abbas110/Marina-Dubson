@@ -16,6 +16,7 @@ model User {
   role             String    @default("STAFF")
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+  avatar           String?
   certification    String?
   company          String?
   submittedBids    Bid[]     @relation("ReporterBids")
@@ -257,26 +258,6 @@ model EmailLog {
   @@index([sentAt])
 }
 
-model Task {
-  id           String    @id @default(cuid())
-  title        String
-  description  String?
-  status       String    @default("TODO")
-  priority     String    @default("MEDIUM")
-  dueDate      DateTime?
-  assignedToId String?
-  createdById  String
-  bookingId    String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  booking      Booking?  @relation(fields: [bookingId], references: [id])
-  createdBy    User      @relation("CreatedTasks", fields: [createdById], references: [id])
-  assignedTo   User?     @relation("AssignedTasks", fields: [assignedToId], references: [id])
-
-  @@index([assignedToId])
-  @@index([createdById])
-  @@index([status])
-}
 
 model Bid {
   id         String   @id @default(cuid())
@@ -295,3 +276,54 @@ model Bid {
   @@index([reporterId])
   @@index([status])
 }
+
+model TeamMember {
+  id            String   @id @default(cuid())
+  firstName     String
+  lastName      String
+  email         String   @unique
+  phone         String?
+  position      String   // e.g., "Operations Manager", "Client Relations", "Billing Specialist"
+  department    String?  // e.g., "Operations", "Sales", "Finance"
+  status        String   @default("ACTIVE") // ACTIVE, INACTIVE, ON_LEAVE
+  hireDate      DateTime @default(now())
+  avatar        String?
+  bio           String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  assignedTasks Task[]   @relation("AssignedToTeamMember")
+
+  @@index([email])
+  @@index([status])
+  @@index([department])
+}
+
+model Task {
+  id             String      @id @default(cuid())
+  title          String
+  description    String?
+  priority       String      @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status         String      @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, CANCELLED
+  dueDate        DateTime?
+  completedAt    DateTime?
+  assignedToUserId String?
+  assignedToTeamId String?
+  assignedToType   String?     // "USER" or "TEAM_MEMBER"
+  createdById      String
+  bookingId        String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  booking          Booking?    @relation(fields: [bookingId], references: [id])
+  assignedToUser   User?       @relation("AssignedTasks", fields: [assignedToUserId], references: [id])
+  assignedToTeam   TeamMember? @relation("AssignedToTeamMember", fields: [assignedToTeamId], references: [id])
+  createdBy      User        @relation("CreatedTasks", fields: [createdById], references: [id])
+
+  @@index([assignedToUserId])
+  @@index([assignedToTeamId])
+  @@index([createdById])
+  @@index([bookingId])
+  @@index([status])
+  @@index([priority])
+}
+
+
