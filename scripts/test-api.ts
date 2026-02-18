@@ -2,7 +2,7 @@ import { generateToken } from '../lib/auth'
 
 async function testApi() {
     const token = generateToken({
-        userId: 'cmlpgrg7o000011ciw3y2n1th', // The ID from our integrity check
+        userId: 'cmlpgrg7o000011ciw3y2n1th',
         id: 'cmlpgrg7o000011ciw3y2n1th',
         email: 'admin@marinadubson.com',
         role: 'ADMIN',
@@ -18,7 +18,8 @@ async function testApi() {
         console.log('Bookings:', data.bookings?.length || 0)
         if (data.error) console.log('Error:', data.error)
     } catch (e) {
-        console.error('Failed to connect to API:', e.message)
+        const msg = e instanceof Error ? e.message : 'Unknown error';
+        console.error('Failed to connect to API:', msg);
     }
 
     console.log('\nTesting /api/admin/users with ADMIN token...')
@@ -29,7 +30,8 @@ async function testApi() {
         const data = await res.json()
         console.log('Users:', data.users?.length || 0)
     } catch (e) {
-        console.error('Failed to connect to API:', e.message)
+        const msg = e instanceof Error ? e.message : 'Unknown error';
+        console.error('Failed to connect to API:', msg);
     }
 }
 
