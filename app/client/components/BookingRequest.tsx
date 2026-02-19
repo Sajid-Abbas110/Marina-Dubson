@@ -72,11 +72,11 @@ export default function BookingRequest({ services, onBookingCreated }: BookingRe
                 <div className="h-20 w-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-600">
                     <Globe className="h-10 w-10" />
                 </div>
-                <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight mb-2">Transmission Received</h2>
-                <p className="text-gray-500 max-w-md mx-auto mb-8">Your booking request has been successfully transmitted to our secure node. A confirmation will be sent shortly.</p>
+                <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-2">Transmission Received</h2>
+                <p className="text-muted-foreground max-w-md mx-auto mb-8">Your booking request has been successfully transmitted to our secure node. A confirmation will be sent shortly.</p>
                 <button
                     onClick={() => setSuccess(false)}
-                    className="px-8 py-4 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-primary transition-all"
+                    className="px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-primary/90 transition-all"
                 >
                     Submit Another Request
                 </button>

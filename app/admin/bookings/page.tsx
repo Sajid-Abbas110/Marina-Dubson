@@ -32,6 +32,7 @@ export default function BookingManagementPage() {
     const [showBidsModal, setShowBidsModal] = useState(false)
     const [selectedBookingBids, setSelectedBookingBids] = useState<any[]>([])
     const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null)
+    const [error, setError] = useState<string | null>(null)
 
     const fetchBookings = async () => {
         try {
@@ -152,6 +153,7 @@ export default function BookingManagementPage() {
 
     const handleComplete = async (id: string) => {
         try {
+            setError(null)
             const token = localStorage.getItem('token')
             const res = await fetch(`/api/bookings/${id}/complete`, {
                 method: 'POST',
@@ -164,9 +166,13 @@ export default function BookingManagementPage() {
             if (res.ok) {
                 setShowCompleteModal(false)
                 fetchBookings()
+            } else {
+                const data = await res.json()
+                setError(data.error || 'Automation sync failed. Please check connectivity.')
             }
-        } catch (error) {
-            console.error('Failed to complete job:', error)
+        } catch (error: any) {
+            console.error('Job completion error:', error)
+            setError(error.message || 'An unexpected error occurred during transmission.')
         }
     }
 
@@ -260,37 +266,37 @@ export default function BookingManagementPage() {
     }, [])
 
     return (
-        <div className="max-w-[1600px] w-[95%] mx-auto p-6 lg:p-12 space-y-12 pb-24 animate-in fade-in duration-700">
+        <div className="max-w-full w-[98%] mx-auto p-6 lg:p-12 space-y-12 pb-24 animate-in fade-in duration-700">
             {/* Command Header */}
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
-                <div className="space-y-4">
-                    <h1 className="text-3xl font-black text-foreground tracking-tight uppercase leading-none">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                <div className="space-y-2">
+                    <h1 className="text-2xl font-black text-foreground tracking-tight uppercase leading-none">
                         Tactical <span className="brand-gradient italic">Registry</span>
                     </h1>
-                    <p className="text-muted-foreground font-black uppercase text-[10px] tracking-[0.4em]">Bridging Clients & Reporters across the MD Global Node.</p>
+                    <p className="text-muted-foreground font-black uppercase text-[9px] tracking-[0.3em]">Bridging Clients & Reporters across the MD Global Node.</p>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="relative group w-full sm:w-auto">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                        <input className="w-full sm:min-w-[400px] pl-14 pr-6 py-5 rounded-2xl bg-card border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-primary/10 text-foreground transition-all" placeholder="DECRYPT CASE_ID OR CLIENT_NODE..." />
+                <div className="flex items-center gap-3">
+                    <div className="relative group w-full xl:w-auto">
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                        <input className="w-full xl:min-w-[400px] pl-14 pr-6 py-4 rounded-xl bg-card border border-border text-[10px] font-black uppercase tracking-[0.1em] outline-none focus:ring-4 focus:ring-primary/10 text-foreground transition-all shadow-inner" placeholder="DECRYPT CASE_ID OR CLIENT_NODE..." />
                     </div>
                 </div>
             </div>
 
             {/* Matrix Filters */}
-            <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
                 <FilterTab active={filter === 'ALL'} onClick={() => setFilter('ALL')} label="Full Matrix" count={(bookings || []).length.toString()} />
                 <FilterTab active={filter === 'SUBMITTED'} onClick={() => setFilter('SUBMITTED')} label="Requires Review" count={(bookings || []).filter(b => b.bookingStatus === 'SUBMITTED').length.toString()} />
                 <FilterTab active={filter === 'ACCEPTED'} onClick={() => setFilter('ACCEPTED')} label="Active Logistics" count={(bookings || []).filter(b => b.bookingStatus === 'ACCEPTED').length.toString()} />
-                <div className="ml-auto h-14 w-14 rounded-2xl bg-card flex items-center justify-center border border-border shadow-sm cursor-pointer hover:bg-muted hover:border-primary/20 transition-all text-muted-foreground">
-                    <Filter className="h-5 w-5" />
+                <div className="ml-auto h-10 w-10 rounded-xl bg-card border border-border flex items-center justify-center shadow-sm cursor-pointer hover:bg-muted hover:border-primary/20 transition-all text-muted-foreground">
+                    <Filter className="h-3.5 w-3.5" />
                 </div>
             </div>
 
             {/* Operational Grid */}
-            <div className="glass-panel rounded-[3rem] overflow-hidden bg-card border border-border shadow-2xl">
-                <div className="px-10 py-8 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/30">
-                    <div className="flex items-center gap-4">
+            <div className="glass-panel rounded-3xl overflow-hidden bg-card border border-border shadow-2xl">
+                <div className="px-6 py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/30">
+                    <div className="flex items-center gap-3">
                         <div className="h-3 w-3 rounded-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)] animate-pulse"></div>
                         <h3 className="text-sm font-black text-foreground uppercase tracking-[0.3em]">Active Logistics Table</h3>
                     </div>
@@ -305,56 +311,56 @@ export default function BookingManagementPage() {
                     {loading ? (
                         <div className="p-32 text-center text-muted-foreground uppercase font-black text-[10px] tracking-[0.5em] animate-pulse">Synchronizing Matrix Data...</div>
                     ) : (bookings || []).filter(b => filter === 'ALL' || b.bookingStatus === filter).map(b => (
-                        <div key={b.id} className="px-10 py-10 hover:bg-primary/5 transition-all cursor-pointer group flex flex-col xl:flex-row xl:items-center justify-between gap-10 border-l-4 border-transparent hover:border-primary">
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-10 lg:gap-14">
+                        <div key={b.id} className="px-8 py-6 hover:bg-primary/5 transition-all cursor-pointer group flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-l-4 border-transparent hover:border-primary">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 lg:gap-10">
                                 {/* Date Pillar */}
-                                <div className="flex flex-col items-center justify-center h-20 w-20 rounded-[1.5rem] bg-muted border border-border shadow-sm group-hover:border-primary/20 transition-all flex-shrink-0">
-                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{new Date(b.bookingDate).toLocaleString('default', { month: 'short' })}</span>
-                                    <span className="text-2xl font-black text-foreground">{new Date(b.bookingDate).getDate()}</span>
+                                <div className="flex flex-col items-center justify-center h-16 w-16 rounded-2xl bg-muted border border-border shadow-sm group-hover:border-primary/20 transition-all flex-shrink-0">
+                                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">{new Date(b.bookingDate).toLocaleString('default', { month: 'short' })}</span>
+                                    <span className="text-xl font-black text-foreground">{new Date(b.bookingDate).getDate()}</span>
                                 </div>
 
                                 {/* Logistics Identity */}
-                                <div className="space-y-3">
-                                    <div className="flex flex-wrap items-center gap-4">
-                                        <span className="px-3 py-1 rounded-xl bg-primary/10 text-[10px] font-black text-primary border border-primary/20 uppercase tracking-widest">{b.bookingNumber}</span>
-                                        <h4 className="text-xl font-black text-foreground uppercase tracking-tight group-hover:text-primary transition-colors">{b.proceedingType}</h4>
+                                <div className="space-y-1.5">
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        <span className="px-2 py-0.5 rounded-lg bg-primary/10 text-[9px] font-black text-primary border border-primary/20 uppercase tracking-widest">{b.bookingNumber}</span>
+                                        <h4 className="text-lg font-black text-foreground uppercase tracking-tight group-hover:text-primary transition-colors">{b.proceedingType}</h4>
                                     </div>
-                                    <div className="flex flex-wrap items-center gap-8">
-                                        <div className="flex items-center gap-3">
-                                            <Building2 className="h-4 w-4 text-muted-foreground/40" />
-                                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{b.contact.companyName || `${b.contact.firstName} ${b.contact.lastName}`}</span>
+                                    <div className="flex flex-wrap items-center gap-6">
+                                        <div className="flex items-center gap-2">
+                                            <Building2 className="h-3.5 w-3.5 text-muted-foreground/40" />
+                                            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.1em]">{b.contact.companyName || `${b.contact.firstName} ${b.contact.lastName}`}</span>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <Clock className="h-4 w-4 text-muted-foreground/40" />
-                                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{b.bookingTime}</span>
+                                        <div className="flex items-center gap-2">
+                                            <Clock className="h-3.5 w-3.5 text-muted-foreground/40" />
+                                            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.1em]">{b.bookingTime}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8 lg:gap-20">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 lg:gap-12">
                                 {/* Assignment Bridge */}
-                                <div className="flex flex-col gap-2 sm:items-end">
-                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-1">Logistics Assignment</p>
+                                <div className="flex flex-col gap-1.5 sm:items-end min-w-[150px]">
+                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">Assignment</p>
                                     {b.reporter ? (
-                                        <div className="flex items-center gap-4 px-5 py-2.5 rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+                                        <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
                                             <User className="h-4 w-4" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest">{b.reporter.firstName} {b.reporter.lastName}</span>
+                                            <span className="text-[10px] font-black uppercase">{b.reporter.firstName} {b.reporter.lastName}</span>
                                         </div>
                                     ) : (
                                         <div className="flex items-center gap-3">
                                             <button
                                                 onClick={() => toggleMarketplace(b.id, b.isMarketplace)}
-                                                className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all ${b.isMarketplace ? 'bg-primary text-primary-foreground border-primary shadow-xl shadow-primary/20' : 'bg-muted text-muted-foreground border-border hover:border-primary/20 hover:text-primary'}`}
+                                                className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${b.isMarketplace ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' : 'bg-muted text-muted-foreground border-border hover:border-primary/20 hover:text-primary'}`}
                                             >
-                                                {b.isMarketplace ? 'Marketplace Live' : 'Push to Market'}
+                                                {b.isMarketplace ? 'Market' : 'Push'}
                                             </button>
                                             {b.isMarketplace && (
                                                 <button
                                                     onClick={() => viewBids(b.id)}
-                                                    className="luxury-button px-5 py-2.5 h-auto text-[10px]"
+                                                    className="luxury-button px-4 py-2 h-auto text-[9px]"
                                                 >
-                                                    View Bids
+                                                    Bids
                                                 </button>
                                             )}
                                         </div>
@@ -367,19 +373,19 @@ export default function BookingManagementPage() {
                                         <>
                                             <button
                                                 onClick={() => updateStatus(b.id, 'ACCEPTED')}
-                                                className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest hover:translate-y-[-2px] transition-all shadow-lg shadow-primary/20"
+                                                className="px-6 py-2 rounded-xl bg-primary text-primary-foreground text-[9px] font-black uppercase tracking-[0.1em] hover:translate-y-[-2px] transition-all shadow-lg"
                                             >
                                                 Approve
                                             </button>
                                             <button
                                                 onClick={() => updateStatus(b.id, 'MAYBE')}
-                                                className="px-5 py-2.5 rounded-xl bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest hover:translate-y-[-2px] transition-all shadow-lg shadow-amber-500/20"
+                                                className="px-4 py-2 rounded-xl bg-amber-500 text-white text-[9px] font-black uppercase tracking-[0.1em] hover:translate-y-[-2px] transition-all shadow-lg"
                                             >
                                                 Maybe
                                             </button>
                                             <button
                                                 onClick={() => updateStatus(b.id, 'DECLINED')}
-                                                className="px-5 py-2.5 rounded-xl bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest hover:translate-y-[-2px] transition-all shadow-lg shadow-rose-500/20"
+                                                className="px-4 py-2 rounded-xl bg-rose-500 text-white text-[9px] font-black uppercase tracking-[0.1em] hover:translate-y-[-2px] transition-all shadow-lg"
                                             >
                                                 Decline
                                             </button>
@@ -389,13 +395,13 @@ export default function BookingManagementPage() {
                                         <>
                                             <button
                                                 onClick={() => updateStatus(b.id, 'ACCEPTED')}
-                                                className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest hover:translate-y-[-2px] transition-all shadow-lg shadow-primary/20"
+                                                className="px-6 py-2 rounded-xl bg-primary text-primary-foreground text-[9px] font-black uppercase tracking-[0.1em] hover:translate-y-[-2px] transition-all shadow-lg"
                                             >
                                                 Approve
                                             </button>
                                             <button
                                                 onClick={() => updateStatus(b.id, 'DECLINED')}
-                                                className="px-6 py-2.5 rounded-xl bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest hover:translate-y-[-2px] transition-all shadow-lg shadow-rose-500/20"
+                                                className="px-6 py-2 rounded-xl bg-rose-500 text-white text-[9px] font-black uppercase tracking-[0.1em] hover:translate-y-[-2px] transition-all shadow-lg"
                                             >
                                                 Decline
                                             </button>
@@ -407,16 +413,16 @@ export default function BookingManagementPage() {
                                                 setSelectedBookingId(b.id)
                                                 setShowCompleteModal(true)
                                             }}
-                                            className="px-6 py-2.5 rounded-xl bg-foreground text-background text-[10px] font-black uppercase tracking-widest hover:translate-y-[-2px] transition-all shadow-xl"
+                                            className="px-6 py-2 rounded-xl bg-foreground text-background text-[10px] font-black uppercase tracking-[0.2em] hover:translate-y-[-2px] transition-all shadow-xl"
                                         >
                                             Complete & Bill
                                         </button>
                                     )}
-                                    <div className="px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-card border border-border rounded-xl">{b.bookingStatus}</div>
+                                    <div className="px-6 py-2 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground bg-card border border-border rounded-xl">{b.bookingStatus}</div>
                                 </div>
 
-                                <button className="h-14 w-14 rounded-2xl bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/20 hover:shadow-2xl hover:translate-x-1 transition-all">
-                                    <ArrowRight className="h-7 w-7" />
+                                <button className="h-12 w-12 rounded-xl bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/20 transition-all">
+                                    <ArrowRight className="h-6 w-6" />
                                 </button>
                             </div>
                         </div>
@@ -613,19 +619,29 @@ export default function BookingManagementPage() {
                         </div>
 
                         {/* Modal Actions */}
-                        <div className="mt-12 pt-8 border-t border-border flex items-center gap-5 flex-shrink-0">
-                            <button
-                                onClick={() => setShowCompleteModal(false)}
-                                className="flex-1 py-5 px-8 rounded-2xl bg-muted border border-border text-muted-foreground font-black uppercase text-[10px] tracking-[0.3em] hover:text-foreground transition-all"
-                            >
-                                Abort Deployment
-                            </button>
-                            <button
-                                onClick={() => handleComplete(selectedBookingId!)}
-                                className="luxury-button flex-[2] py-5 px-10 shadow-3xl"
-                            >
-                                <span className="uppercase tracking-[0.3em] text-[10px] font-black">Generate Unified Invoice</span>
-                            </button>
+                        <div className="mt-12 pt-8 border-t border-border flex flex-col gap-4 flex-shrink-0">
+                            {error && (
+                                <div className="px-6 py-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-[10px] font-black uppercase tracking-widest text-center">
+                                    {error}
+                                </div>
+                            )}
+                            <div className="flex items-center gap-5">
+                                <button
+                                    onClick={() => {
+                                        setShowCompleteModal(false)
+                                        setError(null)
+                                    }}
+                                    className="flex-1 py-5 px-8 rounded-2xl bg-muted border border-border text-muted-foreground font-black uppercase text-[10px] tracking-[0.3em] hover:text-foreground transition-all"
+                                >
+                                    Abort Deployment
+                                </button>
+                                <button
+                                    onClick={() => handleComplete(selectedBookingId!)}
+                                    className="luxury-button flex-[2] py-5 px-10 shadow-3xl"
+                                >
+                                    <span className="uppercase tracking-[0.3em] text-[10px] font-black">Generate Unified Invoice</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -638,27 +654,27 @@ function FilterTab({ label, count, active, onClick }: any) {
     return (
         <button
             onClick={onClick}
-            className={`flex items-center gap-4 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest whitespace-nowrap transition-all border ${active
-                ? 'bg-primary text-primary-foreground shadow-2xl shadow-primary/30 border-primary'
+            className={`flex items-center gap-3 px-5 py-3 rounded-xl font-black text-[9px] uppercase tracking-widest whitespace-nowrap transition-all border ${active
+                ? 'bg-primary text-primary-foreground shadow-xl shadow-primary/30 border-primary'
                 : 'bg-card text-muted-foreground border-border hover:border-primary/20 hover:text-foreground'
                 }`}
         >
             {label}
-            <span className={`px-2.5 py-1 rounded-lg text-[9px] ${active ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground group-hover:bg-primary/5'}`}>{count}</span>
+            <span className={`px-2 py-0.5 rounded-md text-[8px] ${active ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground group-hover:bg-primary/5'}`}>{count}</span>
         </button>
     )
 }
 
 function CheckboxItem({ label, checked, onChange }: { label: string, checked: boolean, onChange: (v: boolean) => void }) {
     return (
-        <label className="flex items-center gap-4 cursor-pointer group">
+        <label className="flex items-center gap-3 cursor-pointer group">
             <div
-                className={`h-7 w-7 rounded-xl border-2 flex items-center justify-center transition-all duration-300 ${checked ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105' : 'border-border bg-card group-hover:border-primary/50'}`}
+                className={`h-6 w-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${checked ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105' : 'border-border bg-card group-hover:border-primary/50'}`}
                 onClick={(e) => { e.preventDefault(); onChange(!checked); }}
             >
-                {checked && <CheckCircle2 className="h-5 w-5" />}
+                {checked && <CheckCircle2 className="h-4 w-4" />}
             </div>
-            <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${checked ? 'text-foreground' : 'text-muted-foreground group-hover:text-primary'}`}>{label}</span>
+            <span className={`text-[9px] font-black uppercase tracking-widest transition-colors ${checked ? 'text-foreground' : 'text-muted-foreground group-hover:text-primary'}`}>{label}</span>
         </label>
     )
 }

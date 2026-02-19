@@ -82,7 +82,7 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isOpen, setI
                 className={`fixed inset-y-0 left-0 z-[500] flex flex-col border-r border-border transition-all duration-300 ease-in-out transform lg:translate-x-0 
                     bg-card
                     ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}
-                    ${isCollapsed ? 'lg:w-20 w-72' : 'lg:w-72 w-72'}`}
+                    ${isCollapsed ? 'lg:w-20 w-64' : 'lg:w-64 w-64'}`}
             >
                 {/* Brand Identity Section */}
                 <div className={`flex flex-col relative overflow-hidden h-[100px] justify-center border-b border-border transition-all duration-300 ${isCollapsed ? 'px-0' : 'px-6'}`}>
@@ -125,16 +125,16 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isOpen, setI
                                         onClick={() => {
                                             if (window.innerWidth < 1024) setIsOpen(false)
                                         }}
-                                        className={`group relative flex items-center px-4 py-3 rounded-xl transition-all duration-300 ${isActive
+                                        className={`group relative flex items-center px-4 py-2.5 rounded-xl transition-all duration-300 ${isActive
                                             ? 'bg-primary text-primary-foreground shadow-xl shadow-primary/20 scale-[1.02]'
                                             : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
-                                            } ${isCollapsed ? 'justify-center px-0 h-12 w-12 mx-auto' : ''}`}
+                                            } ${isCollapsed ? 'justify-center px-0 h-10 w-10 mx-auto' : ''}`}
                                     >
-                                        <item.icon className={`h-4.5 w-4.5 flex-shrink-0 transition-all duration-300 ${isActive ? 'scale-110' : 'group-hover:text-primary group-hover:rotate-3'
+                                        <item.icon className={`h-4 w-4 flex-shrink-0 transition-all duration-300 ${isActive ? 'scale-110' : 'group-hover:text-primary group-hover:rotate-3'
                                             }`} />
 
                                         {!isCollapsed && (
-                                            <span className="ml-3 font-bold text-xs tracking-tight">{item.name}</span>
+                                            <span className="ml-3 font-bold text-[10px] tracking-tight">{item.name}</span>
                                         )}
 
                                         {isActive && !isCollapsed && (

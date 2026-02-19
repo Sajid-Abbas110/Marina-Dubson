@@ -68,23 +68,23 @@ export default function ReportersPage() {
 
     return (
         <div className="max-w-[1600px] w-[95%] mx-auto p-6 lg:p-12 space-y-12 pb-24 animate-in fade-in duration-700">
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
                 <div className="space-y-2">
-                    <h1 className="text-4xl font-black text-foreground tracking-tight uppercase">
+                    <h1 className="text-2xl font-black text-foreground tracking-tight uppercase leading-none">
                         Master <span className="brand-gradient italic">Stenographers</span>
                     </h1>
-                    <p className="text-muted-foreground font-medium font-poppins">
+                    <p className="text-muted-foreground font-medium font-poppins text-[9px] tracking-[0.3em] uppercase">
                         Highly certified court reporters and digital specialists in the MD Elite network.
-                        {!loading && ` • ${users.length} Certified Reporters`}
+                        {!loading && <span className="text-primary ml-2 italic"> • {users.length} Certified Reporters</span>}
                     </p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     <div className="relative group w-full sm:w-auto font-poppins">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 group-focus-within:text-primary transition-colors" />
                         <input
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full sm:min-w-[320px] px-12 py-4 rounded-2xl bg-muted/50 border border-border text-xs font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/10 text-foreground transition-all"
+                            className="w-full sm:min-w-[300px] pl-10 pr-4 py-3 rounded-xl bg-muted/50 border border-border text-[9px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/10 text-foreground transition-all"
                             placeholder="Search Professional RSR..."
                         />
                     </div>
@@ -124,10 +124,10 @@ function ReporterCard({ user }: { user: any }) {
     const joined = format(new Date(user.createdAt), 'MMM yyyy').toUpperCase()
 
     return (
-        <div className="glass-panel group p-8 rounded-[2.5rem] hover:shadow-2xl transition-all relative overflow-hidden bg-card">
+        <div className="glass-panel group p-6 rounded-[2rem] hover:shadow-2xl transition-all relative overflow-hidden bg-card border border-border">
             <div className="flex items-start justify-between relative z-10">
-                <div className="flex items-center gap-5">
-                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-indigo-800 flex items-center justify-center text-primary-foreground font-black text-xl shadow-lg transition-transform group-hover:scale-110 duration-500 overflow-hidden relative">
+                <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-indigo-800 flex items-center justify-center text-primary-foreground font-black text-sm shadow-md transition-transform group-hover:scale-110 duration-500 overflow-hidden relative">
                         {user.avatar ? (
                             <Image src={user.avatar} alt={name} fill className="object-cover" />
                         ) : (
@@ -135,50 +135,50 @@ function ReporterCard({ user }: { user: any }) {
                         )}
                     </div>
                     <div>
-                        <h3 className="text-lg font-black text-foreground uppercase tracking-tight line-clamp-1">{name}</h3>
-                        <div className="flex items-center gap-2 mt-1">
-                            <span className="px-2 py-0.5 rounded-md bg-primary/10 text-[8px] font-black text-primary uppercase tracking-widest border border-primary/20">Reporter</span>
-                            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{user.certification || 'CSR-RPR'}</span>
+                        <h3 className="text-sm font-black text-foreground uppercase tracking-tight line-clamp-1">{name}</h3>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="px-1.5 py-0.5 rounded bg-primary/10 text-[6px] font-black text-primary uppercase tracking-widest border border-primary/20">Reporter</span>
+                            <span className="text-[7px] font-bold text-muted-foreground uppercase tracking-widest">{user.certification || 'CSR-RPR'}</span>
                         </div>
                     </div>
                 </div>
-                <button className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:text-primary transition-colors">
-                    <MoreHorizontal className="h-4 w-4" />
+                <button className="h-6 w-6 rounded-md bg-muted flex items-center justify-center text-muted-foreground hover:text-primary transition-colors">
+                    <MoreHorizontal className="h-3 w-3" />
                 </button>
             </div>
 
-            <div className="mt-8 space-y-4 relative z-10">
+            <div className="mt-4 space-y-2 relative z-10">
                 <div className="flex items-center justify-between text-muted-foreground">
-                    <div className="flex items-center gap-3">
-                        <Mail className="h-3.5 w-3.5 text-primary/50" />
-                        <span className="text-[11px] font-bold truncate max-w-[150px]">{user.email}</span>
+                    <div className="flex items-center gap-1.5">
+                        <Mail className="h-2.5 w-2.5 text-primary/50" />
+                        <span className="text-[8px] font-bold truncate max-w-[120px] line-clamp-1">{user.email}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/10">
-                        <ShieldCheck className="h-3 w-3 text-indigo-600" />
-                        <span className="text-[7px] font-black text-indigo-600 uppercase tracking-widest">Verified</span>
+                    <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-500/10">
+                        <ShieldCheck className="h-2 w-2 text-indigo-600" />
+                        <span className="text-[5px] font-black text-indigo-600 uppercase tracking-widest">Verified</span>
                     </div>
                 </div>
-                <div className="flex items-center gap-3 text-muted-foreground">
-                    <Calendar className="h-3.5 w-3.5 text-primary/50" />
-                    <span className="text-[11px] font-bold uppercase tracking-tight">Active since {joined}</span>
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Calendar className="h-2.5 w-2.5 text-primary/50" />
+                    <span className="text-[8px] font-bold uppercase tracking-tight">Active since {joined}</span>
                 </div>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-border flex items-center justify-between relative z-10">
+            <div className="mt-4 pt-4 border-t border-border flex items-center justify-between relative z-10">
                 <div className="flex flex-col">
-                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1">Load Balance</span>
-                    <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-24 bg-muted rounded-full overflow-hidden">
+                    <span className="text-[6px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Load Balance</span>
+                    <div className="flex items-center gap-1.5">
+                        <div className="h-1 w-16 bg-muted rounded-full overflow-hidden">
                             <div className="h-full bg-primary w-1/3 rounded-full animate-pulse"></div>
                         </div>
-                        <span className="text-[10px] font-black text-foreground">Low</span>
+                        <span className="text-[8px] font-black text-foreground">Low</span>
                     </div>
                 </div>
                 <button
                     onClick={() => router.push(`/admin/reporters/${user.id}`)}
-                    className="luxury-button flex items-center gap-2 px-5 py-3 text-[9px]"
+                    className="luxury-button flex items-center gap-1.5 px-3 py-2 text-[7px]"
                 >
-                    View History <ArrowRight className="h-3.5 w-3.5" />
+                    History <ArrowRight className="h-2.5 w-2.5" />
                 </button>
             </div>
         </div>

@@ -212,20 +212,20 @@ export default function ClientCalendar({ bookings, onBookingCreated, services }:
                 </div>
 
                 <div className="space-y-8">
-                    <div className="glass-panel rounded-[2.5rem] p-8 border border-gray-100 dark:border-white/5 bg-white">
+                    <div className="glass-panel rounded-[2.5rem] p-8 border border-border dark:border-white/5">
                         <div className="flex items-center gap-4 mb-8">
                             <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                                 <CalendarIcon className="h-5 w-5" />
                             </div>
                             <div>
-                                <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight">{format(selectedDate, 'MMM dd, yyyy')}</h3>
-                                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mt-1">Daily Briefing</p>
+                                <h3 className="text-sm font-black text-foreground uppercase tracking-tight">{format(selectedDate, 'MMM dd, yyyy')}</h3>
+                                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mt-1">Daily Briefing</p>
                             </div>
                         </div>
 
                         <div className="space-y-4">
                             {selectedDayBookings.map(b => (
-                                <div key={b.id} className="p-4 rounded-2xl bg-gray-50/50 border border-gray-50 hover:border-primary/20 transition-all group">
+                                <div key={b.id} className="p-4 rounded-2xl bg-muted/50 border border-border hover:border-primary/20 transition-all group">
                                     <div className="flex justify-between items-start mb-3">
                                         <span className={`px-2 py-0.5 rounded-lg text-[7px] font-black uppercase tracking-widest border ${b.bookingStatus === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                                             ['CONFIRMED', 'ACCEPTED'].includes(b.bookingStatus) ? 'bg-primary/5 text-primary border-primary/10' :
@@ -233,18 +233,18 @@ export default function ClientCalendar({ bookings, onBookingCreated, services }:
                                             }`}>
                                             {b.bookingStatus}
                                         </span>
-                                        <span className="text-[8px] font-black text-gray-400 uppercase">{b.bookingTime}</span>
+                                        <span className="text-[8px] font-black text-muted-foreground uppercase">{b.bookingTime}</span>
                                     </div>
-                                    <h5 className="text-xs font-black text-gray-900 uppercase mb-2 line-clamp-1">{b.proceedingType}</h5>
+                                    <h5 className="text-xs font-black text-foreground uppercase mb-2 line-clamp-1">{b.proceedingType}</h5>
 
                                     <div className="flex items-center gap-2 mb-3">
-                                        <div className="h-5 w-5 rounded-full bg-white flex items-center justify-center border border-gray-100">
-                                            <MapPin className="h-2.5 w-2.5 text-gray-400" />
+                                        <div className="h-5 w-5 rounded-full bg-card flex items-center justify-center border border-border">
+                                            <MapPin className="h-2.5 w-2.5 text-muted-foreground" />
                                         </div>
-                                        <span className="text-[9px] font-bold text-gray-500 uppercase truncate">{b.location || 'Remote Node'}</span>
+                                        <span className="text-[9px] font-bold text-muted-foreground uppercase truncate">{b.location || 'Remote Node'}</span>
                                     </div>
 
-                                    <button className="w-full py-2.5 rounded-xl bg-white border border-gray-100 text-[8px] font-black uppercase tracking-widest flex items-center justify-center gap-2 group-hover:bg-primary group-hover:text-white transition-all">
+                                    <button className="w-full py-2.5 rounded-xl bg-card border border-border text-[8px] font-black uppercase tracking-widest flex items-center justify-center gap-2 group-hover:bg-primary group-hover:text-white transition-all">
                                         Authorization Stack <ArrowRight className="h-3 w-3" />
                                     </button>
                                 </div>
@@ -261,9 +261,9 @@ export default function ClientCalendar({ bookings, onBookingCreated, services }:
                     <div className="glass-panel rounded-[2rem] p-6 border border-gray-100 bg-gradient-to-br from-primary/5 to-emerald-500/5">
                         <div className="flex items-center gap-3 mb-4">
                             <Activity className="h-5 w-5 text-primary" />
-                            <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Resource Allocation</h4>
+                            <h4 className="text-[10px] font-black text-foreground uppercase tracking-widest">Resource Allocation</h4>
                         </div>
-                        <p className="text-[9px] text-gray-500 font-medium uppercase leading-relaxed">MD Network protocols are operating at peak efficiency across all selected temporal nodes.</p>
+                        <p className="text-[9px] text-muted-foreground font-medium uppercase leading-relaxed">MD Network protocols are operating at peak efficiency across all selected temporal nodes.</p>
                     </div>
                 </div>
             </div>

@@ -233,28 +233,28 @@ export default function AdministrativeJobNexus() {
     return (
         <div className="max-w-[1600px] w-[95%] mx-auto p-6 lg:p-12 space-y-12 pb-24 animate-in fade-in duration-700 font-poppins selection:bg-primary/10 selection:text-primary">
             {/* Elite Header */}
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
                 <div className="space-y-2">
-                    <h1 className="text-3xl font-black text-foreground tracking-tighter uppercase leading-none">
+                    <h1 className="text-2xl font-black text-foreground tracking-tighter uppercase leading-none">
                         Protocol <span className="brand-gradient italic">Inventory</span>
                     </h1>
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.5em] mt-3">Monitoring Job Lifecycle & Resource Matrix</p>
+                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em] mt-1">Monitoring Job Lifecycle & Resource Matrix</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-4">
+                <div className="flex flex-wrap items-center gap-3">
                     <div className="relative group w-full sm:w-auto">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                         <input
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full sm:w-64 pl-10 pr-6 py-3 rounded-xl bg-muted/50 border border-border outline-none text-[10px] font-black uppercase tracking-widest focus:ring-4 focus:ring-primary/10 transition-all text-foreground"
+                            className="w-full sm:w-64 pl-10 pr-4 py-2.5 rounded-xl bg-muted/50 border border-border outline-none text-[9px] font-black uppercase tracking-widest focus:ring-2 focus:ring-primary/10 transition-all text-foreground"
                             placeholder="IDENTIFY JOB_ID..."
                         />
                     </div>
                     <button
                         onClick={() => setShowAddModal(true)}
-                        className="luxury-button flex items-center gap-3 px-8 py-4 text-[10px] w-full sm:w-auto justify-center"
+                        className="luxury-button flex items-center gap-2 px-6 py-2.5 text-[9px] w-full sm:w-auto justify-center h-10"
                     >
-                        <Plus className="h-5 w-5" /> Initiate Job Node
+                        <Plus className="h-4 w-4" /> Initiate Job Node
                     </button>
                 </div>
             </div>
@@ -527,27 +527,27 @@ export default function AdministrativeJobNexus() {
 
 function JobOperationalCard({ job, onDelete, onEdit }: { job: any, onDelete: () => void, onEdit: () => void }) {
     return (
-        <div className="glass-panel p-8 rounded-[3rem] group hover:-translate-y-2 transition-all duration-500 relative border border-border bg-card">
-            <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-10 transition-all">
-                <Briefcase className="h-16 w-16 text-primary" />
+        <div className="glass-panel p-5 rounded-[2rem] group hover:-translate-y-1 transition-all duration-500 relative border border-border bg-card">
+            <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-10 transition-all">
+                <Briefcase className="h-10 w-10 text-primary" />
             </div>
 
-            <div className="flex justify-between items-start mb-6">
-                <span className="text-[10px] font-black text-primary uppercase tracking-widest">{job.bookingNumber}</span>
-                <div className="flex gap-2">
+            <div className="flex justify-between items-start mb-4">
+                <span className="text-[9px] font-black text-primary uppercase tracking-widest">{job.bookingNumber}</span>
+                <div className="flex gap-1.5">
                     <button
                         onClick={onEdit}
-                        className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-primary transition-all opacity-0 group-hover:opacity-100 shadow-sm"
+                        className="h-6 w-6 rounded bg-muted flex items-center justify-center text-muted-foreground hover:text-primary transition-all opacity-0 group-hover:opacity-100 shadow-sm"
                     >
-                        <Edit3 className="h-3.5 w-3.5" />
+                        <Edit3 className="h-3 w-3" />
                     </button>
                     <button
                         onClick={onDelete}
-                        className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-rose-500 transition-all opacity-0 group-hover:opacity-100 shadow-sm"
+                        className="h-6 w-6 rounded bg-muted flex items-center justify-center text-muted-foreground hover:text-rose-500 transition-all opacity-0 group-hover:opacity-100 shadow-sm"
                     >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3 w-3" />
                     </button>
-                    <div className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-tighter ${job.priority === 'URGENT' ? 'bg-rose-500 text-white animate-pulse' :
+                    <div className={`px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter ${job.priority === 'URGENT' ? 'bg-rose-500 text-white animate-pulse' :
                         job.priority === 'HIGH' ? 'bg-amber-500 text-white' :
                             job.bookingStatus === 'COMPLETED' ? 'bg-primary/20 text-primary border border-primary/30' :
                                 'bg-muted text-muted-foreground border border-border'
@@ -557,33 +557,33 @@ function JobOperationalCard({ job, onDelete, onEdit }: { job: any, onDelete: () 
                 </div>
             </div>
 
-            <h3 className="text-lg font-black text-foreground uppercase tracking-tight mb-2 group-hover:text-primary transition-colors">{job.proceedingType}</h3>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-6 flex items-center gap-2">
-                <Building2 className="h-3 w-3" />
+            <h3 className="text-sm font-black text-foreground uppercase tracking-tight mb-1 group-hover:text-primary transition-colors">{job.proceedingType}</h3>
+            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-1.5">
+                <Building2 className="h-2.5 w-2.5" />
                 {job.contact?.companyName || `${job.contact?.firstName} ${job.contact?.lastName}`}
             </p>
 
-            <div className="flex items-center justify-between pt-6 border-t border-border">
-                <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between pt-4 border-t border-border">
+                <div className="flex items-center gap-2">
                     {job.reporter ? (
-                        <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                                <UserCheck className="h-4 w-4 text-primary" />
+                        <div className="flex items-center gap-1.5">
+                            <div className="h-6 w-6 rounded bg-primary/10 flex items-center justify-center">
+                                <UserCheck className="h-3 w-3 text-primary" />
                             </div>
-                            <span className="text-[10px] font-black text-muted-foreground uppercase">{job.reporter.firstName} {job.reporter.lastName}</span>
+                            <span className="text-[8px] font-black text-muted-foreground uppercase">{job.reporter.firstName} {job.reporter.lastName}</span>
                         </div>
                     ) : (
-                        <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-lg bg-primary-foreground text-primary flex items-center justify-center border border-primary">
-                                <Users className="h-4 w-4" />
+                        <div className="flex items-center gap-1.5">
+                            <div className="h-6 w-6 rounded bg-primary-foreground text-primary flex items-center justify-center border border-primary">
+                                <Users className="h-3 w-3" />
                             </div>
-                            <span className="text-[10px] font-black text-primary uppercase italic">Unassigned</span>
+                            <span className="text-[8px] font-black text-primary uppercase italic">Unassigned</span>
                         </div>
                     )}
                 </div>
-                <div className="flex items-center gap-2 text-muted-foreground/30">
-                    <Calendar className="h-3 w-3" />
-                    <span className="text-[10px] font-black uppercase tracking-tighter">{format(new Date(job.bookingDate), 'MMM dd')}</span>
+                <div className="flex items-center gap-1.5 text-muted-foreground/30">
+                    <Calendar className="h-2.5 w-2.5" />
+                    <span className="text-[8px] font-black uppercase tracking-tighter">{format(new Date(job.bookingDate), 'MMM dd')}</span>
                 </div>
             </div>
         </div>
@@ -592,13 +592,13 @@ function JobOperationalCard({ job, onDelete, onEdit }: { job: any, onDelete: () 
 
 function JobStat({ label, value, trend, icon, color }: any) {
     return (
-        <div className="glass-panel p-8 rounded-[2.5rem] relative overflow-hidden group border border-border bg-card">
-            <div className={`absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity ${color}`}>
+        <div className="glass-panel p-6 rounded-[2rem] relative overflow-hidden group border border-border bg-card">
+            <div className={`absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-10 transition-opacity ${color}`}>
                 {icon}
             </div>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">{label}</p>
-            <div className="text-3xl font-black text-foreground tracking-tighter uppercase mb-2">{value}</div>
-            <p className={`text-[9px] font-black uppercase tracking-widest ${trend.includes('Priority') || trend.includes('+') ? 'text-primary' : 'text-muted-foreground/40'}`}>{trend}</p>
+            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-2">{label}</p>
+            <div className="text-2xl font-black text-foreground tracking-tighter uppercase mb-1">{value}</div>
+            <p className={`text-[8px] font-black uppercase tracking-widest ${trend.includes('Priority') || trend.includes('+') ? 'text-primary' : 'text-muted-foreground/40'}`}>{trend}</p>
         </div>
     )
 }

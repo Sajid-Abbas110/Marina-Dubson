@@ -11,15 +11,20 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
+        const userId = payload.userId || payload.id
+        if (!userId) {
+            return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 })
+        }
+
         // Fetch users the current user has chatted with
         const sentTo = await prisma.message.findMany({
-            where: { senderId: payload.userId },
+            where: { senderId: userId },
             select: { recipientId: true },
             distinct: ['recipientId']
         })
 
         const receivedFrom = await prisma.message.findMany({
-            where: { recipientId: payload.userId },
+            where: { recipientId: userId },
             select: { senderId: true },
             distinct: ['senderId']
         })
@@ -39,12 +44,12 @@ export async function GET(request: NextRequest) {
                 role: true,
                 // Get the last message for each
                 receivedMessages: {
-                    where: { senderId: payload.userId },
+                    where: { senderId: userId },
                     orderBy: { createdAt: 'desc' },
                     take: 1
                 },
                 sentMessages: {
-                    where: { recipientId: payload.userId },
+                    where: { recipientId: userId },
                     orderBy: { createdAt: 'desc' },
                     take: 1
                 }

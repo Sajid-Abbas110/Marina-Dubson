@@ -105,10 +105,10 @@ export default function BookingConfirmationPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+            <div className="min-h-screen bg-background flex items-center justify-center p-6">
                 <div className="flex flex-col items-center gap-4">
                     <Loader2 className="h-10 w-10 text-primary animate-spin" />
-                    <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Loading Legal Terms...</p>
+                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Loading Legal Terms...</p>
                 </div>
             </div>
         )
@@ -116,25 +116,25 @@ export default function BookingConfirmationPage() {
 
     if (success) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-                <div className="max-w-xl w-full bg-white rounded-[3rem] p-12 shadow-2xl text-center space-y-8 animate-in zoom-in-95 duration-500">
-                    <div className="h-24 w-24 bg-emerald-50 rounded-[2.5rem] flex items-center justify-center mx-auto">
+            <div className="min-h-screen bg-background flex items-center justify-center p-6">
+                <div className="max-w-xl w-full bg-card rounded-[3rem] p-12 shadow-2xl text-center space-y-8 animate-in zoom-in-95 duration-500 border border-border">
+                    <div className="h-24 w-24 bg-emerald-500/10 rounded-[2.5rem] flex items-center justify-center mx-auto">
                         <CheckCircle2 className="h-12 w-12 text-emerald-500" />
                     </div>
                     <div className="space-y-2">
-                        <h2 className="text-3xl font-black text-gray-900 tracking-tighter uppercase">Booking Confirmed</h2>
-                        <p className="text-gray-500 font-medium">Your legal confirmation has been recorded successfully.</p>
+                        <h2 className="text-3xl font-black text-foreground tracking-tighter uppercase">Booking Confirmed</h2>
+                        <p className="text-muted-foreground font-medium">Your legal confirmation has been recorded successfully.</p>
                     </div>
-                    <div className="p-6 bg-gray-50 rounded-2xl text-left space-y-4">
-                        <div className="flex justify-between text-xs font-black uppercase tracking-widest text-gray-400">
+                    <div className="p-6 bg-muted/50 rounded-2xl text-left space-y-4">
+                        <div className="flex justify-between text-xs font-black uppercase tracking-widest text-muted-foreground">
                             <span>Booking Number</span>
-                            <span className="text-gray-900">{data?.booking?.bookingNumber}</span>
+                            <span className="text-foreground">{data?.booking?.bookingNumber}</span>
                         </div>
-                        <div className="flex justify-between text-xs font-black uppercase tracking-widest text-gray-400">
+                        <div className="flex justify-between text-xs font-black uppercase tracking-widest text-muted-foreground">
                             <span>Confirmation ID</span>
-                            <span className="text-gray-900">{data?.confirmation?.id || 'Recorded'}</span>
+                            <span className="text-foreground">{data?.confirmation?.id || 'Recorded'}</span>
                         </div>
-                        <div className="flex justify-between text-xs font-black uppercase tracking-widest text-gray-400">
+                        <div className="flex justify-between text-xs font-black uppercase tracking-widest text-muted-foreground">
                             <span>Status</span>
                             <span className="text-emerald-600">CONFIRMED</span>
                         </div>
@@ -233,7 +233,7 @@ export default function BookingConfirmationPage() {
                                         disabled={submitting || !confirmedScheduling || !confirmedCancellation || !confirmedFinancial}
                                         className={`w-full py-5 rounded-2xl font-black text-xs uppercase tracking-[0.4em] transition-all flex items-center justify-center gap-3 shadow-2xl
                                             ${submitting || !confirmedScheduling || !confirmedCancellation || !confirmedFinancial
-                                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                                ? 'bg-muted text-muted-foreground cursor-not-allowed'
                                                 : 'bg-primary text-white hover:scale-[1.02] active:scale-95 shadow-primary/30'
                                             }`}
                                     >
@@ -267,7 +267,7 @@ function TermSection({ icon, title, content, checked, onChange, label, highlight
     return (
         <div className={`glass-panel rounded-[2.5rem] p-10 space-y-8 border-2 transition-all ${checked ? 'border-primary shadow-2xl shadow-primary/5 bg-primary/[0.01]' : 'border-transparent hover:border-gray-200'}`}>
             <div className="flex items-center gap-6">
-                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center transition-all ${checked ? 'bg-primary text-white shadow-lg shadow-primary/20 rotate-12' : 'bg-gray-100 text-gray-400'}`}>
+                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center transition-all ${checked ? 'bg-primary text-white shadow-lg shadow-primary/20 rotate-12' : 'bg-muted text-muted-foreground'}`}>
                     {icon}
                 </div>
                 <h2 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">{title}</h2>

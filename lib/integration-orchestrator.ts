@@ -167,7 +167,17 @@ export class IntegrationOrchestrator {
 
             if (!booking) throw new Error('Booking not found')
 
-            const rates = await PricingEngine.getApplicableRates(booking.contactId, booking.serviceId)
+            // Priority: Locked Rates on Booking > Custom Pricing > Service Defaults
+            const baseRates = await PricingEngine.getApplicableRates(booking.contactId, booking.serviceId)
+
+            const rates = {
+                ...baseRates,
+                pageRate: booking.lockedPageRate || baseRates.pageRate,
+                appearanceFeeRemote: booking.lockedAppearanceFee || baseRates.appearanceFeeRemote,
+                appearanceFeeInPerson: booking.lockedAppearanceFee || baseRates.appearanceFeeInPerson,
+                minimumFee: booking.lockedMinimumFee || baseRates.minimumFee,
+            }
+
             const { subtotal, total } = PricingEngine.calculateTotal(rates, {
                 ...billingData,
                 isRemote: booking.location?.toLowerCase().includes('remote')
@@ -208,81 +218,87 @@ export class IntegrationOrchestrator {
                 }
             })
 
-            // 2. Sync to Zoho Books
-            const customerResult = await zohoBooks.upsertCustomer({
-                contact_name: `${booking.contact.firstName} ${booking.contact.lastName}`,
-                company_name: booking.contact.companyName ?? undefined,
-                email: booking.contact.email
-            })
+            // 2. Sync to Zoho Books (Wrapped in try-catch to be non-blocking)
+            let zohoInvoiceId = null
+            try {
+                const customerResult = await zohoBooks.upsertCustomer({
+                    contact_name: `${booking.contact.firstName} ${booking.contact.lastName}`,
+                    company_name: booking.contact.companyName ?? undefined,
+                    email: booking.contact.email
+                })
 
-            const lineItems = [
-                {
-                    name: 'Original Transcript',
-                    description: `(${billingData.pages} pgs x $${rates.pageRate})`,
-                    rate: rates.pageRate,
-                    quantity: billingData.pages * billingData.originalCopies
+                const lineItems = [
+                    {
+                        name: 'Original Transcript',
+                        description: `(${billingData.pages} pgs x $${rates.pageRate})`,
+                        rate: rates.pageRate,
+                        quantity: billingData.pages * billingData.originalCopies
+                    }
+                ]
+
+                if (billingData.additionalCopies > 0) {
+                    lineItems.push({
+                        name: 'Transcript Copies',
+                        description: `(${billingData.pages} pgs x $${rates.copyRate})`,
+                        rate: rates.copyRate,
+                        quantity: billingData.pages * billingData.additionalCopies
+                    })
                 }
-            ]
 
-            if (billingData.additionalCopies > 0) {
                 lineItems.push({
-                    name: 'Transcript Copies',
-                    description: `(${billingData.pages} pgs x $${rates.copyRate})`,
-                    rate: rates.copyRate,
-                    quantity: billingData.pages * billingData.additionalCopies
+                    name: 'Appearance & Logistics',
+                    description: 'Flat Fee + Congestion Surcharge',
+                    rate: (booking.location?.toLowerCase().includes('remote') ? rates.appearanceFeeRemote : rates.appearanceFeeInPerson) + rates.congestionFee,
+                    quantity: 1
                 })
-            }
 
-            lineItems.push({
-                name: 'Appearance & Logistics',
-                description: 'Flat Fee + Congestion Surcharge',
-                rate: (booking.location?.toLowerCase().includes('remote') ? rates.appearanceFeeRemote : rates.appearanceFeeInPerson) + rates.congestionFee,
-                quantity: 1
-            })
+                if (billingData.hasRough) {
+                    lineItems.push({
+                        name: 'Rough Draft Access',
+                        description: `(+$${rates.roughRate} per page)`,
+                        rate: rates.roughRate,
+                        quantity: billingData.pages
+                    })
+                }
 
-            if (billingData.hasRough) {
-                lineItems.push({
-                    name: 'Rough Draft Access',
-                    description: `(+$${rates.roughRate} per page)`,
-                    rate: rates.roughRate,
-                    quantity: billingData.pages
+                if (billingData.hasVideographer) {
+                    lineItems.push({
+                        name: 'Videography Services',
+                        description: `(+$${rates.videographerRate} per page)`,
+                        rate: rates.videographerRate,
+                        quantity: billingData.pages
+                    })
+                }
+
+                if (billingData.hasInterpreter) {
+                    lineItems.push({
+                        name: 'Interpreter Services',
+                        description: `(+$${rates.interpreterRate} per page)`,
+                        rate: rates.interpreterRate,
+                        quantity: billingData.pages
+                    })
+                }
+
+                if (billingData.hasExpert) {
+                    lineItems.push({
+                        name: 'Expert Witness Services',
+                        description: `(+$${rates.expertRate} per page)`,
+                        rate: rates.expertRate,
+                        quantity: billingData.pages
+                    })
+                }
+
+                const zohoInvoice = await zohoBooks.createInvoice({
+                    customer_id: customerResult.id,
+                    date: new Date().toISOString().split('T')[0],
+                    due_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    line_items: lineItems,
+                    notes: `Invoice for ${booking.proceedingType}. JOB: ${booking.bookingNumber}`
                 })
+                zohoInvoiceId = zohoInvoice.id
+            } catch (zohoError) {
+                console.error('Zoho Books sync failed during completion:', zohoError)
             }
-
-            if (billingData.hasVideographer) {
-                lineItems.push({
-                    name: 'Videography Services',
-                    description: `(+$${rates.videographerRate} per page)`,
-                    rate: rates.videographerRate,
-                    quantity: billingData.pages
-                })
-            }
-
-            if (billingData.hasInterpreter) {
-                lineItems.push({
-                    name: 'Interpreter Services',
-                    description: `(+$${rates.interpreterRate} per page)`,
-                    rate: rates.interpreterRate,
-                    quantity: billingData.pages
-                })
-            }
-
-            if (billingData.hasExpert) {
-                lineItems.push({
-                    name: 'Expert Witness Services',
-                    description: `(+$${rates.expertRate} per page)`,
-                    rate: rates.expertRate,
-                    quantity: billingData.pages
-                })
-            }
-
-            const zohoInvoice = await zohoBooks.createInvoice({
-                customer_id: customerResult.id,
-                date: new Date().toISOString().split('T')[0],
-                due_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                line_items: lineItems,
-                notes: `Invoice for ${booking.proceedingType}. JOB: ${booking.bookingNumber}`
-            })
 
             // 3. Automation Sync
             const currentMetadata = JSON.parse(booking.notes || '{}')
@@ -293,15 +309,17 @@ export class IntegrationOrchestrator {
                     invoiceStatus: 'SENT',
                     notes: JSON.stringify({
                         ...currentMetadata,
-                        zohoBooksInvoiceId: zohoInvoice.id
+                        zohoBooksInvoiceId: zohoInvoiceId
                     })
                 }
             })
 
             // 4. Trigger Notifications
             try {
-                // Official Zoho Books Email
-                await zohoBooks.sendInvoiceEmail(zohoInvoice.id)
+                // Official Zoho Books Email (Only if sync was successful)
+                if (zohoInvoiceId) {
+                    await zohoBooks.sendInvoiceEmail(zohoInvoiceId)
+                }
 
                 // Custom Client Portal Email
                 const clientEmailData = emailTemplates.invoiceGenerated(
@@ -334,7 +352,7 @@ export class IntegrationOrchestrator {
                 console.error('Notification dispatch failed:', emailError)
             }
 
-            return { localInvoice, zohoInvoice }
+            return { localInvoice, zohoInvoiceId }
         } catch (error) {
             console.error('Final invoice generation failed:', error)
             throw error

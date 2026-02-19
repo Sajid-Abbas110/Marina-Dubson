@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { extractTokenFromHeader, verifyToken } from '@/lib/auth'
-import { zohoCRM } from '@/lib/zoho-crm'
 import { z } from 'zod'
 
 const messageSchema = z.object({
@@ -20,19 +19,43 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const messages = await prisma.message.findMany({
-            where: {
+        const userId = payload.userId || payload.id
+        if (!userId) {
+            return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 })
+        }
+
+        // Verify the current user actually exists in DB
+        const currentUser = await prisma.user.findUnique({ where: { id: userId } })
+        if (!currentUser) {
+            return NextResponse.json({ error: 'Authenticated user not found in database', code: 'USER_NOT_FOUND' }, { status: 404 })
+        }
+
+        const { searchParams } = new URL(request.url)
+        const recipientId = searchParams.get('recipientId')
+
+        // Build the where clause: get the conversation thread between two users
+        const where: any = recipientId
+            ? {
                 OR: [
-                    { senderId: payload.id },
-                    { recipientId: payload.id }
+                    { senderId: userId, recipientId: recipientId },
+                    { senderId: recipientId, recipientId: userId },
                 ]
-            },
+            }
+            : {
+                OR: [
+                    { senderId: userId },
+                    { recipientId: userId }
+                ]
+            }
+
+        const messages = await prisma.message.findMany({
+            where,
             include: {
                 sender: {
-                    select: { firstName: true, lastName: true, role: true }
+                    select: { id: true, firstName: true, lastName: true, role: true }
                 },
                 recipient: {
-                    select: { firstName: true, lastName: true, role: true }
+                    select: { id: true, firstName: true, lastName: true, role: true }
                 }
             },
             orderBy: { createdAt: 'asc' }
@@ -54,55 +77,88 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
+        const userId = payload.userId || payload.id
+        const userRole = (payload.role || '').toUpperCase()
+
+        if (!userId) {
+            return NextResponse.json({ error: 'Invalid token: no user ID' }, { status: 400 })
+        }
+
+        // ✅ CRITICAL FIX: Verify sender actually exists before creating a message
+        const senderUser = await prisma.user.findUnique({ where: { id: userId } })
+        if (!senderUser) {
+            console.error(`[MSG-POST] Sender ${userId} not found in DB. Token role: ${userRole}`)
+            return NextResponse.json({
+                error: 'Your account could not be verified. Please log out and log in again.',
+                code: 'SENDER_NOT_FOUND'
+            }, { status: 403 })
+        }
+
         const body = await request.json()
         const data = messageSchema.parse(body)
 
-        // If client or reporter is sending, find an admin if recipientId not provided
+        // Find recipient: use provided ID or default to an Admin node for Clients/Reporters
         let recipientId = data.recipientId
-        if (!recipientId && (payload.role === 'CLIENT' || payload.role === 'REPORTER')) {
+
+        if (!recipientId && (userRole === 'CLIENT' || userRole === 'REPORTER')) {
             const admin = await prisma.user.findFirst({
-                where: { role: { in: ['ADMIN', 'SUPER_ADMIN'] } }
+                where: {
+                    role: { in: ['ADMIN', 'SUPER_ADMIN', 'staff'] }
+                }
             })
             recipientId = admin?.id
         }
 
         if (!recipientId) {
-            return NextResponse.json({ error: 'Recipent not found' }, { status: 400 })
+            console.error('[MSG-POST] No recipient could be identified. Payload:', { userId, userRole })
+            return NextResponse.json({ error: 'Recipient not found. Please select a valid contact.' }, { status: 400 })
+        }
+
+        // Verify recipient also exists
+        const recipientUser = await prisma.user.findUnique({ where: { id: recipientId } })
+        if (!recipientUser) {
+            return NextResponse.json({ error: 'Recipient user not found in database.' }, { status: 404 })
         }
 
         const message = await prisma.message.create({
             data: {
-                senderId: payload.id,
-                recipientId: recipientId,
+                senderId: senderUser.id,        // Use verified DB id
+                recipientId: recipientUser.id,  // Use verified DB id
                 content: data.content,
-                contactId: data.contactId || (payload.role === 'CLIENT' ? undefined : undefined), // Set if known
-                // subject can be added if needed
+                contactId: data.contactId ?? null,
+            },
+            include: {
+                sender: {
+                    select: { id: true, firstName: true, lastName: true, role: true }
+                },
+                recipient: {
+                    select: { id: true, firstName: true, lastName: true, role: true }
+                }
             }
         })
 
-        // Requirement 8.2: Log message in CRM
+        // Mark any unread incoming messages from this recipient as read
+        await prisma.message.updateMany({
+            where: {
+                senderId: recipientUser.id,
+                recipientId: senderUser.id,
+                isRead: false
+            },
+            data: { isRead: true }
+        })
+
+        // Optional CRM logging - fire and forget, don't block response
         try {
-            // Find the contact associated with this client
-            const user = await prisma.user.findUnique({
-                where: { id: payload.id }
-            })
-
-            if (user) {
-                // Look up contact by email since User and Contact share the email field
-                const contact = await prisma.contact.findUnique({
-                    where: { email: user.email }
-                })
-
-                if (contact) {
-                    const contactIdInCRM = JSON.parse(contact.notes || '{}').zohoCRMContactId
-                    if (contactIdInCRM) {
-                        await zohoCRM.addNote(contactIdInCRM, 'Contacts', `[Portal Message] ${payload.firstName || 'User'}: ${data.content}`)
-                    }
+            const contact = await prisma.contact.findUnique({ where: { email: senderUser.email } })
+            if (contact?.notes) {
+                const metadata = JSON.parse(contact.notes)
+                if (metadata.zohoCRMContactId) {
+                    const { zohoCRM } = await import('@/lib/zoho-crm')
+                    await zohoCRM.addNote(metadata.zohoCRMContactId, 'Contacts', `[Portal Message] ${senderUser.firstName}: ${data.content}`)
                 }
             }
-        } catch (crmError) {
-            console.error('Failed to log message to CRM:', crmError)
-            // Don't fail the message creation if CRM logging fails
+        } catch (crmErr) {
+            console.error('CRM Logging failed (non-fatal):', crmErr)
         }
 
         return NextResponse.json(message, { status: 201 })

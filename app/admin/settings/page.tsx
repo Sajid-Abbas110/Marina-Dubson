@@ -30,26 +30,26 @@ export default function AdministrativeSettingsPage() {
     return (
         <div className="max-w-[1600px] w-[95%] mx-auto p-6 lg:p-12 space-y-12 pb-24 animate-in fade-in duration-700">
             {/* Settings Header */}
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
                 <div className="space-y-2">
-                    <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
+                    <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
                         Configuration <span className="text-primary italic">Core</span>
                     </h1>
-                    <p className="text-gray-500 font-medium">Fine-tuning the Global Node architecture & networking protocols.</p>
+                    <p className="text-[10px] text-gray-500 font-medium tracking-wide">Fine-tuning the Global Node architecture & networking protocols.</p>
                 </div>
-                <div className="flex items-center gap-4">
-                    <button className="h-14 px-8 rounded-2xl bg-gray-900 text-white font-black text-xs uppercase tracking-[0.2em] flex items-center gap-3 hover:bg-primary transition-all shadow-2xl">
-                        Save System State <Zap className="h-5 w-5" />
+                <div className="flex items-center gap-3">
+                    <button className="h-10 px-6 rounded-xl bg-gray-900 text-white font-black text-[9px] uppercase tracking-[0.2em] flex items-center gap-2 hover:bg-primary transition-all shadow-xl">
+                        Save System State <Zap className="h-4 w-4" />
                     </button>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
                 {/* Control Sidebar */}
-                <aside className="lg:col-span-1 space-y-10">
-                    <div className="space-y-2">
-                        <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] mb-6">Hierarchy Controls</h3>
-                        <nav className="flex flex-col gap-2">
+                <aside className="lg:col-span-1 space-y-6">
+                    <div className="space-y-1">
+                        <h3 className="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4">Hierarchy Controls</h3>
+                        <nav className="flex flex-col gap-1.5">
                             <SettingsTab active={activeTab === 'PROFILE'} onClick={() => setActiveTab('PROFILE')} icon={<User />} label="Root Identity" />
                             <SettingsTab active={activeTab === 'SECURITY'} onClick={() => setActiveTab('SECURITY')} icon={<Shield />} label="Security Vault" />
                             <SettingsTab active={activeTab === 'NETWORK'} onClick={() => setActiveTab('NETWORK')} icon={<Globe />} label="Network Grid" />
@@ -58,44 +58,44 @@ export default function AdministrativeSettingsPage() {
                         </nav>
                     </div>
 
-                    <div className="p-8 rounded-[2.5rem] bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 shadow-inner group">
-                        <Power className="h-8 w-8 text-gray-300 dark:text-gray-600 mb-4 group-hover:text-rose-500 transition-colors" />
-                        <h4 className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest mb-1">Emergency Off-Grid</h4>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase leading-relaxed tracking-tighter">Temporarily disable all external API endpoints and secure the node.</p>
-                        <button className="w-full py-4 mt-6 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[10px] font-black uppercase text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all">Enable Lockdown</button>
+                    <div className="p-6 rounded-[2rem] bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 shadow-inner group">
+                        <Power className="h-6 w-6 text-gray-300 dark:text-gray-600 mb-3 group-hover:text-rose-500 transition-colors" />
+                        <h4 className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-widest mb-0.5">Emergency Off-Grid</h4>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase leading-relaxed tracking-tighter">Temporarily disable all external API endpoints and secure the node.</p>
+                        <button className="w-full py-3 mt-4 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[9px] font-black uppercase text-rose-500 hover:bg-rose-500 hover:text-white rounded-lg transition-all">Enable Lockdown</button>
                     </div>
                 </aside>
 
                 {/* Main Settings Canvas */}
                 <div className="lg:col-span-3 space-y-8">
                     {activeTab === 'PROFILE' && (
-                        <div className="glass-panel rounded-[3rem] p-12 space-y-12 animate-in slide-in-from-right-8 duration-500">
-                            <div className="flex items-center gap-8 pb-12 border-b border-gray-100 dark:border-white/5">
+                        <div className="glass-panel rounded-[2rem] p-8 space-y-8 animate-in slide-in-from-right-8 duration-500">
+                            <div className="flex items-center gap-6 pb-8 border-b border-gray-100 dark:border-white/5">
                                 <div className="relative group">
-                                    <div className="h-24 w-24 rounded-[2.5rem] bg-gradient-to-br from-primary to-emerald-800 flex items-center justify-center text-white text-3xl font-black shadow-2xl relative z-10">
+                                    <div className="h-20 w-20 rounded-[2rem] bg-gradient-to-br from-primary to-emerald-800 flex items-center justify-center text-white text-2xl font-black shadow-xl relative z-10">
                                         MD
                                     </div>
-                                    <div className="absolute inset-0 bg-primary rounded-[2.5rem] blur-xl opacity-20 animate-pulse"></div>
-                                    <button className="absolute -bottom-2 -right-2 h-10 w-10 rounded-xl bg-white dark:bg-[#00120d] border border-gray-100 dark:border-white/10 shadow-xl flex items-center justify-center text-gray-400 hover:text-primary transition-all z-20">
-                                        <Smartphone className="h-4 w-4" />
+                                    <div className="absolute inset-0 bg-primary rounded-[2rem] blur-xl opacity-20 animate-pulse"></div>
+                                    <button className="absolute -bottom-2 -right-2 h-8 w-8 rounded-lg bg-white dark:bg-[#00120d] border border-gray-100 dark:border-white/10 shadow-lg flex items-center justify-center text-gray-400 hover:text-primary transition-all z-20">
+                                        <Smartphone className="h-3.5 w-3.5" />
                                     </button>
                                 </div>
-                                <div className="space-y-1">
-                                    <h3 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Marina Dubson</h3>
-                                    <p className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.3em]">Chief Operational Officer • Node 01</p>
+                                <div className="space-y-0.5">
+                                    <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Marina Dubson</h3>
+                                    <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.3em]">Chief Operational Officer • Node 01</p>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <SettingsField label="Professional First Name" value="Marina" />
                                 <SettingsField label="Professional Last Name" value="Dubson" />
                                 <SettingsField label="Global Command Email" value="marina@marinadubson.com" />
                                 <SettingsField label="Secure Mobile Link" value="+1 (917) 494-1859" />
                             </div>
 
-                            <div className="space-y-4 pt-8">
-                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em]">Biography Asset</h4>
-                                <textarea className="luxury-input dark:bg-white/5 dark:text-white min-h-[160px] py-8 leading-relaxed resize-none" defaultValue="Directing the future of stenographic excellence. Managing a global network of elite reporters and legal firms with zero-latency synchronization." />
+                            <div className="space-y-3 pt-4">
+                                <h4 className="text-[9px] font-black text-gray-400 uppercase tracking-[0.4em]">Biography Asset</h4>
+                                <textarea className="luxury-input dark:bg-white/5 dark:text-white min-h-[120px] py-6 leading-relaxed resize-none text-xs" defaultValue="Directing the future of stenographic excellence. Managing a global network of elite reporters and legal firms with zero-latency synchronization." />
                             </div>
                         </div>
                     )}
@@ -123,12 +123,12 @@ export default function AdministrativeSettingsPage() {
                     )}
 
                     {activeTab === 'NETWORK' && (
-                        <div className="glass-panel rounded-[3rem] p-12 space-y-12 animate-in slide-in-from-right-8 duration-500">
+                        <div className="glass-panel rounded-[2rem] p-8 space-y-8 animate-in slide-in-from-right-8 duration-500">
                             <div>
-                                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Network Grid Coordination</h3>
-                                <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-2">Manage the links between legal clients and stenographic professionals.</p>
+                                <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">Network Grid Coordination</h3>
+                                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-1.5">Manage the links between legal clients and stenographic professionals.</p>
                             </div>
-                            <div className="space-y-8">
+                            <div className="space-y-6">
                                 <SecurityToggle label="Automated Personnel Linking" status="Link clients to preferred reporters automatically" icon={<Globe className="text-primary" />} />
                                 <SecurityToggle label="Inter-Portal Direct Messaging" status="Allow direct comms between linked nodes" icon={<MessageSquare className="text-emerald-500" />} />
                                 <SecurityToggle label="Global Directory Visibility" status="Show reporter profiles to all verified clients" icon={<Database className="text-purple-500" />} />
@@ -154,16 +154,16 @@ function SettingsTab({ icon, label, active, onClick }: any) {
     return (
         <button
             onClick={onClick}
-            className={`flex items-center gap-5 w-full p-5 rounded-2xl transition-all duration-500 group ${active
-                ? 'bg-primary text-white shadow-2xl shadow-primary/20 translate-x-1'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-white/5 hover:shadow-xl hover:shadow-gray-200/20'
+            className={`flex items-center gap-4 w-full p-4 rounded-xl transition-all duration-500 group ${active
+                ? 'bg-primary text-white shadow-xl shadow-primary/20 translate-x-1'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-white/5 hover:shadow-lg hover:shadow-gray-200/20'
                 }`}
         >
             <div className={`transition-all duration-500 ${active ? 'text-white' : 'text-gray-300 group-hover:text-primary group-hover:rotate-12'}`}>
                 {icon}
             </div>
-            <span className="text-[11px] font-black uppercase tracking-widest">{label}</span>
-            {active && <ChevronRight className="ml-auto h-4 w-4 opacity-50" />}
+            <span className="text-[10px] font-black uppercase tracking-widest text-left">{label}</span>
+            {active && <ChevronRight className="ml-auto h-3.5 w-3.5 opacity-50" />}
         </button>
     )
 }
@@ -198,24 +198,24 @@ function SecurityToggle({ label, status, icon }: any) {
 
 function InfrastructureCard({ label, status, icon, load }: any) {
     return (
-        <div className="glass-panel p-8 rounded-[2.5rem] space-y-8 border border-gray-100 dark:border-white/5 hover:shadow-2xl transition-all group">
+        <div className="glass-panel p-6 rounded-[2rem] space-y-6 border border-gray-100 dark:border-white/5 hover:shadow-xl transition-all group">
             <div className="flex justify-between items-start">
-                <div className="h-14 w-14 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center group-hover:bg-white dark:group-hover:bg-white/10 group-hover:shadow-lg transition-all">
-                    {icon}
+                <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center group-hover:bg-white dark:group-hover:bg-white/10 group-hover:shadow-md transition-all">
+                    <div className="scale-90">{icon}</div>
                 </div>
                 <div className="text-right">
-                    <p className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Active Load</p>
-                    <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">{load}</p>
+                    <p className="text-[8px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Active Load</p>
+                    <p className="text-lg font-black text-gray-900 dark:text-white tracking-tighter">{load}</p>
                 </div>
             </div>
             <div>
-                <h4 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight mb-2">{label}</h4>
-                <div className="flex items-center gap-2">
+                <h4 className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight mb-1.5">{label}</h4>
+                <div className="flex items-center gap-1.5">
                     <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                    <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">{status}</span>
+                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">{status}</span>
                 </div>
             </div>
-            <div className="h-1.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+            <div className="h-1 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                 <div className="h-full bg-primary transition-all duration-1000" style={{ width: load }}></div>
             </div>
         </div>

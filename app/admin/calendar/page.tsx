@@ -130,23 +130,23 @@ export default function VisualCalendarPage() {
 
     const renderHeader = () => {
         return (
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 mb-12">
-                <div className="space-y-4">
-                    <h1 className="text-3xl font-black text-foreground tracking-tight uppercase leading-none">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-8">
+                <div className="space-y-2">
+                    <h1 className="text-2xl font-black text-foreground tracking-tight uppercase leading-none">
                         Bookings <span className="brand-gradient italic">Calendar</span>
                     </h1>
-                    <p className="text-muted-foreground font-black uppercase text-[10px] tracking-[0.4em]">Visualizing the MD logistics pipeline.</p>
+                    <p className="text-muted-foreground font-black uppercase text-[9px] tracking-[0.3em]">Visualizing the MD logistics pipeline.</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-4 bg-muted/30 p-2.5 rounded-[2.5rem] border border-border shadow-sm">
+                <div className="flex flex-wrap items-center gap-3 bg-muted/30 p-2 rounded-[2rem] border border-border shadow-sm">
                     <button
                         onClick={() => {
                             setFormData({ ...formData, bookingDate: format(selectedDate, 'yyyy-MM-dd') })
                             setIsModalOpen(true)
                         }}
-                        className="luxury-button py-3.5 px-8 h-12 flex items-center gap-2 group"
+                        className="luxury-button py-2.5 px-6 h-10 flex items-center gap-2 group"
                     >
-                        <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Quick Deployment</span>
+                        <Plus className="h-3.5 w-3.5 group-hover:rotate-90 transition-transform" />
+                        <span className="text-[9px] font-black uppercase tracking-widest">Quick Deployment</span>
                     </button>
                     <div className="h-8 w-px bg-border hidden md:block mx-2"></div>
                     <div className="flex items-center gap-2">
@@ -191,7 +191,7 @@ export default function VisualCalendarPage() {
         const allDays = eachDayOfInterval({ start: startDate, end: endDate })
 
         return (
-            <div className="grid grid-cols-7 gap-px bg-border border border-border rounded-[3rem] overflow-hidden shadow-2xl bg-border/20">
+            <div className="grid grid-cols-7 gap-px bg-border border border-border rounded-[2rem] overflow-hidden shadow-xl bg-border/20">
                 {allDays.map((d, i) => {
                     const dayBookings = (bookings || []).filter(b => b && b.bookingDate && isSameDay(new Date(b.bookingDate), d))
                     const hasConflict = dayBookings.length > 3
@@ -200,11 +200,11 @@ export default function VisualCalendarPage() {
                     return (
                         <div
                             key={i}
-                            className={`min-h-[160px] p-6 bg-card transition-all hover:bg-primary/5 cursor-pointer group relative ${!isSameMonth(d, monthStart) ? 'opacity-20 grayscale' : ''}`}
+                            className={`min-h-[120px] p-3 bg-card transition-all hover:bg-primary/5 cursor-pointer group relative ${!isSameMonth(d, monthStart) ? 'opacity-20 grayscale' : ''}`}
                             onClick={() => setSelectedDate(d)}
                         >
-                            <div className="flex justify-between items-start mb-4">
-                                <span className={`text-[11px] font-black transition-all ${isToday ? 'text-primary bg-primary/10 px-3 py-1 rounded-lg border border-primary/20 scale-110 shadow-[0_0_15px_rgba(var(--primary),0.2)]' : 'text-muted-foreground group-hover:text-foreground'}`}>
+                            <div className="flex justify-between items-start mb-2">
+                                <span className={`text-[10px] font-black transition-all ${isToday ? 'text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 scale-105 shadow-[0_0_10px_rgba(var(--primary),0.2)]' : 'text-muted-foreground group-hover:text-foreground'}`}>
                                     {format(d, 'd')}
                                 </span>
                                 {hasConflict && (
@@ -255,19 +255,19 @@ export default function VisualCalendarPage() {
                     {renderCells()}
                 </div>
 
-                <div className="space-y-8">
-                    <div className="glass-panel rounded-[3rem] p-8 bg-card border border-border shadow-2xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-110 transition-transform duration-700">
-                            <Activity className="h-24 w-24 text-primary" />
+                <div className="space-y-6">
+                    <div className="glass-panel rounded-[2rem] p-6 bg-card border border-border shadow-xl relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:scale-110 transition-transform duration-700">
+                            <Activity className="h-20 w-20 text-primary" />
                         </div>
 
-                        <div className="flex items-center gap-5 mb-10 relative z-10">
-                            <div className="h-14 w-14 rounded-2xl bg-muted border border-border flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500">
-                                <CalendarIcon className="h-7 w-7" />
+                        <div className="flex items-center gap-4 mb-6 relative z-10">
+                            <div className="h-10 w-10 rounded-xl bg-muted border border-border flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500">
+                                <CalendarIcon className="h-5 w-5" />
                             </div>
-                            <div className="space-y-1">
-                                <h3 className="text-xl font-black text-foreground uppercase tracking-tight">{format(selectedDate, 'MMM dd, yyyy')}</h3>
-                                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em] leading-none">Daily Tactical Briefing</p>
+                            <div className="space-y-0.5">
+                                <h3 className="text-lg font-black text-foreground uppercase tracking-tight">{format(selectedDate, 'MMM dd, yyyy')}</h3>
+                                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.3em] leading-none">Daily Tactical Briefing</p>
                             </div>
                         </div>
 
@@ -328,17 +328,17 @@ export default function VisualCalendarPage() {
 
             {/* Booking Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 lg:pl-80 animate-in fade-in duration-300">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 lg:pl-80 animate-in fade-in duration-300">
                     <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
-                    <div className="relative w-full max-w-2xl bg-card rounded-[3.5rem] shadow-3xl border border-border overflow-hidden p-12 custom-scrollbar max-h-[90vh]">
-                        <div className="flex items-center justify-between mb-12">
-                            <div className="flex items-center gap-8">
-                                <div className="h-16 w-16 rounded-[1.5rem] bg-primary flex items-center justify-center text-primary-foreground shadow-2xl">
-                                    <Plus className="h-10 w-10" />
+                    <div className="relative w-full max-w-2xl bg-card rounded-[2.5rem] shadow-3xl border border-border overflow-hidden p-8 custom-scrollbar max-h-[90vh]">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-6">
+                                <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-xl">
+                                    <Plus className="h-6 w-6" />
                                 </div>
-                                <div className="space-y-1">
-                                    <h3 className="text-2xl font-black text-foreground uppercase tracking-tight leading-none">Node Initialization</h3>
-                                    <p className="text-[10px] uppercase font-black tracking-[0.3em] text-muted-foreground">Logistics Cluster for {format(selectedDate, 'MMM dd, yyyy')}</p>
+                                <div className="space-y-0.5">
+                                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight leading-none">Node Initialization</h3>
+                                    <p className="text-[9px] uppercase font-black tracking-[0.3em] text-muted-foreground">Logistics Cluster for {format(selectedDate, 'MMM dd, yyyy')}</p>
                                 </div>
                             </div>
                             <button onClick={() => setIsModalOpen(false)} className="h-14 w-14 rounded-2xl bg-muted border border-border text-muted-foreground hover:text-foreground transition-all flex items-center justify-center">
