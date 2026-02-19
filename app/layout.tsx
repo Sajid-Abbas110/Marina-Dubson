@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Poppins } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/lib/theme-context'
+import PWAInstallPrompt from '@/app/components/PWAInstallPrompt'
 
 const poppins = Poppins({
     subsets: ['latin'],
@@ -44,6 +45,7 @@ export default function RootLayout({
                     <main className="min-h-screen">
                         {children}
                     </main>
+                    <PWAInstallPrompt />
                 </ThemeProvider>
             </body>
         </html>

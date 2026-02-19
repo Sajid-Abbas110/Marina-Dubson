@@ -1,12 +1,12 @@
 'use client'
 
-import { Bell, MessageSquare, Settings, LogOut, User, Moon, Sun, ChevronDown, Menu } from 'lucide-react'
+import { Bell, MessageSquare, Settings, LogOut, User, Moon, Sun, ChevronDown } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useTheme } from '@/lib/theme-context'
 
-export default function PortalHeader({ userRole, onMenuClick }: { userRole?: string, onMenuClick?: () => void }) {
+export default function PortalHeader({ userRole }: { userRole?: string }) {
     const router = useRouter()
     const { theme, toggleTheme } = useTheme()
     const [user, setUser] = useState<any>(null)
@@ -67,8 +67,15 @@ export default function PortalHeader({ userRole, onMenuClick }: { userRole?: str
 
     return (
         <header className="sticky top-0 z-[450] flex items-center justify-between gap-4
-                           h-[64px] px-4 sm:px-6
+                           h-[64px] px-3 sm:px-6
                            bg-card/90 backdrop-blur-md border-b border-border">
+
+            {/* Mobile Logo */}
+            <div className="lg:hidden flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                    <span className="text-[10px] font-black uppercase">MD</span>
+                </div>
+            </div>
 
             {/* Greeting — desktop */}
             <div className="hidden lg:block pl-2">
@@ -80,24 +87,14 @@ export default function PortalHeader({ userRole, onMenuClick }: { userRole?: str
                 </p>
             </div>
 
-            {/* Mobile Menu Button */}
-            <button
-                onClick={onMenuClick}
-                className="lg:hidden p-2 rounded-lg text-muted-foreground hover:bg-muted transition-colors absolute left-4 z-50"
-                aria-label="Open menu"
-            >
-                <Menu className="h-6 w-6" />
-            </button>
-
             {/* Spacer */}
-            <div className="flex-1 lg:hidden" />
-            <div className="flex-1 hidden lg:block pl-2" />
+            <div className="flex-1" />
 
             {/* Actions */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-                {/* Theme */}
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                {/* Theme toggle - hide on super small mobile? No, keep it. */}
                 <button onClick={toggleTheme}
-                    className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent hover:border-border transition-all"
+                    className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all active:scale-90"
                     aria-label="Toggle theme">
                     {theme === 'light'
                         ? <Moon className="h-4 w-4" />

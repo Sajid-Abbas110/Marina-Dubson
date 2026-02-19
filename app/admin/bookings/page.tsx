@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
     Calendar,
@@ -28,6 +28,13 @@ export default function BookingManagementPage() {
     const [filter, setFilter] = useState('ALL')
     const [bookings, setBookings] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
+    const [searchQuery, setSearchQuery] = useState('')
+    const searchParams = useSearchParams()
+
+    useEffect(() => {
+        const q = searchParams.get('q')
+        if (q) setSearchQuery(q)
+    }, [searchParams])
 
     const [showBidsModal, setShowBidsModal] = useState(false)
     const [selectedBookingBids, setSelectedBookingBids] = useState<any[]>([])
@@ -266,19 +273,24 @@ export default function BookingManagementPage() {
     }, [])
 
     return (
-        <div className="max-w-full w-[98%] mx-auto p-6 lg:p-12 space-y-12 pb-24 animate-in fade-in duration-700">
+        <div className="max-w-full w-full sm:w-[98%] mx-auto px-3 py-6 sm:p-6 lg:p-12 space-y-8 sm:space-y-12 pb-24 animate-in fade-in duration-700">
             {/* Command Header */}
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-                <div className="space-y-2">
-                    <h1 className="text-2xl font-black text-foreground tracking-tight uppercase leading-none">
+                <div className="space-y-1 sm:space-y-2">
+                    <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight uppercase leading-none">
                         Tactical <span className="brand-gradient italic">Registry</span>
                     </h1>
-                    <p className="text-muted-foreground font-black uppercase text-[9px] tracking-[0.3em]">Bridging Clients & Reporters across the MD Global Node.</p>
+                    <p className="text-muted-foreground font-black uppercase text-[8px] sm:text-[9px] tracking-[0.2em] sm:tracking-[0.3em]">Bridging Clients & Reporters across the MD Global Node.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="relative group w-full xl:w-auto">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                        <input className="w-full xl:min-w-[400px] pl-14 pr-6 py-4 rounded-xl bg-card border border-border text-[10px] font-black uppercase tracking-[0.1em] outline-none focus:ring-4 focus:ring-primary/10 text-foreground transition-all shadow-inner" placeholder="DECRYPT CASE_ID OR CLIENT_NODE..." />
+                        <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                        <input
+                            className="w-full xl:min-w-[400px] pl-11 sm:pl-14 pr-4 sm:pr-6 py-3.5 sm:py-4 rounded-xl bg-card border border-border text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] outline-none focus:ring-4 focus:ring-primary/10 text-foreground transition-all shadow-inner"
+                            placeholder="CASE_ID OR CLIENT..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
                     </div>
                 </div>
             </div>
@@ -294,71 +306,82 @@ export default function BookingManagementPage() {
             </div>
 
             {/* Operational Grid */}
-            <div className="glass-panel rounded-3xl overflow-hidden bg-card border border-border shadow-2xl">
-                <div className="px-6 py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/30">
+            <div className="glass-panel rounded-2xl sm:rounded-3xl overflow-hidden bg-card border border-border shadow-2xl">
+                <div className="px-5 sm:px-6 py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/30">
                     <div className="flex items-center gap-3">
-                        <div className="h-3 w-3 rounded-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)] animate-pulse"></div>
-                        <h3 className="text-sm font-black text-foreground uppercase tracking-[0.3em]">Active Logistics Table</h3>
+                        <div className="h-2.5 w-2.5 sm:h-3 w-3 rounded-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)] animate-pulse"></div>
+                        <h3 className="text-[11px] sm:text-sm font-black text-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em] truncate">Active Logistics Matrix</h3>
                     </div>
-                    <div className="flex items-center gap-8 text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em]">
-                        <span className="flex items-center gap-2"><Activity className="h-3 w-3" /> Node Status: <span className="text-emerald-500">Nominal</span></span>
+                    <div className="flex items-center justify-start sm:justify-end gap-5 sm:gap-8 text-[8px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em]">
+                        <span className="flex items-center gap-2 flex-shrink-0"><Activity className="h-3 w-3" /> Nominal</span>
                         <div className="h-4 w-px bg-border"></div>
-                        <span className="flex items-center gap-2"><Zap className="h-3 w-3" /> Latency: 0.2ms</span>
+                        <span className="flex items-center gap-2 flex-shrink-0"><Zap className="h-3 w-3" /> 0.2ms</span>
                     </div>
                 </div>
 
                 <div className="divide-y divide-border">
                     {loading ? (
                         <div className="p-32 text-center text-muted-foreground uppercase font-black text-[10px] tracking-[0.5em] animate-pulse">Synchronizing Matrix Data...</div>
-                    ) : (bookings || []).filter(b => filter === 'ALL' || b.bookingStatus === filter).map(b => (
-                        <div key={b.id} className="px-8 py-6 hover:bg-primary/5 transition-all cursor-pointer group flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-l-4 border-transparent hover:border-primary">
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 lg:gap-10">
+                    ) : (bookings || []).filter(b => {
+                        const matchesFilter = filter === 'ALL' || b.bookingStatus === filter
+                        const q = searchQuery.toLowerCase()
+                        const matchesSearch = !searchQuery ||
+                            b.bookingNumber?.toLowerCase().includes(q) ||
+                            b.proceedingType?.toLowerCase().includes(q) ||
+                            b.contact?.companyName?.toLowerCase().includes(q) ||
+                            `${b.contact?.firstName} ${b.contact?.lastName}`.toLowerCase().includes(q)
+                        return matchesFilter && matchesSearch
+                    }).map(b => (
+                        <div key={b.id} className="px-4 sm:px-8 py-5 sm:py-6 hover:bg-primary/5 transition-all cursor-pointer group flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-l-4 border-transparent hover:border-primary">
+                            <div className="flex flex-row items-center gap-4 sm:gap-6 lg:gap-10">
                                 {/* Date Pillar */}
-                                <div className="flex flex-col items-center justify-center h-16 w-16 rounded-2xl bg-muted border border-border shadow-sm group-hover:border-primary/20 transition-all flex-shrink-0">
-                                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">{new Date(b.bookingDate).toLocaleString('default', { month: 'short' })}</span>
-                                    <span className="text-xl font-black text-foreground">{new Date(b.bookingDate).getDate()}</span>
+                                <div className="flex flex-col items-center justify-center h-12 w-12 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl bg-muted border border-border shadow-sm group-hover:border-primary/20 transition-all flex-shrink-0">
+                                    <span className="text-[7px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">{new Date(b.bookingDate).toLocaleString('default', { month: 'short' })}</span>
+                                    <span className="text-base sm:text-xl font-black text-foreground">{new Date(b.bookingDate).getDate()}</span>
                                 </div>
 
                                 {/* Logistics Identity */}
                                 <div className="space-y-1.5">
-                                    <div className="flex flex-wrap items-center gap-3">
-                                        <span className="px-2 py-0.5 rounded-lg bg-primary/10 text-[9px] font-black text-primary border border-primary/20 uppercase tracking-widest">{b.bookingNumber}</span>
-                                        <h4 className="text-lg font-black text-foreground uppercase tracking-tight group-hover:text-primary transition-colors">{b.proceedingType}</h4>
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-6">
+                                    <div className="flex flex-col gap-1 sm:gap-3">
                                         <div className="flex items-center gap-2">
-                                            <Building2 className="h-3.5 w-3.5 text-muted-foreground/40" />
-                                            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.1em]">{b.contact.companyName || `${b.contact.firstName} ${b.contact.lastName}`}</span>
+                                            <span className="px-1.5 py-0.5 rounded-lg bg-primary/10 text-[7px] sm:text-[9px] font-black text-primary border border-primary/20 uppercase tracking-widest leading-none">{b.bookingNumber}</span>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <Clock className="h-3.5 w-3.5 text-muted-foreground/40" />
-                                            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.1em]">{b.bookingTime}</span>
+                                        <h4 className="text-sm sm:text-lg font-black text-foreground uppercase tracking-tight group-hover:text-primary transition-colors leading-tight">{b.proceedingType}</h4>
+                                    </div>
+                                    <div className="flex flex-row flex-wrap items-center gap-x-4 gap-y-2">
+                                        <div className="flex items-center gap-1.5">
+                                            <Building2 className="h-3 sm:h-3.5 w-3 sm:w-3.5 text-muted-foreground/40" />
+                                            <span className="text-[8px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-[0.1em]">{b.contact.companyName || `${b.contact.firstName} ${b.contact.lastName}`}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <Clock className="h-3 sm:h-3.5 w-3 sm:w-3.5 text-muted-foreground/40" />
+                                            <span className="text-[8px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-[0.1em]">{b.bookingTime}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 lg:gap-12">
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6 lg:gap-12 px-2 sm:px-0">
                                 {/* Assignment Bridge */}
-                                <div className="flex flex-col gap-1.5 sm:items-end min-w-[150px]">
-                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">Assignment</p>
+                                <div className="flex flex-row sm:flex-col gap-3 items-center sm:items-end min-w-[120px]">
+                                    <p className="hidden sm:block text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">Assignment</p>
                                     {b.reporter ? (
-                                        <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
-                                            <User className="h-4 w-4" />
-                                            <span className="text-[10px] font-black uppercase">{b.reporter.firstName} {b.reporter.lastName}</span>
+                                        <div className="flex items-center gap-3 px-3 py-1.5 rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+                                            <User className="h-3 w-3" />
+                                            <span className="text-[8px] sm:text-[10px] font-black uppercase">{b.reporter.firstName} {b.reporter.lastName}</span>
                                         </div>
                                     ) : (
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => toggleMarketplace(b.id, b.isMarketplace)}
-                                                className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${b.isMarketplace ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' : 'bg-muted text-muted-foreground border-border hover:border-primary/20 hover:text-primary'}`}
+                                                className={`px-3 py-1.5 rounded-xl text-[8px] sm:text-[9px] font-black uppercase tracking-widest border transition-all ${b.isMarketplace ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' : 'bg-muted text-muted-foreground border-border hover:border-primary/20 hover:text-primary'}`}
                                             >
                                                 {b.isMarketplace ? 'Market' : 'Push'}
                                             </button>
                                             {b.isMarketplace && (
                                                 <button
                                                     onClick={() => viewBids(b.id)}
-                                                    className="luxury-button px-4 py-2 h-auto text-[9px]"
+                                                    className="luxury-button px-3 py-1.5 h-auto text-[8px] sm:text-[9px]"
                                                 >
                                                     Bids
                                                 </button>
@@ -368,24 +391,24 @@ export default function BookingManagementPage() {
                                 </div>
 
                                 {/* Status Toggle Automation */}
-                                <div className="flex items-center gap-3 p-2 rounded-2xl bg-muted border border-border">
+                                <div className="flex flex-wrap items-center gap-2 p-1.5 sm:p-2 rounded-2xl bg-muted border border-border">
                                     {b.bookingStatus === 'SUBMITTED' && (
                                         <>
                                             <button
                                                 onClick={() => updateStatus(b.id, 'ACCEPTED')}
-                                                className="px-6 py-2 rounded-xl bg-primary text-primary-foreground text-[9px] font-black uppercase tracking-[0.1em] hover:translate-y-[-2px] transition-all shadow-lg"
+                                                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-primary text-primary-foreground text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] transition-all shadow-md active:scale-95"
                                             >
                                                 Approve
                                             </button>
                                             <button
                                                 onClick={() => updateStatus(b.id, 'MAYBE')}
-                                                className="px-4 py-2 rounded-xl bg-amber-500 text-white text-[9px] font-black uppercase tracking-[0.1em] hover:translate-y-[-2px] transition-all shadow-lg"
+                                                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-amber-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] transition-all shadow-md active:scale-95"
                                             >
                                                 Maybe
                                             </button>
                                             <button
                                                 onClick={() => updateStatus(b.id, 'DECLINED')}
-                                                className="px-4 py-2 rounded-xl bg-rose-500 text-white text-[9px] font-black uppercase tracking-[0.1em] hover:translate-y-[-2px] transition-all shadow-lg"
+                                                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-rose-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] transition-all shadow-md active:scale-95"
                                             >
                                                 Decline
                                             </button>
@@ -395,13 +418,13 @@ export default function BookingManagementPage() {
                                         <>
                                             <button
                                                 onClick={() => updateStatus(b.id, 'ACCEPTED')}
-                                                className="px-6 py-2 rounded-xl bg-primary text-primary-foreground text-[9px] font-black uppercase tracking-[0.1em] hover:translate-y-[-2px] transition-all shadow-lg"
+                                                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-primary text-primary-foreground text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] transition-all shadow-md active:scale-95"
                                             >
                                                 Approve
                                             </button>
                                             <button
                                                 onClick={() => updateStatus(b.id, 'DECLINED')}
-                                                className="px-6 py-2 rounded-xl bg-rose-500 text-white text-[9px] font-black uppercase tracking-[0.1em] hover:translate-y-[-2px] transition-all shadow-lg"
+                                                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-rose-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] transition-all shadow-md active:scale-95"
                                             >
                                                 Decline
                                             </button>
@@ -413,16 +436,16 @@ export default function BookingManagementPage() {
                                                 setSelectedBookingId(b.id)
                                                 setShowCompleteModal(true)
                                             }}
-                                            className="px-6 py-2 rounded-xl bg-foreground text-background text-[10px] font-black uppercase tracking-[0.2em] hover:translate-y-[-2px] transition-all shadow-xl"
+                                            className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-foreground text-background text-[8px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all shadow-xl active:scale-95"
                                         >
                                             Complete & Bill
                                         </button>
                                     )}
-                                    <div className="px-6 py-2 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground bg-card border border-border rounded-xl">{b.bookingStatus}</div>
+                                    <div className="px-3 sm:px-4 py-1.5 sm:py-2 text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] text-muted-foreground bg-card border border-border rounded-xl">{b.bookingStatus}</div>
                                 </div>
 
-                                <button className="h-12 w-12 rounded-xl bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/20 transition-all">
-                                    <ArrowRight className="h-6 w-6" />
+                                <button className="flex h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-card border border-border items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/20 transition-all flex-shrink-0">
+                                    <ArrowRight className="h-4 sm:h-6 w-4 sm:w-6" />
                                 </button>
                             </div>
                         </div>
@@ -432,64 +455,60 @@ export default function BookingManagementPage() {
 
             {/* Bids Management Modal */}
             {showBidsModal && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 lg:pl-80 animate-in fade-in duration-300">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 lg:pl-80 animate-in fade-in duration-300">
                     <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setShowBidsModal(false)}></div>
-                    <div className="relative w-full max-w-4xl bg-card rounded-[3.5rem] p-12 shadow-3xl border border-border overflow-hidden">
-                        <div className="flex items-center justify-between mb-12">
-                            <div className="flex items-center gap-8">
-                                <div className="h-16 w-16 rounded-[1.5rem] bg-primary flex items-center justify-center text-primary-foreground shadow-2xl">
-                                    <TrendingUp className="h-9 w-9" />
+                    <div className="relative w-full max-w-4xl bg-card rounded-[2rem] sm:rounded-[3.5rem] p-6 sm:p-12 shadow-3xl border border-border overflow-hidden">
+                        <div className="flex items-center justify-between mb-8 sm:mb-12">
+                            <div className="flex items-center gap-4 sm:gap-8">
+                                <div className="h-10 w-10 sm:h-16 sm:w-16 rounded-xl sm:rounded-[1.5rem] bg-primary flex items-center justify-center text-primary-foreground shadow-2xl">
+                                    <TrendingUp className="h-5 w-5 sm:h-9 sm:w-9" />
                                 </div>
-                                <div className="space-y-1">
-                                    <h2 className="text-3xl font-black text-foreground uppercase tracking-tight">Marketplace Bids</h2>
-                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Select the most qualified node for deployment</p>
+                                <div className="space-y-0.5 sm:space-y-1">
+                                    <h2 className="text-xl sm:text-3xl font-black text-foreground uppercase tracking-tight">Marketplace Bids</h2>
+                                    <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em]">Qualified nodes for deployment</p>
                                 </div>
                             </div>
-                            <button onClick={() => setShowBidsModal(false)} className="h-14 w-14 rounded-2xl bg-muted border border-border text-muted-foreground hover:text-foreground transition-all flex items-center justify-center">
-                                <X className="h-7 w-7" />
+                            <button onClick={() => setShowBidsModal(false)} className="h-10 w-10 sm:h-14 sm:w-14 rounded-xl bg-muted border border-border text-muted-foreground hover:text-foreground transition-all flex items-center justify-center">
+                                <X className="h-5 w-5 sm:h-7 sm:w-7" />
                             </button>
                         </div>
 
                         <div className="space-y-5 max-h-[500px] overflow-y-auto pr-4 custom-scrollbar">
                             {selectedBookingBids.length === 0 ? (
-                                <div className="py-24 text-center font-black text-[10px] uppercase tracking-[0.5em] text-muted-foreground animate-pulse">No signals detected from the reporter network...</div>
+                                <div className="py-24 text-center font-black text-[10px] uppercase tracking-[0.5em] text-muted-foreground animate-pulse">No signals detected...</div>
                             ) : selectedBookingBids.map(bid => (
-                                <div key={bid.id} className="p-8 rounded-[2.5rem] bg-muted/30 border border-border flex items-center justify-between hover:border-primary/20 transition-all group relative overflow-hidden">
-                                    <div className="flex items-center gap-8 relative z-10">
-                                        <div className="h-16 w-16 rounded-2xl bg-card border border-border flex items-center justify-center text-xl font-black text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500">
+                                <div key={bid.id} className="p-4 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] bg-muted/30 border border-border flex flex-col sm:flex-row items-stretch sm:items-center justify-between hover:border-primary/20 transition-all group relative overflow-hidden gap-6">
+                                    <div className="flex items-center gap-4 sm:gap-8 relative z-10">
+                                        <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl bg-card border border-border flex items-center justify-center text-lg font-black text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500">
                                             {bid.reporter.firstName[0]}
                                         </div>
                                         <div>
-                                            <h4 className="text-lg font-black text-foreground uppercase tracking-tight mb-2 group-hover:text-primary transition-colors">{bid.reporter.firstName} {bid.reporter.lastName}</h4>
-                                            <span className="text-[9px] font-black text-primary bg-primary/10 px-3 py-1 rounded-lg uppercase border border-primary/20 tracking-widest">{bid.reporter.certification || 'Verified Reporter'}</span>
+                                            <h4 className="text-base sm:text-lg font-black text-foreground uppercase tracking-tight mb-1 sm:mb-2 group-hover:text-primary transition-colors">{bid.reporter.firstName} {bid.reporter.lastName}</h4>
+                                            <span className="text-[7px] sm:text-[9px] font-black text-primary bg-primary/10 px-2.5 py-1 rounded-lg uppercase border border-primary/20 tracking-widest leading-none">{bid.reporter.certification || 'Verified'}</span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-16 relative z-10">
+                                    <div className="flex flex-row items-center justify-between sm:justify-end gap-6 sm:gap-16 relative z-10">
                                         <div className="text-right">
-                                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">Proposed Payoff</p>
-                                            <p className="text-3xl font-black text-foreground tracking-tighter">${bid.amount}</p>
-                                        </div>
-                                        <div className="text-right hidden sm:block">
-                                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">Timeline</p>
-                                            <p className="text-base font-black text-foreground uppercase tracking-widest">{bid.timeline}</p>
+                                            <p className="text-[7px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Payoff</p>
+                                            <p className="text-xl sm:text-3xl font-black text-foreground tracking-tighter">${bid.amount}</p>
                                         </div>
                                         {bid.status === 'PENDING' ? (
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-2 sm:gap-3">
                                                 <button
                                                     onClick={() => declineBid(bid.id)}
-                                                    className="h-12 px-6 rounded-2xl bg-muted border border-border text-muted-foreground hover:text-rose-500 hover:border-rose-500/20 text-[10px] font-black uppercase tracking-widest transition-all"
+                                                    className="h-10 sm:h-12 px-4 sm:px-6 rounded-xl sm:rounded-2xl bg-muted border border-border text-muted-foreground hover:text-rose-500 hover:border-rose-500/20 text-[8px] sm:text-[10px] font-black uppercase tracking-widest transition-all"
                                                 >
                                                     Decline
                                                 </button>
                                                 <button
                                                     onClick={() => acceptBid(bid.id)}
-                                                    className="h-12 px-8 rounded-2xl bg-foreground text-background text-[10px] font-black uppercase tracking-widest hover:scale-105 shadow-2xl transition-all"
+                                                    className="h-10 sm:h-12 px-6 sm:px-8 rounded-xl sm:rounded-2xl bg-foreground text-background text-[8px] sm:text-[10px] font-black uppercase tracking-widest shadow-xl transition-all active:scale-95"
                                                 >
                                                     Accept
                                                 </button>
                                             </div>
                                         ) : (
-                                            <div className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border ${bid.status === 'ACCEPTED'
+                                            <div className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-[8px] sm:text-[10px] font-black uppercase tracking-widest border ${bid.status === 'ACCEPTED'
                                                 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
                                                 : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
                                                 }`}>
@@ -509,40 +528,40 @@ export default function BookingManagementPage() {
 
             {/* Billing Completion Modal */}
             {showCompleteModal && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 lg:pl-80 animate-in fade-in duration-300">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 lg:pl-80 animate-in fade-in duration-300">
                     <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setShowCompleteModal(false)}></div>
-                    <div className="relative w-full max-w-3xl bg-card rounded-[3.5rem] shadow-3xl border border-border flex flex-col max-h-[90vh] overflow-hidden p-12">
+                    <div className="relative w-full max-w-3xl bg-card rounded-[2rem] sm:rounded-[3.5rem] shadow-3xl border border-border flex flex-col max-h-[90vh] overflow-hidden p-6 sm:p-12">
                         {/* Modal Header */}
-                        <div className="flex items-center gap-8 mb-12 flex-shrink-0">
-                            <div className="h-16 w-16 rounded-[1.5rem] bg-foreground text-background flex items-center justify-center shadow-2xl flex-shrink-0">
-                                <DollarSign className="h-9 w-9" />
+                        <div className="flex items-center gap-4 sm:gap-8 mb-8 sm:mb-12 flex-shrink-0">
+                            <div className="h-10 w-10 sm:h-16 sm:w-16 rounded-xl sm:rounded-[1.5rem] bg-foreground text-background flex items-center justify-center shadow-2xl flex-shrink-0">
+                                <DollarSign className="h-5 w-5 sm:h-9 sm:w-9" />
                             </div>
-                            <div className="space-y-1">
-                                <h2 className="text-3xl font-black text-foreground uppercase tracking-tight">Finalize & Bill Job</h2>
-                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Logistical data for automated invoice generation</p>
+                            <div className="space-y-0.5 sm:space-y-1">
+                                <h2 className="text-xl sm:text-3xl font-black text-foreground uppercase tracking-tight">Finalize & Bill</h2>
+                                <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em]">Logistical data for invoicing</p>
                             </div>
-                            <button onClick={() => setShowCompleteModal(false)} className="ml-auto h-14 w-14 rounded-2xl bg-muted border border-border text-muted-foreground hover:text-foreground transition-all flex items-center justify-center">
-                                <X className="h-7 w-7" />
+                            <button onClick={() => setShowCompleteModal(false)} className="ml-auto h-10 w-10 sm:h-14 sm:w-14 rounded-xl bg-muted border border-border text-muted-foreground hover:text-foreground transition-all flex items-center justify-center">
+                                <X className="h-5 w-5 sm:h-7 sm:w-7" />
                             </button>
                         </div>
 
                         {/* Scrollable Content */}
-                        <div className="overflow-y-auto custom-scrollbar space-y-10 pr-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-2">Total Pages Output</label>
+                        <div className="overflow-y-auto custom-scrollbar space-y-6 sm:space-y-10 pr-2 sm:pr-4">
+                            <div className="grid grid-cols-2 gap-4 sm:gap-8">
+                                <div className="space-y-2 sm:space-y-4">
+                                    <label className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.4em] ml-1 sm:ml-2">Total Pages</label>
                                     <input
                                         type="number"
-                                        className="w-full px-6 py-5 rounded-2xl bg-muted/50 border border-border focus:border-primary/50 outline-none font-black text-2xl focus:ring-4 focus:ring-primary/10 transition-all text-foreground text-center tracking-tighter"
+                                        className="w-full px-4 sm:px-6 py-3 sm:py-5 rounded-xl sm:rounded-2xl bg-muted/50 border border-border focus:border-primary/50 outline-none font-black text-lg sm:text-2xl focus:ring-4 focus:ring-primary/10 transition-all text-foreground text-center tracking-tighter"
                                         value={billingData.pages}
                                         onChange={(e) => setBillingData({ ...billingData, pages: parseInt(e.target.value) || 0 })}
                                     />
                                 </div>
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-2">Additional Copies</label>
+                                <div className="space-y-2 sm:space-y-4">
+                                    <label className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.4em] ml-1 sm:ml-2">Copies</label>
                                     <input
                                         type="number"
-                                        className="w-full px-6 py-5 rounded-2xl bg-muted/50 border border-border focus:border-primary/50 outline-none font-black text-2xl focus:ring-4 focus:ring-primary/10 transition-all text-foreground text-center tracking-tighter"
+                                        className="w-full px-4 sm:px-6 py-3 sm:py-5 rounded-xl sm:rounded-2xl bg-muted/50 border border-border focus:border-primary/50 outline-none font-black text-lg sm:text-2xl focus:ring-4 focus:ring-primary/10 transition-all text-foreground text-center tracking-tighter"
                                         value={billingData.additionalCopies}
                                         onChange={(e) => setBillingData({ ...billingData, additionalCopies: parseInt(e.target.value) || 0 })}
                                     />
@@ -562,21 +581,21 @@ export default function BookingManagementPage() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-2">Afterhours (Hrs)</label>
+                            <div className="grid grid-cols-2 gap-4 sm:gap-8">
+                                <div className="space-y-2 sm:space-y-4">
+                                    <label className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.4em] ml-1 sm:ml-2">Afterhours (Hrs)</label>
                                     <input
                                         type="number"
-                                        className="w-full px-6 py-5 rounded-2xl bg-muted/50 border border-border focus:border-primary/50 outline-none font-black text-2xl focus:ring-4 focus:ring-primary/10 transition-all text-foreground text-center tracking-tighter"
+                                        className="w-full px-4 sm:px-6 py-3 sm:py-5 rounded-xl sm:rounded-2xl bg-muted/50 border border-border focus:border-primary/50 outline-none font-black text-lg sm:text-2xl focus:ring-4 focus:ring-primary/10 transition-all text-foreground text-center tracking-tighter"
                                         value={billingData.afterHoursCount}
                                         onChange={(e) => setBillingData({ ...billingData, afterHoursCount: parseInt(e.target.value) || 0 })}
                                     />
                                 </div>
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-2">Wait Time (Hrs)</label>
+                                <div className="space-y-2 sm:space-y-4">
+                                    <label className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.4em] ml-1 sm:ml-2">Wait Time (Hrs)</label>
                                     <input
                                         type="number"
-                                        className="w-full px-6 py-5 rounded-2xl bg-muted/50 border border-border focus:border-primary/50 outline-none font-black text-2xl focus:ring-4 focus:ring-primary/10 transition-all text-foreground text-center tracking-tighter"
+                                        className="w-full px-4 sm:px-6 py-3 sm:py-5 rounded-xl sm:rounded-2xl bg-muted/50 border border-border focus:border-primary/50 outline-none font-black text-lg sm:text-2xl focus:ring-4 focus:ring-primary/10 transition-all text-foreground text-center tracking-tighter"
                                         value={billingData.waitTimeCount}
                                         onChange={(e) => setBillingData({ ...billingData, waitTimeCount: parseInt(e.target.value) || 0 })}
                                     />
@@ -584,62 +603,61 @@ export default function BookingManagementPage() {
                             </div>
 
                             {/* Live Invoice Preview */}
-                            <div className="bg-foreground/5 rounded-[2.5rem] p-8 border border-foreground/10 space-y-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-3">
+                            <div className="bg-foreground/5 rounded-[1.5rem] sm:rounded-[2.5rem] p-4 sm:p-8 border border-foreground/10 space-y-4 sm:space-y-6">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2 sm:gap-3">
                                         <Zap className="h-4 w-4 text-primary animate-pulse" />
-                                        <span className="text-[10px] font-black text-foreground uppercase tracking-[0.4em]">Real-time Calculation Matrix</span>
+                                        <span className="text-[8px] sm:text-[10px] font-black text-foreground uppercase tracking-[0.2em] sm:tracking-[0.4em]">Calculation Matrix</span>
                                     </div>
-                                    <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[8px] font-black uppercase tracking-widest border border-primary/20">Draft Invoice</span>
+                                    <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[7px] font-black uppercase tracking-widest border border-primary/20">Draft</span>
                                 </div>
 
-                                <div className="space-y-3">
+                                <div className="space-y-2 sm:space-y-3">
                                     {calculation.breakdown.map((item, idx) => (
                                         <div key={idx} className="flex justify-between items-center group">
                                             <div className="flex flex-col">
-                                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none">{item.label}</span>
-                                                <span className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-widest mt-1 group-hover:text-primary transition-colors">{item.detail}</span>
+                                                <span className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none">{item.label}</span>
+                                                <span className="text-[7px] sm:text-[8px] font-bold text-muted-foreground/50 uppercase tracking-widest mt-1 group-hover:text-primary transition-colors">{item.detail}</span>
                                             </div>
-                                            <span className="text-sm font-black text-foreground tracking-tighter">${item.value.toFixed(2)}</span>
+                                            <span className="text-xs sm:text-sm font-black text-foreground tracking-tighter">${item.value.toFixed(2)}</span>
                                         </div>
                                     ))}
                                 </div>
 
-                                <div className="pt-6 border-t border-foreground/10 flex justify-between items-end">
+                                <div className="pt-4 sm:pt-6 border-t border-foreground/10 flex justify-between items-end">
                                     <div>
-                                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1 opacity-50">Unified Logistics Sum</p>
-                                        <p className="text-4xl font-black text-foreground tracking-tighter leading-none">${calculation.total.toFixed(2)}</p>
+                                        <p className="text-[7px] sm:text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5 opacity-50">Logistics Sum</p>
+                                        <p className="text-2xl sm:text-4xl font-black text-foreground tracking-tighter leading-none">${calculation.total.toFixed(2)}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[8px] font-black text-emerald-500 uppercase tracking-widest mb-1">Status: Ready</p>
-                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] leading-none">Net 14 Protocol</p>
+                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.1em] leading-none">Net 14</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Modal Actions */}
-                        <div className="mt-12 pt-8 border-t border-border flex flex-col gap-4 flex-shrink-0">
+                        <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-border flex flex-col gap-3 sm:gap-4 flex-shrink-0">
                             {error && (
-                                <div className="px-6 py-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-[10px] font-black uppercase tracking-widest text-center">
+                                <div className="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-center">
                                     {error}
                                 </div>
                             )}
-                            <div className="flex items-center gap-5">
+                            <div className="flex flex-row items-center gap-3 sm:gap-5">
                                 <button
                                     onClick={() => {
                                         setShowCompleteModal(false)
                                         setError(null)
                                     }}
-                                    className="flex-1 py-5 px-8 rounded-2xl bg-muted border border-border text-muted-foreground font-black uppercase text-[10px] tracking-[0.3em] hover:text-foreground transition-all"
+                                    className="flex-1 py-3 sm:py-5 px-4 sm:px-8 rounded-xl sm:rounded-2xl bg-muted border border-border text-muted-foreground font-black uppercase text-[8px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.3em] hover:text-foreground transition-all"
                                 >
-                                    Abort Deployment
+                                    Abort
                                 </button>
                                 <button
                                     onClick={() => handleComplete(selectedBookingId!)}
-                                    className="luxury-button flex-[2] py-5 px-10 shadow-3xl"
+                                    className="luxury-button flex-[2] py-3 sm:py-5 px-6 sm:px-10 shadow-3xl h-auto"
                                 >
-                                    <span className="uppercase tracking-[0.3em] text-[10px] font-black">Generate Unified Invoice</span>
+                                    <span className="uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[8px] sm:text-[10px] font-black">Generate Invoice</span>
                                 </button>
                             </div>
                         </div>

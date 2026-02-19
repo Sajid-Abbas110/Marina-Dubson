@@ -164,7 +164,7 @@ export default function DashboardPage() {
     ]
 
     return (
-        <div className="max-w-[1400px] mx-auto p-5 lg:p-8 space-y-8 animate-fade-in">
+        <div className="max-w-[1400px] mx-auto px-4 py-6 lg:p-8 space-y-8 animate-fade-in">
             {/* ── Page header ── */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>

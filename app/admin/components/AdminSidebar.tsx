@@ -96,16 +96,6 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isOpen, setI
 
     return (
         <>
-            {/* Mobile toggle */}
-            <button
-                type="button"
-                className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-xl bg-card border border-border shadow-md hover:shadow-lg transition-all"
-                onClick={() => setIsOpen(!isOpen)}
-                aria-label="Toggle navigation"
-            >
-                {isOpen ? <X className="h-5 w-5 text-foreground" /> : <Menu className="h-5 w-5 text-foreground" />}
-            </button>
-
             {/* Sidebar */}
             <aside
                 className={`

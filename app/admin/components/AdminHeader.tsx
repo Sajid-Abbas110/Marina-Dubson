@@ -32,6 +32,7 @@ export default function AdminHeader() {
     const [user, setUser] = useState<any>(null)
     const [isProfileOpen, setIsProfileOpen] = useState(false)
     const [stats, setStats] = useState({ messages: 0, pendingBookings: 0 })
+    const [searchTerm, setSearchTerm] = useState('')
 
     // Determine page title
     const pageTitle = Object.entries(PAGE_TITLES).find(([key]) =>
@@ -77,14 +78,27 @@ export default function AdminHeader() {
         router.push('/')
     }
 
+    const handleSearch = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && searchTerm.trim()) {
+            router.push(`/admin/bookings?q=${encodeURIComponent(searchTerm.trim())}`)
+        }
+    }
+
     const initials = user
         ? `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`
         : 'MD'
 
     return (
         <header className="sticky top-0 z-[450] flex items-center justify-between gap-4
-                           h-[64px] px-4 sm:px-6
+                           h-[64px] px-3 sm:px-6
                            bg-card/90 backdrop-blur-md border-b border-border">
+
+            {/* Mobile Identifier */}
+            <div className="lg:hidden flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                    <span className="text-[10px] font-black uppercase tracking-tighter">ADM</span>
+                </div>
+            </div>
 
             {/* Page title — desktop */}
             <div className="hidden lg:block pl-2">
@@ -93,13 +107,19 @@ export default function AdminHeader() {
                 </h1>
             </div>
 
-            {/* Search — centred */}
-            <div className="flex-1 max-w-xs pl-14 lg:pl-0">
-                <div className="relative">
+            {/* Spacer */}
+            <div className="hidden xs:block flex-1" />
+
+            {/* Search — centred (hide on very small mobile) */}
+            <div className="hidden sm:flex flex-1 max-w-xs">
+                <div className="relative w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                     <input
                         type="text"
                         placeholder="Search…"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={handleSearch}
                         className="w-full bg-muted/60 border border-border rounded-lg
                                    pl-9 pr-3 py-1.5 text-sm text-foreground
                                    placeholder:text-muted-foreground
@@ -108,6 +128,9 @@ export default function AdminHeader() {
                     />
                 </div>
             </div>
+
+            {/* Spacer for small mobile */}
+            <div className="flex-1 sm:hidden" />
 
             {/* Right actions */}
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -130,7 +153,7 @@ export default function AdminHeader() {
                     <MessageSquare className="h-4 w-4" />
                     {stats.messages > 0 && (
                         <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-0.5 text-[10px] font-bold
-                                         bg-primary text-primary-foreground rounded-full flex items-center justify-center border border-card">
+                                     bg-primary text-primary-foreground rounded-full flex items-center justify-center border border-card">
                             {stats.messages}
                         </span>
                     )}
@@ -143,7 +166,7 @@ export default function AdminHeader() {
                     <Bell className="h-4 w-4" />
                     {stats.pendingBookings > 0 && (
                         <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-0.5 text-[10px] font-bold
-                                         bg-amber-500 text-white rounded-full flex items-center justify-center border border-card animate-pulse">
+                                     bg-amber-500 text-white rounded-full flex items-center justify-center border border-card animate-pulse">
                             {stats.pendingBookings}
                         </span>
                     )}
@@ -157,11 +180,11 @@ export default function AdminHeader() {
                     <button
                         onClick={() => setIsProfileOpen(v => !v)}
                         className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg
-                                   hover:bg-muted border border-transparent hover:border-border
-                                   transition-all duration-200"
+                               hover:bg-muted border border-transparent hover:border-border
+                               transition-all duration-200"
                     >
                         <div className="h-7 w-7 rounded-full flex items-center justify-center
-                                        text-white text-xs font-bold flex-shrink-0"
+                                    text-white text-xs font-bold flex-shrink-0"
                             style={{ background: 'hsl(210 60% 30%)' }}>
                             {initials}
                         </div>
@@ -180,8 +203,8 @@ export default function AdminHeader() {
                         <>
                             <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)} />
                             <div className="absolute right-0 top-full mt-2 w-56 z-50
-                                            bg-card border border-border rounded-xl shadow-xl
-                                            overflow-hidden animate-fade-in">
+                                        bg-card border border-border rounded-xl shadow-xl
+                                        overflow-hidden animate-fade-in">
                                 {/* User info */}
                                 <div className="px-4 py-3 border-b border-border">
                                     <p className="text-sm font-semibold text-foreground truncate">
@@ -216,7 +239,7 @@ export default function AdminHeader() {
                                     <button
                                         onClick={handleLogout}
                                         className="flex items-center gap-3 px-4 py-2.5 text-sm w-full text-left
-                                                   text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                                               text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
                                     >
                                         <LogOut className="h-4 w-4" />
                                         Sign out

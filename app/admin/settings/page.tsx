@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -21,14 +21,88 @@ import {
     Cloud,
     Power,
     CheckCircle2,
-    MessageSquare
+    MessageSquare,
+    Loader2
 } from 'lucide-react'
 
 export default function AdministrativeSettingsPage() {
     const [activeTab, setActiveTab] = useState('PROFILE')
+    const [user, setUser] = useState<any>(null)
+    const [loading, setLoading] = useState(true)
+    const [saving, setSaving] = useState(false)
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        company: '',
+        bio: '',
+        twoFactor: true,
+        encryption: true,
+        ipWhitelist: false,
+        cachePurge: true,
+        autoLinking: true,
+        directMessaging: true,
+        directoryVisibility: false
+    })
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const token = localStorage.getItem('token')
+                const res = await fetch('/api/auth/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                if (res.ok) {
+                    const data = await res.json()
+                    setUser(data.user)
+                    setFormData(prev => ({
+                        ...prev,
+                        firstName: data.user.firstName || '',
+                        lastName: data.user.lastName || '',
+                        email: data.user.email || '',
+                        company: data.user.company || 'Marina Dubson Stenographic',
+                        bio: data.user.bio || 'Directing the future of stenographic excellence.'
+                    }))
+                }
+            } catch (err) {
+                console.error('Failed to fetch profile:', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchProfile()
+    }, [])
+
+    const handleSave = async () => {
+        setSaving(true)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/profile', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(formData)
+            })
+            if (res.ok) {
+                const data = await res.json()
+                setUser(data.user)
+                localStorage.setItem('user', JSON.stringify(data.user))
+                alert('Profile updated successfully')
+            } else {
+                alert('Failed to update profile')
+            }
+        } catch (err) {
+            console.error('Save error:', err)
+            alert('An error occurred while saving')
+        } finally {
+            setSaving(false)
+        }
+    }
 
     return (
-        <div className="max-w-[1600px] w-[95%] mx-auto p-6 lg:p-12 space-y-12 pb-24 animate-in fade-in duration-700">
+        <div className="max-w-[1600px] mx-auto px-4 py-8 lg:p-12 space-y-12 animate-in fade-in duration-700">
             {/* Settings Header */}
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
                 <div className="space-y-2">
@@ -38,8 +112,13 @@ export default function AdministrativeSettingsPage() {
                     <p className="text-[10px] text-gray-500 font-medium tracking-wide">Fine-tuning the Global Node architecture & networking protocols.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button className="h-10 px-6 rounded-xl bg-gray-900 text-white font-black text-[9px] uppercase tracking-[0.2em] flex items-center gap-2 hover:bg-primary transition-all shadow-xl">
-                        Save System State <Zap className="h-4 w-4" />
+                    <button
+                        disabled={saving}
+                        onClick={handleSave}
+                        className="h-10 px-6 rounded-xl bg-gray-900 text-white font-black text-[9px] uppercase tracking-[0.2em] flex items-center gap-2 hover:bg-primary transition-all shadow-xl disabled:opacity-50"
+                    >
+                        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                        Save System State
                     </button>
                 </div>
             </div>
@@ -73,7 +152,7 @@ export default function AdministrativeSettingsPage() {
                             <div className="flex items-center gap-6 pb-8 border-b border-gray-100 dark:border-white/5">
                                 <div className="relative group">
                                     <div className="h-20 w-20 rounded-[2rem] bg-gradient-to-br from-primary to-emerald-800 flex items-center justify-center text-white text-2xl font-black shadow-xl relative z-10">
-                                        MD
+                                        {formData.firstName?.[0] || 'M'}{formData.lastName?.[0] || 'D'}
                                     </div>
                                     <div className="absolute inset-0 bg-primary rounded-[2rem] blur-xl opacity-20 animate-pulse"></div>
                                     <button className="absolute -bottom-2 -right-2 h-8 w-8 rounded-lg bg-white dark:bg-[#00120d] border border-gray-100 dark:border-white/10 shadow-lg flex items-center justify-center text-gray-400 hover:text-primary transition-all z-20">
@@ -81,21 +160,29 @@ export default function AdministrativeSettingsPage() {
                                     </button>
                                 </div>
                                 <div className="space-y-0.5">
-                                    <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Marina Dubson</h3>
-                                    <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.3em]">Chief Operational Officer • Node 01</p>
+                                    <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                                        {formData.firstName} {formData.lastName}
+                                    </h3>
+                                    <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.3em]">
+                                        {user?.role || 'ADMINISTRATOR'} • Node 01
+                                    </p>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <SettingsField label="Professional First Name" value="Marina" />
-                                <SettingsField label="Professional Last Name" value="Dubson" />
-                                <SettingsField label="Global Command Email" value="marina@marinadubson.com" />
+                                <SettingsField label="Professional First Name" value={formData.firstName} onChange={(v: string) => setFormData({ ...formData, firstName: v })} />
+                                <SettingsField label="Professional Last Name" value={formData.lastName} onChange={(v: string) => setFormData({ ...formData, lastName: v })} />
+                                <SettingsField label="Global Command Email" value={formData.email} disabled />
                                 <SettingsField label="Secure Mobile Link" value="+1 (917) 494-1859" />
                             </div>
 
                             <div className="space-y-3 pt-4">
                                 <h4 className="text-[9px] font-black text-gray-400 uppercase tracking-[0.4em]">Biography Asset</h4>
-                                <textarea className="luxury-input dark:bg-white/5 dark:text-white min-h-[120px] py-6 leading-relaxed resize-none text-xs" defaultValue="Directing the future of stenographic excellence. Managing a global network of elite reporters and legal firms with zero-latency synchronization." />
+                                <textarea
+                                    className="luxury-input dark:bg-white/5 dark:text-white min-h-[120px] py-6 leading-relaxed resize-none text-xs"
+                                    value={formData.bio}
+                                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                                />
                             </div>
                         </div>
                     )}
@@ -103,10 +190,34 @@ export default function AdministrativeSettingsPage() {
                     {activeTab === 'SECURITY' && (
                         <div className="glass-panel rounded-[3rem] p-12 space-y-10 animate-in slide-in-from-right-8 duration-500">
                             <div className="space-y-8">
-                                <SecurityToggle label="Two-Factor Fingerprint Auth" status="Enabled" icon={<Fingerprint className="text-primary" />} />
-                                <SecurityToggle label="End-to-End Transcript Encryption" status="Military Grade (AES-256)" icon={<Lock className="text-emerald-500" />} />
-                                <SecurityToggle label="IP Access Whitelist" status="Restricted to Certified Nodes" icon={<Shield className="text-purple-500" />} />
-                                <SecurityToggle label="Automatic Cache Purge" status="Every 24 Hours" icon={<Zap className="text-yellow-500" />} />
+                                <SecurityToggle
+                                    label="Two-Factor Fingerprint Auth"
+                                    status={formData.twoFactor ? "Enabled" : "Disabled"}
+                                    icon={<Fingerprint className="text-primary" />}
+                                    active={formData.twoFactor}
+                                    onClick={() => setFormData({ ...formData, twoFactor: !formData.twoFactor })}
+                                />
+                                <SecurityToggle
+                                    label="End-to-End Transcript Encryption"
+                                    status={formData.encryption ? "Military Grade (AES-256)" : "Standard"}
+                                    icon={<Lock className="text-emerald-500" />}
+                                    active={formData.encryption}
+                                    onClick={() => setFormData({ ...formData, encryption: !formData.encryption })}
+                                />
+                                <SecurityToggle
+                                    label="IP Access Whitelist"
+                                    status={formData.ipWhitelist ? "Restricted" : "Open Access"}
+                                    icon={<Shield className="text-purple-500" />}
+                                    active={formData.ipWhitelist}
+                                    onClick={() => setFormData({ ...formData, ipWhitelist: !formData.ipWhitelist })}
+                                />
+                                <SecurityToggle
+                                    label="Automatic Cache Purge"
+                                    status={formData.cachePurge ? "Every 24 Hours" : "Off"}
+                                    icon={<Zap className="text-yellow-500" />}
+                                    active={formData.cachePurge}
+                                    onClick={() => setFormData({ ...formData, cachePurge: !formData.cachePurge })}
+                                />
                             </div>
 
                             <div className="pt-10 border-t border-gray-100 dark:border-white/5 flex items-center justify-between">
@@ -129,9 +240,27 @@ export default function AdministrativeSettingsPage() {
                                 <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-1.5">Manage the links between legal clients and stenographic professionals.</p>
                             </div>
                             <div className="space-y-6">
-                                <SecurityToggle label="Automated Personnel Linking" status="Link clients to preferred reporters automatically" icon={<Globe className="text-primary" />} />
-                                <SecurityToggle label="Inter-Portal Direct Messaging" status="Allow direct comms between linked nodes" icon={<MessageSquare className="text-emerald-500" />} />
-                                <SecurityToggle label="Global Directory Visibility" status="Show reporter profiles to all verified clients" icon={<Database className="text-purple-500" />} />
+                                <SecurityToggle
+                                    label="Automated Personnel Linking"
+                                    status={formData.autoLinking ? "Active" : "Manual Only"}
+                                    icon={<Globe className="text-primary" />}
+                                    active={formData.autoLinking}
+                                    onClick={() => setFormData({ ...formData, autoLinking: !formData.autoLinking })}
+                                />
+                                <SecurityToggle
+                                    label="Inter-Portal Direct Messaging"
+                                    status={formData.directMessaging ? "Allowed" : "Disabled"}
+                                    icon={<MessageSquare className="text-emerald-500" />}
+                                    active={formData.directMessaging}
+                                    onClick={() => setFormData({ ...formData, directMessaging: !formData.directMessaging })}
+                                />
+                                <SecurityToggle
+                                    label="Global Directory Visibility"
+                                    status={formData.directoryVisibility ? "Visible" : "Hidden"}
+                                    icon={<Database className="text-purple-500" />}
+                                    active={formData.directoryVisibility}
+                                    onClick={() => setFormData({ ...formData, directoryVisibility: !formData.directoryVisibility })}
+                                />
                             </div>
                         </div>
                     )}
@@ -168,18 +297,26 @@ function SettingsTab({ icon, label, active, onClick }: any) {
     )
 }
 
-function SettingsField({ label, value }: any) {
+function SettingsField({ label, value, onChange, disabled }: any) {
     return (
         <div className="space-y-3">
             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">{label}</label>
-            <input className="luxury-input dark:bg-white/5 dark:text-white dark:border-white/10 dark:focus:ring-primary/20" defaultValue={value} />
+            <input
+                className="luxury-input dark:bg-white/5 dark:text-white dark:border-white/10 dark:focus:ring-primary/20 disabled:opacity-50"
+                value={value}
+                onChange={(e) => onChange?.(e.target.value)}
+                disabled={disabled}
+            />
         </div>
     )
 }
 
-function SecurityToggle({ label, status, icon }: any) {
+function SecurityToggle({ label, status, icon, active, onClick }: any) {
     return (
-        <div className="flex items-center justify-between p-6 rounded-[2rem] bg-gray-50/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-transparent hover:border-gray-100 dark:hover:border-white/10 hover:shadow-lg transition-all cursor-pointer group">
+        <div
+            onClick={onClick}
+            className="flex items-center justify-between p-6 rounded-[2rem] bg-gray-50/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-transparent hover:border-gray-100 dark:hover:border-white/10 hover:shadow-lg transition-all cursor-pointer group"
+        >
             <div className="flex items-center gap-6">
                 <div className="h-12 w-12 rounded-2xl bg-white dark:bg-white/5 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
                     {icon}
@@ -189,7 +326,7 @@ function SecurityToggle({ label, status, icon }: any) {
                     <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest mt-0.5">{status}</p>
                 </div>
             </div>
-            <div className="h-8 w-14 rounded-full bg-emerald-500 p-1 flex items-center justify-end relative shadow-inner">
+            <div className={`h-8 w-14 rounded-full p-1 flex items-center transition-all ${active ? 'bg-emerald-500 justify-end' : 'bg-gray-200 dark:bg-gray-700 justify-start'} relative shadow-inner`}>
                 <div className="h-6 w-6 rounded-full bg-white shadow-lg"></div>
             </div>
         </div>

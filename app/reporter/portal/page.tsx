@@ -155,7 +155,7 @@ export default function ReporterPortal() {
     if (!user) return null
 
     return (
-        <div className="animate-in fade-in duration-500">
+        <div className="animate-in fade-in duration-500 px-4 py-6 md:p-8">
             {/* Reporter Profile Hero */}
             <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8 animate-in fade-in slide-in-from-top-4 duration-700">
                 <div className="flex items-center gap-8">
@@ -206,7 +206,7 @@ export default function ReporterPortal() {
                                 onClick={() => { navigateTab('jobs'); setShouldScroll(true); }}
                             />
                         </div>
-                        <div className="glass-panel bg-card rounded-[3rem] p-10 shadow-xl border border-border">
+                        <div className="glass-panel bg-card rounded-[3rem] p-6 md:p-10 shadow-xl border border-border">
                             <div className="flex items-center justify-between mb-10">
                                 <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Active Deployments</h3>
                                 <button onClick={() => navigateTab('jobs')} className="text-[10px] font-black text-primary uppercase tracking-widest px-4 py-2 bg-primary/5 rounded-xl">View Schedule</button>
@@ -687,7 +687,7 @@ function MetricCard({ label, value, sub, color, onClick }: any) {
     return (
         <button
             onClick={onClick}
-            className="w-full text-left bg-card p-8 rounded-[2.5rem] border border-border shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all group outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full text-left bg-card p-6 md:p-8 rounded-[2.5rem] border border-border shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all group outline-none focus:ring-2 focus:ring-primary/20"
         >
             <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">{label}</h4>
             <div className="flex items-end gap-3">
@@ -703,37 +703,37 @@ function AssignmentItem({ id, client, location, date, time, type, onClick }: any
     return (
         <button
             onClick={onClick}
-            className="w-full group flex items-center justify-between p-6 bg-muted/20 hover:bg-card hover:shadow-2xl rounded-3xl transition-all border border-transparent hover:border-primary/20 cursor-pointer outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full group flex items-center justify-between p-4 md:p-6 bg-muted/20 hover:bg-card hover:shadow-2xl rounded-3xl transition-all border border-transparent hover:border-primary/20 cursor-pointer outline-none focus:ring-2 focus:ring-primary/20"
         >
-            <div className="flex items-center gap-8">
-                <div className="h-16 w-16 rounded-2xl bg-card border border-border flex flex-col items-center justify-center shadow-inner group-hover:bg-primary/5 group-hover:border-primary/20 transition-colors">
+            <div className="flex items-center gap-4 md:gap-8 overflow-hidden">
+                <div className="h-14 w-14 md:h-16 md:w-16 rounded-2xl bg-card border border-border flex flex-shrink-0 flex-col items-center justify-center shadow-inner group-hover:bg-primary/5 group-hover:border-primary/20 transition-colors">
                     <span className="text-[10px] font-black text-primary">{date.split(' ')[0]}</span>
-                    <span className="text-xl font-black text-foreground">{date.split(' ')[1]}</span>
+                    <span className="text-base md:text-xl font-black text-foreground">{date.split(' ')[1]}</span>
                 </div>
-                <div className="space-y-1 text-left">
-                    <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded-lg">{type.split(' ')[0]}</span>
-                        <h4 className="text-lg font-black text-foreground tracking-tight">{client}</h4>
+                <div className="space-y-1 text-left min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                        <span className="text-[9px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded-lg w-max">{type.split(' ')[0]}</span>
+                        <h4 className="text-base md:text-lg font-black text-foreground tracking-tight truncate">{client}</h4>
                     </div>
-                    <div className="flex items-center gap-4 text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground">
                         <div className="flex items-center gap-1.5">
                             <MapPin className="h-3 w-3" />
-                            <span className="text-[10px] font-black uppercase tracking-tight">{location}</span>
+                            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-tight">{location}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                             <Clock className="h-3 w-3" />
-                            <span className="text-[10px] font-black uppercase tracking-tight">{time}</span>
+                            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-tight">{time}</span>
                         </div>
                     </div>
                 </div>
             </div>
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4 md:gap-6 flex-shrink-0 ml-2">
                 <div className="text-right hidden sm:block">
                     <p className="text-xs font-black text-foreground">{id}</p>
                     <p className="text-[9px] font-bold text-muted-foreground uppercase">Assignment Code</p>
                 </div>
-                <div className="h-12 w-12 rounded-2xl bg-card border border-border flex items-center justify-center text-muted-foreground group-hover:text-primary group-hover:border-primary/50 group-hover:shadow-lg transition-all">
-                    <ChevronRight className="h-6 w-6" />
+                <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-card border border-border flex items-center justify-center text-muted-foreground group-hover:text-primary group-hover:border-primary/50 group-hover:shadow-lg transition-all">
+                    <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
                 </div>
             </div>
         </button>

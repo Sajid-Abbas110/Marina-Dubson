@@ -27,6 +27,8 @@ export default function ClientInvoicesPage() {
     const [invoices, setInvoices] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
 
+    const [searchQuery, setSearchQuery] = useState('')
+
     useEffect(() => {
         const fetchInvoices = async () => {
             try {
@@ -49,7 +51,15 @@ export default function ClientInvoicesPage() {
         fetchInvoices()
     }, [router])
 
-    const totalDue = invoices.filter(i => i.status === 'UNPAID').reduce((acc, curr) => acc + curr.total, 0)
+    const filteredInvoices = invoices.filter(inv => {
+        const q = searchQuery.toLowerCase()
+        return !searchQuery ||
+            inv.invoiceNumber?.toLowerCase().includes(q) ||
+            inv.booking?.proceedingType?.toLowerCase().includes(q) ||
+            inv.jobNumber?.toLowerCase().includes(q)
+    })
+
+    const totalDue = invoices.filter(i => i.status !== 'PAID').reduce((acc, curr) => acc + curr.total, 0)
 
     return (
         <div className="min-h-screen bg-background font-poppins text-foreground pb-20">
@@ -108,14 +118,19 @@ export default function ClientInvoicesPage() {
                         <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Invoice History</h3>
                         <div className="relative">
                             <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <input className="pl-12 pr-6 py-3 rounded-2xl bg-muted border-none outline-none text-[10px] font-black uppercase tracking-widest focus:ring-2 focus:ring-primary/20 text-foreground w-[240px]" placeholder="Search Voucher ID..." />
+                            <input
+                                className="pl-12 pr-6 py-3 rounded-2xl bg-muted border-none outline-none text-[10px] font-black uppercase tracking-widest focus:ring-2 focus:ring-primary/20 text-foreground w-[240px]"
+                                placeholder="Search Voucher ID..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
                         </div>
                     </div>
 
                     <div className="divide-y divide-border">
                         {loading ? (
                             <div className="p-20 text-center text-muted-foreground uppercase font-black text-xs tracking-widest">Synchronizing Ledger...</div>
-                        ) : invoices.map(inv => (
+                        ) : filteredInvoices.map(inv => (
                             <div
                                 key={inv.id}
                                 onClick={() => router.push(`/client/invoices/${inv.id}`)}

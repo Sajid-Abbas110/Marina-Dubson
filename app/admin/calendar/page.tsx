@@ -13,6 +13,8 @@ import {
     AlertTriangle,
     CheckCircle,
     ExternalLink,
+    Activity,
+    Zap,
 } from 'lucide-react'
 import {
     format,
@@ -286,59 +288,73 @@ export default function CalendarPage() {
                 </div>
 
                 {/* Day detail panel */}
-                <div className="space-y-4">
-                    <div className="md-card">
-                        <div className="flex items-center gap-3 mb-5">
-                            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                                <CalendarIcon className="h-4 w-4 text-primary" />
+                <div className="space-y-6">
+                    <div className="glass-panel p-6 sm:p-8 rounded-[2rem] bg-card border border-border shadow-xl hover:shadow-2xl transition-all group overflow-hidden relative">
+                        <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.1] transition-opacity group-hover:rotate-12 duration-700">
+                            <CalendarIcon className="h-24 w-24 text-primary" />
+                        </div>
+
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-inner">
+                                <Activity className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                                <h3 className="font-semibold text-foreground">{format(selectedDate, 'EEEE')}</h3>
-                                <p className="text-xs text-muted-foreground">{format(selectedDate, 'MMMM d, yyyy')}</p>
+                                <h3 className="text-sm font-black text-foreground uppercase tracking-tight leading-none mb-1">{format(selectedDate, 'EEEE')}</h3>
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{format(selectedDate, 'MMMM d, yyyy')}</p>
                             </div>
                         </div>
 
                         {selectedDayBookings.length === 0 ? (
-                            <div className="py-10 text-center">
-                                <CalendarIcon className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
-                                <p className="text-sm text-muted-foreground">No bookings on this day.</p>
+                            <div className="py-12 text-center space-y-4">
+                                <div className="h-16 w-16 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-2 border border-border/50">
+                                    <Clock className="h-8 w-8 text-muted-foreground/30" />
+                                </div>
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">No active nodes scheduled</p>
                                 <button
-                                    onClick={() => { handleDateChange(format(selectedDate, 'yyyy-MM-dd')); setFormData(f => ({ ...f, bookingDate: format(selectedDate, 'yyyy-MM-dd') })); setIsModalOpen(true) }}
-                                    className="mt-4 btn-primary text-xs px-4 py-2"
+                                    onClick={() => {
+                                        handleDateChange(format(selectedDate, 'yyyy-MM-dd'));
+                                        setFormData(f => ({ ...f, bookingDate: format(selectedDate, 'yyyy-MM-dd') }));
+                                        setIsModalOpen(true)
+                                    }}
+                                    className="luxury-button px-6 py-2.5 h-auto text-[9px] font-black uppercase tracking-widest"
                                 >
-                                    <Plus className="h-3.5 w-3.5 inline mr-1" />
-                                    Schedule
+                                    <Plus className="h-3.5 w-3.5 inline mr-2" />
+                                    Push Deployment
                                 </button>
                             </div>
                         ) : (
-                            <div className="space-y-3">
+                            <div className="space-y-4 relative z-10">
                                 {selectedDayBookings.map(b => (
-                                    <div key={b.id} className="p-3.5 rounded-xl border border-border bg-muted/30 hover:border-primary/30 transition-all group">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${STATUS_COLORS[b.bookingStatus] || STATUS_COLORS.SUBMITTED}`}>
+                                    <div key={b.id} className="p-4 rounded-2xl border border-border bg-muted/30 hover:bg-card hover:border-primary/30 hover:shadow-lg transition-all group/item">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border ${STATUS_COLORS[b.bookingStatus] || STATUS_COLORS.SUBMITTED}`}>
                                                 {b.bookingStatus}
                                             </span>
-                                            <span className="text-xs font-medium text-muted-foreground">{b.bookingTime}</span>
+                                            <div className="flex items-center gap-1.5 text-[9px] font-black text-muted-foreground uppercase tracking-wider">
+                                                <Clock className="h-3 w-3" />
+                                                {b.bookingTime}
+                                            </div>
                                         </div>
-                                        <p className="text-sm font-semibold text-foreground mb-1 line-clamp-2">{b.proceedingType}</p>
-                                        {b.contact && (
-                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
-                                                <User className="h-3 w-3" />
-                                                {b.contact.firstName} {b.contact.lastName}
-                                                {b.contact.companyName && ` — ${b.contact.companyName}`}
-                                            </div>
-                                        )}
-                                        {b.location && (
-                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                                <MapPin className="h-3 w-3" />
-                                                {b.location}
-                                            </div>
-                                        )}
+                                        <h4 className="text-xs font-black text-foreground uppercase tracking-tight mb-3 line-clamp-2 group-hover/item:text-primary transition-colors">{b.proceedingType}</h4>
+                                        <div className="space-y-2">
+                                            {b.contact && (
+                                                <div className="flex items-center gap-2 text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
+                                                    <User className="h-3 w-3 opacity-40" />
+                                                    <span className="truncate">{b.contact.firstName} {b.contact.lastName}</span>
+                                                </div>
+                                            )}
+                                            {b.location && (
+                                                <div className="flex items-center gap-2 text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
+                                                    <MapPin className="h-3 w-3 opacity-40" />
+                                                    <span className="truncate">{b.location}</span>
+                                                </div>
+                                            )}
+                                        </div>
                                         <button
                                             onClick={() => router.push(`/admin/bookings?id=${b.id}`)}
-                                            className="mt-3 w-full py-1.5 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all flex items-center justify-center gap-1.5 group-hover:border-primary/30"
+                                            className="mt-4 w-full py-2 rounded-xl border border-border text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary hover:border-primary/40 transition-all flex items-center justify-center gap-2 group-hover/item:bg-primary/5 group-hover/item:border-primary/20"
                                         >
-                                            View Booking <ExternalLink className="h-3 w-3" />
+                                            Inspect Node <ExternalLink className="h-3 w-3" />
                                         </button>
                                     </div>
                                 ))}
@@ -347,9 +363,13 @@ export default function CalendarPage() {
                     </div>
 
                     {/* Monthly summary */}
-                    <div className="md-card">
-                        <h4 className="text-sm font-semibold text-foreground mb-4">This Month</h4>
-                        <div className="space-y-2 text-sm">
+                    <div className="glass-panel p-6 sm:p-8 rounded-[2rem] bg-card border border-border shadow-xl relative overflow-hidden group">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-emerald-500 to-primary"></div>
+                        <div className="flex items-center justify-between mb-8">
+                            <h4 className="text-xs font-black text-foreground uppercase tracking-[0.2em]">Matrix Yield <span className="brand-gradient italic">Monthly</span></h4>
+                            <Activity className="h-4 w-4 text-primary opacity-30 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                        <div className="space-y-4">
                             {['ACCEPTED', 'CONFIRMED', 'PENDING', 'COMPLETED', 'CANCELLED'].map(s => {
                                 const count = bookings.filter(b => {
                                     const d = new Date(b.bookingDate)
@@ -357,11 +377,14 @@ export default function CalendarPage() {
                                 }).length
                                 if (count === 0) return null
                                 return (
-                                    <div key={s} className="flex items-center justify-between">
-                                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium border ${STATUS_COLORS[s]}`}>
+                                    <div key={s} className="flex items-center justify-between group/line">
+                                        <span className={`inline-flex items-center px-3 py-1 rounded-xl text-[8px] font-black uppercase tracking-widest border shadow-sm transition-all group-hover/line:translate-x-1 ${STATUS_COLORS[s]}`}>
                                             {s}
                                         </span>
-                                        <span className="font-semibold text-foreground text-xs">{count}</span>
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-px w-8 sm:w-16 bg-border group-hover/line:w-24 transition-all duration-500"></div>
+                                            <span className="font-black text-foreground text-base tracking-tighter">{count}</span>
+                                        </div>
                                     </div>
                                 )
                             })}

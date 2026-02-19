@@ -458,3 +458,49 @@
   animation: shimmer 1.5s ease-in-out infinite;
   @apply rounded-lg;
 }
+
+/* ─── Mobile App Experience Utilities ─── */
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* App-like card interactions */
+@media (max-width: 1024px) {
+
+  .stat-card,
+  .md-card,
+  .glass-panel,
+  .dashboard-card,
+  .ActivityRow {
+    @apply active:scale-[0.98] transition-all duration-200;
+    -webkit-tap-highlight-color: transparent;
+    @apply mb-4 w-full mx-0;
+  }
+
+  /* Hide scrollbars for an app feel */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  body {
+    overscroll-behavior-y: contain;
+    background: hsl(var(--background));
+    @apply overflow-x-hidden w-full;
+  }
+
+  /* Safe area padding for the content to not be hidden by the bottom nav */
+  main {
+    @apply pb-28 pt-2;
+  }
+
+  /* Fixed headers for mobile */
+  .mobile-header {
+    @apply sticky top-0 z-[100] bg-background/80 backdrop-blur-md pt-safe border-b border-border/50 px-4 py-3 flex items-center justify-between;
+  }
+}

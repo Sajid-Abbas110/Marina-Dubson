@@ -4,6 +4,7 @@ import { useState } from 'react'
 import PortalSidebar from './PortalSidebar'
 import PortalHeader from './PortalHeader'
 import ProtectedRoute from '@/app/components/ProtectedRoute'
+import MobileTabNavigation from '@/app/components/MobileTabNavigation'
 
 interface PortalLayoutProps {
     children: React.ReactNode
@@ -13,7 +14,6 @@ interface PortalLayoutProps {
 
 export default function PortalLayout({ children, navigation, userRole }: PortalLayoutProps) {
     const [isCollapsed, setIsCollapsed] = useState(false)
-    const [sidebarOpen, setSidebarOpen] = useState(false)
 
     return (
         <ProtectedRoute allowedRoles={[userRole]}>
@@ -24,8 +24,8 @@ export default function PortalLayout({ children, navigation, userRole }: PortalL
                     navigation={navigation}
                     isCollapsed={isCollapsed}
                     toggleCollapse={() => setIsCollapsed(!isCollapsed)}
-                    isOpen={sidebarOpen}
-                    setIsOpen={setSidebarOpen}
+                    isOpen={false}
+                    setIsOpen={() => { }}
                     userRole={userRole}
                 />
 
@@ -35,19 +35,16 @@ export default function PortalLayout({ children, navigation, userRole }: PortalL
                     transition-all duration-300 ease-in-out
                     ${isCollapsed ? 'lg:pl-[68px]' : 'lg:pl-60'}
                 `}>
-                    <PortalHeader userRole={userRole} onMenuClick={() => setSidebarOpen(true)} />
-                    <main className="flex-1 overflow-y-auto">
+                    <PortalHeader userRole={userRole} />
+                    <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
                         {children}
                     </main>
                 </div>
 
-                {/* Mobile overlay */}
-                {sidebarOpen && (
-                    <div
-                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 lg:hidden"
-                        onClick={() => setSidebarOpen(false)}
-                    />
-                )}
+                {/* Mobile Bottom Navigation */}
+                <MobileTabNavigation navigation={navigation} />
+
+                {/* Mobile overlay - Not needed without hamburger */}
             </div>
         </ProtectedRoute>
     )

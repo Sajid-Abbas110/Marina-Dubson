@@ -85,32 +85,32 @@ export default function BookingRequest({ services, onBookingCreated }: BookingRe
     }
 
     return (
-        <div className="glass-panel rounded-[2.5rem] p-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-10 pb-10 border-b border-gray-100 dark:border-white/5">
+        <div className="glass-panel rounded-[1.5rem] sm:rounded-[2.5rem] px-3 py-6 sm:p-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 pb-8 border-b border-gray-100 dark:border-white/5">
                 <div>
-                    <h2 className="text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tighter">
+                    <h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tighter">
                         Initiate <span className="text-primary italic">Booking</span>
                     </h2>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-2">Secure Deployment Request Protocol</p>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Request Protocol</p>
                 </div>
                 <div className="flex items-center gap-4">
-                    <div className="px-4 py-2 bg-primary/5 rounded-xl border border-primary/10">
+                    <div className="px-3 py-1.5 bg-primary/5 rounded-lg border border-primary/10">
                         <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                            <span className="text-[10px] font-black text-primary uppercase tracking-widest">System Ready</span>
+                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                            <span className="text-[9px] font-black text-primary uppercase tracking-widest">System Ready</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <div className="space-y-6">
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="space-y-5">
                     <div className="space-y-2">
                         <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Service Protocol</label>
                         <div className="relative">
                             <select
                                 required
-                                className="w-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl px-6 py-4 text-xs font-black uppercase text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all"
+                                className="w-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl px-5 py-3.5 text-xs font-black uppercase text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all"
                                 value={formData.serviceId}
                                 onChange={(e) => setFormData({ ...formData, serviceId: e.target.value })}
                             >
@@ -119,7 +119,7 @@ export default function BookingRequest({ services, onBookingCreated }: BookingRe
                                     <option key={s.id} value={s.id} className="dark:bg-[#001a12]">{s.serviceName}</option>
                                 ))}
                             </select>
-                            <Calendar className="absolute right-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                            <Calendar className="absolute right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                         </div>
                     </div>
 
@@ -127,20 +127,20 @@ export default function BookingRequest({ services, onBookingCreated }: BookingRe
                         <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Proceeding Detail</label>
                         <input
                             required
-                            className="w-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl px-6 py-4 text-xs font-black uppercase text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-300"
+                            className="w-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl px-5 py-3.5 text-xs font-black uppercase text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-300"
                             placeholder="E.G. DEPOSITION OF DR. SMITH"
                             value={formData.proceedingType}
                             onChange={(e) => setFormData({ ...formData, proceedingType: e.target.value })}
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Date Node</label>
                             <input
                                 type="date"
                                 required
-                                className="w-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl px-6 py-4 text-xs font-black uppercase text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                className="w-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl px-5 py-3.5 text-xs font-black uppercase text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                                 value={formData.bookingDate}
                                 onChange={(e) => setFormData({ ...formData, bookingDate: e.target.value })}
                             />
@@ -150,47 +150,47 @@ export default function BookingRequest({ services, onBookingCreated }: BookingRe
                             <div className="relative">
                                 <input
                                     required
-                                    className="w-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl px-6 py-4 text-xs font-black uppercase text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                    className="w-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl px-5 py-3.5 text-xs font-black uppercase text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                                     placeholder="09:00 AM"
                                     value={formData.bookingTime}
                                     onChange={(e) => setFormData({ ...formData, bookingTime: e.target.value })}
                                 />
-                                <Clock className="absolute right-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Clock className="absolute right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-5">
                     <div className="space-y-2">
-                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Location Coordinates</label>
+                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Coordinates</label>
                         <div className="relative">
                             <input
                                 required
-                                className="w-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl px-6 py-4 text-xs font-black uppercase text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-300"
-                                placeholder="ENTER ADDRESS OR DIGITAL ROOM URL"
+                                className="w-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl px-5 py-3.5 text-[10px] sm:text-xs font-black uppercase text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-300"
+                                placeholder="ADDRESS OR URL"
                                 value={formData.location}
                                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                             />
-                            <MapPin className="absolute right-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <MapPin className="absolute right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Appearance Vector</label>
-                        <div className="grid grid-cols-2 gap-4">
+                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Modal Vector</label>
+                        <div className="grid grid-cols-2 gap-3">
                             <button
                                 type="button"
-                                className={`py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest border transition-all ${formData.appearanceType === 'REMOTE'
+                                className={`py-3.5 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${formData.appearanceType === 'REMOTE'
                                     ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20 ring-4 ring-primary/10'
                                     : 'bg-transparent text-gray-400 border-gray-100 hover:border-gray-300'}`}
                                 onClick={() => setFormData({ ...formData, appearanceType: 'REMOTE' })}
                             >
-                                Remote Link
+                                Remote
                             </button>
                             <button
                                 type="button"
-                                className={`py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest border transition-all ${formData.appearanceType === 'IN_PERSON'
+                                className={`py-3.5 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${formData.appearanceType === 'IN_PERSON'
                                     ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20 ring-4 ring-primary/10'
                                     : 'bg-transparent text-gray-400 border-gray-100 hover:border-gray-300'}`}
                                 onClick={() => setFormData({ ...formData, appearanceType: 'IN_PERSON' })}
@@ -201,10 +201,10 @@ export default function BookingRequest({ services, onBookingCreated }: BookingRe
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Special Directives</label>
+                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Directives</label>
                         <textarea
-                            className="w-full h-32 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl px-6 py-4 text-xs font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-300 resize-none"
-                            placeholder="Enter any additional requirements, expedited delivery requests, or secure notes..."
+                            className="w-full h-24 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl px-5 py-3.5 text-xs font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-300 resize-none"
+                            placeholder="Additional requirements..."
                             value={formData.specialRequirements}
                             onChange={(e) => setFormData({ ...formData, specialRequirements: e.target.value })}
                         />
@@ -213,10 +213,10 @@ export default function BookingRequest({ services, onBookingCreated }: BookingRe
                     <button
                         type="submit"
                         disabled={saving}
-                        className="w-full py-5 bg-gray-900 dark:bg-white dark:text-black text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] shadow-xl hover:bg-primary dark:hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-4 disabled:opacity-50 group hover:-translate-y-1"
+                        className="w-full py-4 bg-gray-900 dark:bg-white dark:text-black text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-primary dark:hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50 group active:scale-[0.98]"
                     >
                         {saving ? 'Transmitting...' : (
-                            <>Authorize Deployment <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" /></>
+                            <><span className="hidden sm:inline">Authorize Deployment</span><span className="sm:hidden">Confirm Booking</span> <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" /></>
                         )}
                     </button>
                 </div>

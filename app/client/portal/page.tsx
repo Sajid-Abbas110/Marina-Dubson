@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { format } from 'date-fns'
@@ -48,6 +48,7 @@ export default function ClientPortal() {
     const [loading, setLoading] = useState(true)
     const [messageContent, setMessageContent] = useState('')
     const [sendingMessage, setSendingMessage] = useState(false)
+    const [docSearchQuery, setDocSearchQuery] = useState('')
 
     const [scrolled, setScrolled] = useState(false)
 
@@ -62,61 +63,62 @@ export default function ClientPortal() {
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
 
-    useEffect(() => {
-        const fetchAllData = async () => {
-            try {
-                const token = localStorage.getItem('token')
-                if (!token) {
-                    router.push('/login')
-                    return
-                }
-
-                const [userRes, bookingsRes, servicesRes, docsRes, invoicesRes, messagesRes] = await Promise.all([
-                    fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch('/api/bookings', { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch('/api/services', { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch('/api/documents', { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch('/api/invoices', { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch('/api/messages', { headers: { 'Authorization': `Bearer ${token}` } })
-                ])
-
-                const userData = await userRes.json()
-                const bookingsData = await bookingsRes.json()
-                const servicesData = await servicesRes.json()
-                const docsData = await docsRes.json()
-                const invoicesData = await invoicesRes.json()
-                const messagesData = await messagesRes.json()
-
-                if (userData.user) setUser(userData.user)
-
-                const userBookings = Array.isArray(bookingsData.bookings) ? bookingsData.bookings : []
-                setBookings(userBookings)
-                setServices(Array.isArray(servicesData.services) ? servicesData.services : [])
-                setDocuments(Array.isArray(docsData.documents) ? docsData.documents : [])
-                setInvoices(Array.isArray(invoicesData.invoices) ? invoicesData.invoices : [])
-
-                // Ensure messages are chronological (Oldest -> Newest)
-                setMessages(Array.isArray(messagesData.messages) ? messagesData.messages : [])
-
-                // Calculate stats
-                const active = userBookings.filter((b: any) => ['SUBMITTED', 'ACCEPTED', 'CONFIRMED'].includes(b.bookingStatus)).length
-                const unpaid = (invoicesData.invoices || [])
-                    .filter((i: any) => i.status !== 'PAID')
-                    .reduce((sum: number, i: any) => sum + i.total, 0)
-
-                setStats({
-                    active,
-                    unpaid,
-                    files: docsData.documents?.length || 0
-                })
-            } catch (error) {
-                console.error('Failed to fetch portal data:', error)
-            } finally {
-                setLoading(false)
+    const fetchAllData = useCallback(async (isPoll = false) => {
+        try {
+            const token = localStorage.getItem('token')
+            if (!token) {
+                if (!isPoll) router.push('/login')
+                return
             }
+
+            const [userRes, bookingsRes, servicesRes, docsRes, invoicesRes, messagesRes] = await Promise.all([
+                fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('/api/bookings', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('/api/services', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('/api/documents', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('/api/invoices', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('/api/messages', { headers: { 'Authorization': `Bearer ${token}` } })
+            ])
+
+            const userData = await userRes.json()
+            const bookingsData = await bookingsRes.json()
+            const servicesData = await servicesRes.json()
+            const docsData = await docsRes.json()
+            const invoicesData = await invoicesRes.json()
+            const messagesData = await messagesRes.json()
+
+            if (userData.user) setUser(userData.user)
+
+            const userBookings = Array.isArray(bookingsData.bookings) ? bookingsData.bookings : []
+            setBookings(userBookings)
+            setServices(Array.isArray(servicesData.services) ? servicesData.services : [])
+            setDocuments(Array.isArray(docsData.documents) ? docsData.documents : [])
+            setInvoices(Array.isArray(invoicesData.invoices) ? invoicesData.invoices : [])
+            setMessages(Array.isArray(messagesData.messages) ? messagesData.messages : [])
+
+            // Calculate stats
+            const active = userBookings.filter((b: any) => ['SUBMITTED', 'ACCEPTED', 'CONFIRMED'].includes(b.bookingStatus)).length
+            const unpaid = (invoicesData.invoices || [])
+                .filter((i: any) => i.status !== 'PAID')
+                .length
+
+            setStats({
+                active,
+                unpaid,
+                files: docsData.documents?.length || 0
+            })
+        } catch (error) {
+            console.error('Failed to fetch portal data:', error)
+        } finally {
+            if (!isPoll) setLoading(false)
         }
-        fetchAllData()
     }, [router])
+
+    useEffect(() => {
+        fetchAllData()
+        const interval = setInterval(() => fetchAllData(true), 60000)
+        return () => clearInterval(interval)
+    }, [fetchAllData])
 
     const handleSendMessage = async () => {
         if (!messageContent.trim()) return
@@ -163,7 +165,7 @@ export default function ClientPortal() {
 
 
     return (
-        <div className="p-5 lg:p-8 max-w-[1400px] mx-auto animate-fade-in">
+        <div className="px-2 sm:px-4 py-6 lg:p-8 max-w-[1400px] mx-auto animate-fade-in">
             {/* Welcome header */}
             <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -264,7 +266,7 @@ export default function ClientPortal() {
                         </div>
                         <div className="space-y-4">
                             {bookings.map(booking => (
-                                <div key={booking.id} className="p-8 rounded-3xl bg-card border border-border hover:border-primary/20 hover:shadow-2xl transition-all group">
+                                <div key={booking.id} className="p-5 md:p-8 rounded-3xl bg-card border border-border hover:border-primary/20 hover:shadow-2xl transition-all group">
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
                                         <div className="flex items-center gap-6">
                                             <div className="h-14 w-14 rounded-2xl bg-muted/50 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
@@ -302,7 +304,7 @@ export default function ClientPortal() {
 
                 {
                     activeTab === 'scheduler' && (
-                        <div className="glass-panel rounded-[2.5rem] p-10">
+                        <div className="glass-panel rounded-[1.5rem] sm:rounded-[2.5rem] px-3 py-6 sm:p-10">
                             {user.role === 'CLIENT' ? (
                                 <BookingRequest
                                     services={services}
@@ -332,15 +334,20 @@ export default function ClientPortal() {
 
                 {
                     activeTab === 'transcripts' && (
-                        <div className="glass-panel rounded-[2.5rem] p-10">
-                            <div className="flex items-center justify-between mb-8">
+                        <div className="glass-panel rounded-[2.5rem] p-5 md:p-10">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
                                 <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Vault Storage</h3>
-                                <div className="flex items-center gap-4">
-                                    <div className="relative">
+                                <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-3 w-full sm:w-auto">
+                                    <div className="relative flex-1 min-w-0">
                                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <input className="pl-12 pr-4 py-3 rounded-xl bg-muted/50 border border-border text-[10px] font-black uppercase outline-none focus:ring-2 focus:ring-primary/10" placeholder="Search Vault..." />
+                                        <input
+                                            className="w-full pl-11 pr-4 py-3 rounded-xl bg-muted/50 border border-border text-[10px] font-black uppercase outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
+                                            placeholder="Search Vault..."
+                                            value={docSearchQuery}
+                                            onChange={(e) => setDocSearchQuery(e.target.value)}
+                                        />
                                     </div>
-                                    <label className="h-10 px-4 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase flex items-center gap-2 cursor-pointer hover:opacity-90 transition-colors">
+                                    <label className="h-10 px-5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-2 cursor-pointer hover:opacity-90 transition-colors shrink-0">
                                         <Upload className="h-4 w-4" /> Upload
                                         <input
                                             type="file"
@@ -368,7 +375,7 @@ export default function ClientPortal() {
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {documents.length > 0 ? documents.map(doc => (
+                                {documents.filter(d => !docSearchQuery || d.fileName.toLowerCase().includes(docSearchQuery.toLowerCase())).length > 0 ? documents.filter(d => !docSearchQuery || d.fileName.toLowerCase().includes(docSearchQuery.toLowerCase())).map(doc => (
                                     <div key={doc.id} className="p-6 rounded-2xl bg-card border border-border flex items-center justify-between hover:shadow-xl hover:border-primary/10 transition-all cursor-pointer group">
                                         <div className="flex items-center gap-4">
                                             <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${doc.fileType.includes('pdf') ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'}`}>
@@ -398,7 +405,7 @@ export default function ClientPortal() {
 
                 {
                     activeTab === 'financials' && (
-                        <div className="glass-panel rounded-[2.5rem] p-10">
+                        <div className="glass-panel rounded-[2.5rem] p-5 md:p-10">
                             <div className="flex items-center justify-between mb-10">
                                 <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Financial Ledger</h3>
                                 <div className="flex items-center gap-3 px-6 py-3 bg-primary/5 rounded-2xl border border-primary/20">
@@ -587,31 +594,32 @@ function ActivityRow({ id, title, date, status, reporter, onClick }: any) {
     return (
         <div
             onClick={onClick}
-            className="group flex items-center justify-between p-6 hover:bg-primary/5 rounded-2xl transition-all border border-transparent hover:border-primary/10 cursor-pointer"
+            className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 hover:bg-primary/5 rounded-2xl transition-all border border-transparent hover:border-primary/10 cursor-pointer gap-4"
         >
-            <div className="flex items-center gap-6">
-                <div className="h-12 w-12 rounded-xl bg-card border border-border flex flex-col items-center justify-center shadow-sm">
-                    <span className="text-[9px] font-black text-muted-foreground">{date.split(' ')[0]}</span>
-                    <span className="text-[10px] font-black text-foreground">{date.split(' ')[1]} {date.split(' ')[2]}</span>
+            <div className="flex items-center gap-4 sm:gap-6 min-w-0">
+                <div className="flex-shrink-0 h-14 w-12 rounded-xl bg-card border border-border flex flex-col items-center justify-center shadow-sm overflow-hidden">
+                    <span className="text-[8px] font-black text-muted-foreground uppercase leading-none mb-0.5">{date.split(' ')[0]}</span>
+                    <span className="text-[14px] font-black text-foreground leading-none">{date.split(' ')[1].replace(',', '')}</span>
+                    <span className="text-[8px] font-bold text-muted-foreground/60 leading-none mt-0.5">{date.split(' ')[2]}</span>
                 </div>
-                <div>
-                    <h4 className="text-sm font-black text-foreground uppercase tracking-tight group-hover:text-primary transition-colors">{title}</h4>
-                    <div className="flex items-center gap-3 mt-0.5">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase">{id} • Processed via Global Node</p>
+                <div className="min-w-0 flex-1">
+                    <h4 className="text-sm font-black text-foreground uppercase tracking-tight group-hover:text-primary transition-colors truncate">{title}</h4>
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase shrink-0">{id} • Global Node</p>
                         {reporter && (
-                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-indigo-50 rounded-md border border-indigo-100">
-                                <User className="h-3 w-3 text-indigo-600" />
-                                <span className="text-[8px] font-black text-indigo-600 uppercase">Assigned: {reporter.firstName} {reporter.lastName}</span>
+                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-md border border-indigo-100 dark:border-indigo-800">
+                                <User className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                                <span className="text-[8px] font-black text-indigo-600 dark:text-indigo-400 uppercase">Assigned: {reporter.firstName} {reporter.lastName}</span>
                             </div>
                         )}
                     </div>
                 </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
                 {status === 'ACCEPTED' && (
                     <span className="text-[9px] font-black text-rose-600 uppercase tracking-widest animate-pulse">Action Required</span>
                 )}
-                <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-colors
+                <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-colors shrink-0
                     ${status === 'COMPLETED' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
                         status === 'ACCEPTED' ? 'bg-rose-600 text-white border-rose-600' :
                             status === 'CONFIRMED' ? 'bg-primary/5 text-primary border-primary/10' :
