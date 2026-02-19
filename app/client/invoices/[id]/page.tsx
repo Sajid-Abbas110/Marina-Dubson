@@ -161,6 +161,45 @@ export default function InvoiceDetailPage() {
                                 </tr>
                             )}
 
+                            {/* Videographer */}
+                            {invoice.videographerFee > 0 && (
+                                <tr>
+                                    <td className="py-6">
+                                        <p className="font-black text-gray-900 uppercase">Videography Services</p>
+                                        <p className="text-[10px] text-gray-500 font-medium italic">(+$1.25 per page)</p>
+                                    </td>
+                                    <td className="text-center font-bold">$1.25pp</td>
+                                    <td className="text-center font-bold">1</td>
+                                    <td className="text-right font-black text-gray-900">${invoice.videographerFee.toFixed(2)}</td>
+                                </tr>
+                            )}
+
+                            {/* Interpreter */}
+                            {invoice.interpreterFee > 0 && (
+                                <tr>
+                                    <td className="py-6">
+                                        <p className="font-black text-gray-900 uppercase">Interpreter Coordination</p>
+                                        <p className="text-[10px] text-gray-500 font-medium italic">(+$1.25 per page)</p>
+                                    </td>
+                                    <td className="text-center font-bold">$1.25pp</td>
+                                    <td className="text-center font-bold">1</td>
+                                    <td className="text-right font-black text-gray-900">${invoice.interpreterFee.toFixed(2)}</td>
+                                </tr>
+                            )}
+
+                            {/* Expert */}
+                            {invoice.expertFee > 0 && (
+                                <tr>
+                                    <td className="py-6">
+                                        <p className="font-black text-gray-900 uppercase">Expert Witness Logistics</p>
+                                        <p className="text-[10px] text-gray-500 font-medium italic">(+$2.00 per page)</p>
+                                    </td>
+                                    <td className="text-center font-bold">$2.00pp</td>
+                                    <td className="text-center font-bold">1</td>
+                                    <td className="text-right font-black text-gray-900">${invoice.expertFee.toFixed(2)}</td>
+                                </tr>
+                            )}
+
                             {/* Afterhours */}
                             {invoice.afterHoursFee > 0 && (
                                 <tr>
@@ -182,7 +221,7 @@ export default function InvoiceDetailPage() {
                                         <p className="text-[10px] text-gray-500 font-medium italic">($100 per hour after 30 minutes)</p>
                                     </td>
                                     <td className="text-center font-bold">$100.00/hr</td>
-                                    <td className="text-center font-bold">1</td>
+                                    <td className="text-center font-bold">{invoice.waitTimeCount || 1}</td>
                                     <td className="text-right font-black text-gray-900">${invoice.waitTimeFee.toFixed(2)}</td>
                                 </tr>
                             )}

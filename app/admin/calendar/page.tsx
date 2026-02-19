@@ -8,15 +8,11 @@ import {
     Clock,
     User,
     MapPin,
-    Search,
-    Filter,
-    ArrowRight,
-    Activity,
     Plus,
     X,
-    Briefcase,
-    Globe,
-    Zap
+    AlertTriangle,
+    CheckCircle,
+    ExternalLink,
 } from 'lucide-react'
 import {
     format,
@@ -28,19 +24,37 @@ import {
     endOfWeek,
     isSameMonth,
     isSameDay,
-    addDays,
-    eachDayOfInterval
+    eachDayOfInterval,
+    isPast,
+    isToday as isTodayFn,
 } from 'date-fns'
+import { useRouter } from 'next/navigation'
 
-export default function VisualCalendarPage() {
+const STATUS_COLORS: Record<string, string> = {
+    SUBMITTED: 'bg-slate-100  text-slate-700  border-slate-200',
+    PENDING: 'bg-amber-100  text-amber-700  border-amber-200',
+    MAYBE: 'bg-purple-100 text-purple-700 border-purple-200',
+    ACCEPTED: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    CONFIRMED: 'bg-blue-100   text-blue-700   border-blue-200',
+    DECLINED: 'bg-red-100    text-red-700    border-red-200',
+    CANCELLED: 'bg-slate-100  text-slate-500  border-slate-200',
+    COMPLETED: 'bg-teal-100   text-teal-700   border-teal-200',
+}
+
+const BLOCKED_STATUSES = ['ACCEPTED', 'CONFIRMED', 'COMPLETED']
+
+export default function CalendarPage() {
+    const router = useRouter()
     const [currentMonth, setCurrentMonth] = useState(new Date())
     const [selectedDate, setSelectedDate] = useState(new Date())
     const [bookings, setBookings] = useState<any[]>([])
-    const [loading, setLoading] = useState(true)
-    const [isModalOpen, setIsModalOpen] = useState(false)
     const [contacts, setContacts] = useState<any[]>([])
     const [services, setServices] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+    const [isModalOpen, setIsModalOpen] = useState(false)
     const [saving, setSaving] = useState(false)
+    const [saveError, setSaveError] = useState('')
+    const [conflictWarning, setConflictWarning] = useState('')
     const [formData, setFormData] = useState({
         contactId: '',
         serviceId: '',
@@ -50,404 +64,424 @@ export default function VisualCalendarPage() {
         location: '',
         venue: '',
         appearanceType: 'REMOTE' as 'REMOTE' | 'IN_PERSON',
-        specialRequirements: ''
+        specialRequirements: '',
     })
 
     const fetchBookings = async () => {
         try {
             const token = localStorage.getItem('token')
-            const res = await fetch('/api/bookings', {
-                headers: { 'Authorization': `Bearer ${token}` }
+            const res = await fetch('/api/bookings?limit=200', {
+                headers: { Authorization: `Bearer ${token}` },
             })
             const data = await res.json()
             setBookings(Array.isArray(data.bookings) ? data.bookings : [])
-        } catch (error) {
-            console.error('Failed to fetch bookings:', error)
+        } catch (e) {
+            console.error(e)
         } finally {
             setLoading(false)
         }
     }
 
-    const fetchSupportingData = async () => {
+    const fetchSupporting = async () => {
         try {
             const token = localStorage.getItem('token')
-            const [contactsRes, servicesRes] = await Promise.all([
-                fetch('/api/contacts', { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch('/api/services', { headers: { 'Authorization': `Bearer ${token}` } })
+            const [cr, sr] = await Promise.all([
+                fetch('/api/contacts', { headers: { Authorization: `Bearer ${token}` } }),
+                fetch('/api/services', { headers: { Authorization: `Bearer ${token}` } }),
             ])
-            const contactsData = await contactsRes.json()
-            const servicesData = await servicesRes.json()
-            setContacts(contactsData.contacts || [])
-            setServices(servicesData.services || [])
-        } catch (error) {
-            console.error('Failed to fetch supporting data:', error)
+            const cd = await cr.json()
+            const sd = await sr.json()
+            setContacts(cd.contacts || [])
+            setServices(sd.services || [])
+        } catch (e) {
+            console.error(e)
         }
     }
 
     useEffect(() => {
         fetchBookings()
-        fetchSupportingData()
+        fetchSupporting()
     }, [])
+
+    // Detect conflicts for a given date
+    const getDateBookings = (d: Date) =>
+        bookings.filter(b => b.bookingDate && isSameDay(new Date(b.bookingDate), d))
+
+    const isDateBlocked = (d: Date) =>
+        getDateBookings(d).some(b => BLOCKED_STATUSES.includes(b.bookingStatus))
+
+    const hasConflict = (d: Date) =>
+        getDateBookings(d).filter(b => BLOCKED_STATUSES.includes(b.bookingStatus)).length > 1
+
+    // On date change in form, check for conflicts
+    const handleDateChange = (dateStr: string) => {
+        setFormData(f => ({ ...f, bookingDate: dateStr }))
+        if (!dateStr) { setConflictWarning(''); return }
+        const d = new Date(dateStr)
+        const blocked = getDateBookings(d).filter(b => BLOCKED_STATUSES.includes(b.bookingStatus))
+        if (blocked.length > 0) {
+            setConflictWarning(
+                `⚠️ This date already has ${blocked.length} accepted/confirmed booking(s). Proceeding will create an overlap.`
+            )
+        } else {
+            setConflictWarning('')
+        }
+    }
 
     const handleCreateBooking = async (e: React.FormEvent) => {
         e.preventDefault()
         setSaving(true)
+        setSaveError('')
         try {
             const token = localStorage.getItem('token')
             const res = await fetch('/api/bookings', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    ...formData,
-                    bookingDate: format(new Date(formData.bookingDate), 'yyyy-MM-dd')
-                })
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify(formData),
             })
-
             if (res.ok) {
                 setIsModalOpen(false)
-                fetchBookings()
+                setConflictWarning('')
                 setFormData({
-                    contactId: '',
-                    serviceId: '',
-                    proceedingType: '',
-                    bookingDate: '',
-                    bookingTime: '',
-                    location: '',
-                    venue: '',
-                    appearanceType: 'REMOTE',
-                    specialRequirements: ''
+                    contactId: '', serviceId: '', proceedingType: '',
+                    bookingDate: '', bookingTime: '', location: '', venue: '',
+                    appearanceType: 'REMOTE', specialRequirements: '',
                 })
+                fetchBookings()
+            } else {
+                const err = await res.json()
+                setSaveError(err.error || 'Failed to create booking.')
             }
-        } catch (error) {
-            console.error('Failed to create booking:', error)
+        } catch (e: any) {
+            setSaveError(e.message || 'Server error.')
         } finally {
             setSaving(false)
         }
     }
 
-    const renderHeader = () => {
-        return (
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-8">
-                <div className="space-y-2">
-                    <h1 className="text-2xl font-black text-foreground tracking-tight uppercase leading-none">
-                        Bookings <span className="brand-gradient italic">Calendar</span>
-                    </h1>
-                    <p className="text-muted-foreground font-black uppercase text-[9px] tracking-[0.3em]">Visualizing the MD logistics pipeline.</p>
-                </div>
-                <div className="flex flex-wrap items-center gap-3 bg-muted/30 p-2 rounded-[2rem] border border-border shadow-sm">
-                    <button
-                        onClick={() => {
-                            setFormData({ ...formData, bookingDate: format(selectedDate, 'yyyy-MM-dd') })
-                            setIsModalOpen(true)
-                        }}
-                        className="luxury-button py-2.5 px-6 h-10 flex items-center gap-2 group"
-                    >
-                        <Plus className="h-3.5 w-3.5 group-hover:rotate-90 transition-transform" />
-                        <span className="text-[9px] font-black uppercase tracking-widest">Quick Deployment</span>
-                    </button>
-                    <div className="h-8 w-px bg-border hidden md:block mx-2"></div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                            className="h-10 w-10 rounded-xl flex items-center justify-center hover:bg-card hover:shadow-lg hover:border border-border transition-all text-muted-foreground hover:text-primary"
-                        >
-                            <ChevronLeft className="h-5 w-5" />
-                        </button>
-                        <div className="px-6 text-[11px] font-black text-foreground uppercase tracking-[0.3em] min-w-[200px] text-center">
-                            {format(currentMonth, 'MMMM yyyy')}
-                        </div>
-                        <button
-                            onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                            className="h-10 w-10 rounded-xl flex items-center justify-center hover:bg-card hover:shadow-lg hover:border border-border transition-all text-muted-foreground hover:text-primary"
-                        >
-                            <ChevronRight className="h-5 w-5" />
-                        </button>
-                    </div>
-                </div>
-            </div>
-        )
-    }
+    const allDays = eachDayOfInterval({
+        start: startOfWeek(startOfMonth(currentMonth)),
+        end: endOfWeek(endOfMonth(currentMonth)),
+    })
 
-    const renderDays = () => {
-        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-        return (
-            <div className="grid grid-cols-7 mb-6">
-                {days.map(day => (
-                    <div key={day} className="text-center text-[10px] font-black text-muted-foreground/50 uppercase tracking-[0.4em]">{day}</div>
-                ))}
-            </div>
-        )
-    }
-
-    const renderCells = () => {
-        const monthStart = startOfMonth(currentMonth)
-        const monthEnd = endOfMonth(monthStart)
-        const startDate = startOfWeek(monthStart)
-        const endDate = endOfWeek(monthEnd)
-
-        const allDays = eachDayOfInterval({ start: startDate, end: endDate })
-
-        return (
-            <div className="grid grid-cols-7 gap-px bg-border border border-border rounded-[2rem] overflow-hidden shadow-xl bg-border/20">
-                {allDays.map((d, i) => {
-                    const dayBookings = (bookings || []).filter(b => b && b.bookingDate && isSameDay(new Date(b.bookingDate), d))
-                    const hasConflict = dayBookings.length > 3
-                    const isToday = isSameDay(d, new Date())
-
-                    return (
-                        <div
-                            key={i}
-                            className={`min-h-[120px] p-3 bg-card transition-all hover:bg-primary/5 cursor-pointer group relative ${!isSameMonth(d, monthStart) ? 'opacity-20 grayscale' : ''}`}
-                            onClick={() => setSelectedDate(d)}
-                        >
-                            <div className="flex justify-between items-start mb-2">
-                                <span className={`text-[10px] font-black transition-all ${isToday ? 'text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 scale-105 shadow-[0_0_10px_rgba(var(--primary),0.2)]' : 'text-muted-foreground group-hover:text-foreground'}`}>
-                                    {format(d, 'd')}
-                                </span>
-                                {hasConflict && (
-                                    <div className="h-2 w-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)] animate-pulse"></div>
-                                )}
-                            </div>
-
-                            <div className="space-y-1.5">
-                                {dayBookings.slice(0, 3).map(b => (
-                                    <div
-                                        key={b.id}
-                                        className={`px-2.5 py-1.5 rounded-lg border text-[8px] font-black uppercase truncate transition-all ${b.bookingStatus === 'COMPLETED' ? 'bg-primary/5 border-primary/10 text-primary/80' :
-                                            b.bookingStatus === 'CONFIRMED' ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/10' :
-                                                b.bookingStatus === 'ACCEPTED' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
-                                                    'bg-muted border-border text-muted-foreground'
-                                            }`}
-                                    >
-                                        <div className="flex items-center gap-1.5">
-                                            <div className="h-1 w-1 rounded-full bg-current"></div>
-                                            {b.bookingTime.split(' ')[0]} {b.proceedingType}
-                                        </div>
-                                    </div>
-                                ))}
-                                {dayBookings.length > 3 && (
-                                    <div className="text-[8px] font-black text-muted-foreground/60 uppercase tracking-widest pl-2 pt-1 italic">
-                                        + {dayBookings.length - 3} Operations
-                                    </div>
-                                )}
-                            </div>
-
-                            {isSameDay(d, selectedDate) && (
-                                <div className="absolute inset-x-0 bottom-0 h-1 bg-primary shadow-[0_0_10px_rgba(var(--primary),0.8)]"></div>
-                            )}
-                        </div>
-                    )
-                })}
-            </div>
-        )
-    }
+    const selectedDayBookings = getDateBookings(selectedDate)
 
     return (
-        <div className="max-w-[1600px] w-[95%] mx-auto p-6 lg:p-12 space-y-12 pb-24 animate-in fade-in duration-700">
-            {renderHeader()}
+        <div className="p-6 lg:p-10 space-y-8 animate-in fade-in duration-500 pb-24">
 
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-12">
-                <div className="xl:col-span-3">
-                    {renderDays()}
-                    {renderCells()}
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-foreground">Booking Calendar</h1>
+                    <p className="text-sm text-muted-foreground mt-0.5">View and manage all scheduled court reporting engagements.</p>
                 </div>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => {
+                            setFormData(f => ({ ...f, bookingDate: format(selectedDate, 'yyyy-MM-dd') }))
+                            handleDateChange(format(selectedDate, 'yyyy-MM-dd'))
+                            setIsModalOpen(true)
+                        }}
+                        className="btn-primary flex items-center gap-2 text-sm"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Schedule Booking
+                    </button>
+                </div>
+            </div>
 
-                <div className="space-y-6">
-                    <div className="glass-panel rounded-[2rem] p-6 bg-card border border-border shadow-xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:scale-110 transition-transform duration-700">
-                            <Activity className="h-20 w-20 text-primary" />
-                        </div>
+            {/* Legend */}
+            <div className="flex flex-wrap items-center gap-3">
+                {Object.entries({ ACCEPTED: 'Accepted', CONFIRMED: 'Confirmed', COMPLETED: 'Completed', PENDING: 'Pending', SUBMITTED: 'Submitted' }).map(([k, v]) => (
+                    <span key={k} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${STATUS_COLORS[k]}`}>
+                        <span className="h-2 w-2 rounded-full bg-current" />
+                        {v}
+                    </span>
+                ))}
+                <span className="text-xs text-muted-foreground ml-2">
+                    🔴 = conflict (multiple accepted bookings on same day)
+                </span>
+            </div>
 
-                        <div className="flex items-center gap-4 mb-6 relative z-10">
-                            <div className="h-10 w-10 rounded-xl bg-muted border border-border flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500">
-                                <CalendarIcon className="h-5 w-5" />
-                            </div>
-                            <div className="space-y-0.5">
-                                <h3 className="text-lg font-black text-foreground uppercase tracking-tight">{format(selectedDate, 'MMM dd, yyyy')}</h3>
-                                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.3em] leading-none">Daily Tactical Briefing</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-5 relative z-10">
-                            {(bookings || []).filter(b => b && b.bookingDate && isSameDay(new Date(b.bookingDate), selectedDate)).map(b => (
-                                <div key={b.id} className="p-6 rounded-[2rem] bg-muted/30 border border-border hover:border-primary/20 transition-all group/item shadow-sm">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <span className={`px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-[0.2em] border ${b.bookingStatus === 'COMPLETED' ? 'bg-primary/10 text-primary border-primary/20' :
-                                            b.bookingStatus === 'ACCEPTED' ? 'bg-primary text-primary-foreground border-primary' :
-                                                'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                                            }`}>
-                                            {b.bookingStatus}
-                                        </span>
-                                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest bg-card px-2 py-0.5 rounded-md border border-border">{b.bookingTime}</span>
-                                    </div>
-                                    <h5 className="text-sm font-black text-foreground uppercase mb-4 line-clamp-2 tracking-tight group-hover/item:text-primary transition-colors">{b.proceedingType}</h5>
-
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="h-8 w-8 rounded-full bg-card border border-border flex items-center justify-center">
-                                            <User className="h-4 w-4 text-primary" />
-                                        </div>
-                                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{b.contact?.firstName} {b.contact?.lastName}</span>
-                                    </div>
-
-                                    <button className="w-full py-3.5 rounded-xl bg-card border border-border text-[9px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 group-hover/item:bg-primary group-hover/item:text-primary-foreground group-hover/item:border-primary transition-all shadow-sm">
-                                        Decrypt Full Specs <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
-                                    </button>
-                                </div>
-                            ))}
-                            {((bookings || []).filter(b => b && b.bookingDate && isSameDay(new Date(b.bookingDate), selectedDate))).length === 0 && (
-                                <div className="py-20 text-center space-y-6">
-                                    <div className="h-20 w-20 rounded-[2.5rem] bg-muted/50 border border-dashed border-border flex items-center justify-center mx-auto text-muted-foreground/20">
-                                        <CalendarIcon className="h-10 w-10" />
-                                    </div>
-                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.5em] leading-relaxed">No active signals<br />on this temporal node.</p>
-                                </div>
-                            )}
-                        </div>
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+                {/* Calendar grid */}
+                <div className="xl:col-span-3 space-y-4">
+                    {/* Month nav */}
+                    <div className="flex items-center justify-between">
+                        <button
+                            onClick={() => setCurrentMonth(m => subMonths(m, 1))}
+                            className="h-9 w-9 rounded-lg border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <h2 className="text-base font-semibold text-foreground">
+                            {format(currentMonth, 'MMMM yyyy')}
+                        </h2>
+                        <button
+                            onClick={() => setCurrentMonth(m => addMonths(m, 1))}
+                            className="h-9 w-9 rounded-lg border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all"
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </button>
                     </div>
 
-                    <div className="glass-panel rounded-[3rem] p-10 bg-card border border-border relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-8 opacity-[0.05] group-hover:scale-125 transition-transform duration-1000">
-                            <Zap className="h-20 w-20 text-primary" />
+                    {/* Days of week */}
+                    <div className="grid grid-cols-7 mb-1">
+                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+                            <div key={d} className="text-center text-xs font-semibold text-muted-foreground py-2">{d}</div>
+                        ))}
+                    </div>
+
+                    {/* Calendar cells */}
+                    <div className="grid grid-cols-7 gap-px bg-border border border-border rounded-xl overflow-hidden">
+                        {allDays.map((d, i) => {
+                            const dayBookings = getDateBookings(d)
+                            const blocked = isDateBlocked(d)
+                            const conflict = hasConflict(d)
+                            const isSelectedDay = isSameDay(d, selectedDate)
+                            const isCurrentMonth = isSameMonth(d, currentMonth)
+                            const today = isTodayFn(d)
+
+                            return (
+                                <div
+                                    key={i}
+                                    onClick={() => setSelectedDate(d)}
+                                    className={`min-h-[90px] md:min-h-[110px] p-2 bg-card transition-all cursor-pointer
+                                        ${!isCurrentMonth ? 'opacity-30' : ''}
+                                        ${isSelectedDay ? 'ring-2 ring-inset ring-primary/50' : 'hover:bg-primary/5'}
+                                        ${blocked ? 'border-l-2 border-l-emerald-500' : ''}
+                                    `}
+                                >
+                                    <div className="flex justify-between items-start mb-1">
+                                        <span className={`text-xs font-semibold leading-none
+                                            ${today ? 'bg-primary text-primary-foreground rounded-full h-5 w-5 flex items-center justify-center text-[10px]' : 'text-muted-foreground'}
+                                        `}>
+                                            {format(d, 'd')}
+                                        </span>
+                                        {conflict && (
+                                            <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" title="Conflict: multiple accepted bookings" />
+                                        )}
+                                        {blocked && !conflict && (
+                                            <span className="h-2 w-2 rounded-full bg-emerald-500" title="Date is booked" />
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-0.5">
+                                        {dayBookings.slice(0, 3).map(b => (
+                                            <div
+                                                key={b.id}
+                                                className={`px-1.5 py-0.5 rounded text-[10px] font-medium border truncate ${STATUS_COLORS[b.bookingStatus] || STATUS_COLORS.SUBMITTED}`}
+                                            >
+                                                {b.bookingTime?.split(' ')[0]} {b.proceedingType?.substring(0, 14)}
+                                            </div>
+                                        ))}
+                                        {dayBookings.length > 3 && (
+                                            <p className="text-[10px] text-muted-foreground pl-1">+{dayBookings.length - 3} more</p>
+                                        )}
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+
+                {/* Day detail panel */}
+                <div className="space-y-4">
+                    <div className="md-card">
+                        <div className="flex items-center gap-3 mb-5">
+                            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <CalendarIcon className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-foreground">{format(selectedDate, 'EEEE')}</h3>
+                                <p className="text-xs text-muted-foreground">{format(selectedDate, 'MMMM d, yyyy')}</p>
+                            </div>
                         </div>
-                        <div className="relative z-10 space-y-4">
-                            <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6">
-                                <Activity className="h-6 w-6" />
+
+                        {selectedDayBookings.length === 0 ? (
+                            <div className="py-10 text-center">
+                                <CalendarIcon className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
+                                <p className="text-sm text-muted-foreground">No bookings on this day.</p>
+                                <button
+                                    onClick={() => { handleDateChange(format(selectedDate, 'yyyy-MM-dd')); setFormData(f => ({ ...f, bookingDate: format(selectedDate, 'yyyy-MM-dd') })); setIsModalOpen(true) }}
+                                    className="mt-4 btn-primary text-xs px-4 py-2"
+                                >
+                                    <Plus className="h-3.5 w-3.5 inline mr-1" />
+                                    Schedule
+                                </button>
                             </div>
-                            <h4 className="text-sm font-black text-foreground uppercase tracking-[0.4em]">Grid Load</h4>
-                            <p className="text-[11px] text-muted-foreground font-medium uppercase leading-relaxed tracking-tight">Node saturation is currently at <span className="text-primary font-black">82% capacity</span> for the upcoming operational cycle.</p>
-                            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden mt-4">
-                                <div className="h-full bg-primary w-[82%] shadow-[0_0_10px_rgba(var(--primary),0.5)]"></div>
+                        ) : (
+                            <div className="space-y-3">
+                                {selectedDayBookings.map(b => (
+                                    <div key={b.id} className="p-3.5 rounded-xl border border-border bg-muted/30 hover:border-primary/30 transition-all group">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${STATUS_COLORS[b.bookingStatus] || STATUS_COLORS.SUBMITTED}`}>
+                                                {b.bookingStatus}
+                                            </span>
+                                            <span className="text-xs font-medium text-muted-foreground">{b.bookingTime}</span>
+                                        </div>
+                                        <p className="text-sm font-semibold text-foreground mb-1 line-clamp-2">{b.proceedingType}</p>
+                                        {b.contact && (
+                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
+                                                <User className="h-3 w-3" />
+                                                {b.contact.firstName} {b.contact.lastName}
+                                                {b.contact.companyName && ` — ${b.contact.companyName}`}
+                                            </div>
+                                        )}
+                                        {b.location && (
+                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                                <MapPin className="h-3 w-3" />
+                                                {b.location}
+                                            </div>
+                                        )}
+                                        <button
+                                            onClick={() => router.push(`/admin/bookings?id=${b.id}`)}
+                                            className="mt-3 w-full py-1.5 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all flex items-center justify-center gap-1.5 group-hover:border-primary/30"
+                                        >
+                                            View Booking <ExternalLink className="h-3 w-3" />
+                                        </button>
+                                    </div>
+                                ))}
                             </div>
+                        )}
+                    </div>
+
+                    {/* Monthly summary */}
+                    <div className="md-card">
+                        <h4 className="text-sm font-semibold text-foreground mb-4">This Month</h4>
+                        <div className="space-y-2 text-sm">
+                            {['ACCEPTED', 'CONFIRMED', 'PENDING', 'COMPLETED', 'CANCELLED'].map(s => {
+                                const count = bookings.filter(b => {
+                                    const d = new Date(b.bookingDate)
+                                    return isSameMonth(d, currentMonth) && b.bookingStatus === s
+                                }).length
+                                if (count === 0) return null
+                                return (
+                                    <div key={s} className="flex items-center justify-between">
+                                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium border ${STATUS_COLORS[s]}`}>
+                                            {s}
+                                        </span>
+                                        <span className="font-semibold text-foreground text-xs">{count}</span>
+                                    </div>
+                                )
+                            })}
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Booking Modal */}
+            {/* Create Booking Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 lg:pl-80 animate-in fade-in duration-300">
-                    <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
-                    <div className="relative w-full max-w-2xl bg-card rounded-[2.5rem] shadow-3xl border border-border overflow-hidden p-8 custom-scrollbar max-h-[90vh]">
-                        <div className="flex items-center justify-between mb-8">
-                            <div className="flex items-center gap-6">
-                                <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-xl">
-                                    <Plus className="h-6 w-6" />
-                                </div>
-                                <div className="space-y-0.5">
-                                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight leading-none">Node Initialization</h3>
-                                    <p className="text-[9px] uppercase font-black tracking-[0.3em] text-muted-foreground">Logistics Cluster for {format(selectedDate, 'MMM dd, yyyy')}</p>
-                                </div>
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 lg:pl-72">
+                    <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
+                    <div className="relative w-full max-w-xl bg-card rounded-2xl shadow-2xl border border-border overflow-hidden flex flex-col max-h-[90vh]">
+
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
+                            <div>
+                                <h3 className="font-bold text-foreground">Schedule Booking</h3>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                    {formData.bookingDate ? format(new Date(formData.bookingDate), 'MMMM d, yyyy') : 'Select a date'}
+                                </p>
                             </div>
-                            <button onClick={() => setIsModalOpen(false)} className="h-14 w-14 rounded-2xl bg-muted border border-border text-muted-foreground hover:text-foreground transition-all flex items-center justify-center">
-                                <X className="h-7 w-7" />
+                            <button onClick={() => setIsModalOpen(false)} className="h-8 w-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground">
+                                <X className="h-4 w-4" />
                             </button>
                         </div>
 
-                        <form onSubmit={handleCreateBooking} className="space-y-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-2">Entity Target</label>
-                                    <select
-                                        required
-                                        className="w-full bg-muted/50 border border-border rounded-2xl px-6 py-4.5 text-xs font-black uppercase outline-none focus:ring-4 focus:ring-primary/10 text-foreground appearance-none cursor-pointer"
-                                        value={formData.contactId}
-                                        onChange={(e) => setFormData({ ...formData, contactId: e.target.value })}
-                                    >
-                                        <option value="">Select Identity</option>
-                                        {contacts.map(c => (
-                                            <option key={c.id} value={c.id}>{c.companyName || `${c.firstName} ${c.lastName}`}</option>
+                        <div className="overflow-y-auto flex-1 px-6 py-5">
+                            <form onSubmit={handleCreateBooking} id="booking-form" className="space-y-5">
+
+                                {conflictWarning && (
+                                    <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+                                        <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                                        {conflictWarning}
+                                    </div>
+                                )}
+
+                                {saveError && (
+                                    <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
+                                        {saveError}
+                                    </div>
+                                )}
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-semibold text-muted-foreground">Client</label>
+                                        <select required className="w-full border border-border bg-background rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                            value={formData.contactId} onChange={e => setFormData(f => ({ ...f, contactId: e.target.value }))}>
+                                            <option value="">Select client…</option>
+                                            {contacts.map(c => (
+                                                <option key={c.id} value={c.id}>{c.companyName || `${c.firstName} ${c.lastName}`}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-semibold text-muted-foreground">Service</label>
+                                        <select required className="w-full border border-border bg-background rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                            value={formData.serviceId} onChange={e => setFormData(f => ({ ...f, serviceId: e.target.value }))}>
+                                            <option value="">Select service…</option>
+                                            {services.map(s => (
+                                                <option key={s.id} value={s.id}>{s.serviceName}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="sm:col-span-2 space-y-1.5">
+                                        <label className="text-xs font-semibold text-muted-foreground">Proceeding Type / Case Name</label>
+                                        <input required className="w-full border border-border bg-background rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                            placeholder="e.g. Deposition of Dr. John Smith"
+                                            value={formData.proceedingType} onChange={e => setFormData(f => ({ ...f, proceedingType: e.target.value }))} />
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-semibold text-muted-foreground">Date</label>
+                                        <input required type="date" className="w-full border border-border bg-background rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                            value={formData.bookingDate} onChange={e => handleDateChange(e.target.value)} />
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-semibold text-muted-foreground">Time</label>
+                                        <input required className="w-full border border-border bg-background rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                            placeholder="e.g. 10:00 AM EST" value={formData.bookingTime} onChange={e => setFormData(f => ({ ...f, bookingTime: e.target.value }))} />
+                                    </div>
+
+                                    <div className="sm:col-span-2 space-y-1.5">
+                                        <label className="text-xs font-semibold text-muted-foreground">Location / Venue</label>
+                                        <input className="w-full border border-border bg-background rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                            placeholder="e.g. 123 Main St, New York — or — Zoom"
+                                            value={formData.location} onChange={e => setFormData(f => ({ ...f, location: e.target.value }))} />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-muted-foreground">Appearance Type</label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {(['REMOTE', 'IN_PERSON'] as const).map(type => (
+                                            <button key={type} type="button"
+                                                className={`py-2.5 rounded-xl text-sm font-semibold border transition-all ${formData.appearanceType === type ? 'bg-primary text-primary-foreground border-primary shadow' : 'bg-background border-border text-muted-foreground hover:border-primary/40'}`}
+                                                onClick={() => setFormData(f => ({ ...f, appearanceType: type }))}>
+                                                {type === 'REMOTE' ? 'Remote / Zoom' : 'In-Person'}
+                                            </button>
                                         ))}
-                                    </select>
+                                    </div>
                                 </div>
 
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-2">Service Node</label>
-                                    <select
-                                        required
-                                        className="w-full bg-muted/50 border border-border rounded-2xl px-6 py-4.5 text-xs font-black uppercase outline-none focus:ring-4 focus:ring-primary/10 text-foreground appearance-none cursor-pointer"
-                                        value={formData.serviceId}
-                                        onChange={(e) => setFormData({ ...formData, serviceId: e.target.value })}
-                                    >
-                                        <option value="">Select Protocol</option>
-                                        {services.map(s => (
-                                            <option key={s.id} value={s.id}>{s.serviceName}</option>
-                                        ))}
-                                    </select>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-muted-foreground">Special Requirements</label>
+                                    <textarea className="w-full border border-border bg-background rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
+                                        rows={3} placeholder="Any special instructions, exhibits, or notes…"
+                                        value={formData.specialRequirements} onChange={e => setFormData(f => ({ ...f, specialRequirements: e.target.value }))} />
                                 </div>
+                            </form>
+                        </div>
 
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-2">Proceeding Vector</label>
-                                    <input
-                                        required
-                                        className="w-full bg-muted/50 border border-border rounded-2xl px-6 py-4.5 text-xs font-black uppercase outline-none focus:ring-4 focus:ring-primary/10 text-foreground placeholder:text-muted-foreground/30"
-                                        placeholder="E.G. DEPOSITION OF DR. SMITH"
-                                        value={formData.proceedingType}
-                                        onChange={(e) => setFormData({ ...formData, proceedingType: e.target.value })}
-                                    />
-                                </div>
-
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-2">Temporal Marker</label>
-                                    <input
-                                        required
-                                        className="w-full bg-muted/50 border border-border rounded-2xl px-6 py-4.5 text-xs font-black uppercase outline-none focus:ring-4 focus:ring-primary/10 text-foreground placeholder:text-muted-foreground/30"
-                                        placeholder="E.G. 10:00 AM EST"
-                                        value={formData.bookingTime}
-                                        onChange={(e) => setFormData({ ...formData, bookingTime: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-2">Appearance Type</label>
-                                <div className="flex gap-4">
-                                    <button
-                                        type="button"
-                                        className={`flex-1 py-4.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] border transition-all ${formData.appearanceType === 'REMOTE' ? 'bg-primary text-primary-foreground border-primary shadow-xl shadow-primary/20' : 'bg-muted border-border text-muted-foreground hover:border-primary/20'}`}
-                                        onClick={() => setFormData({ ...formData, appearanceType: 'REMOTE' })}
-                                    >
-                                        Remote Broadcast
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={`flex-1 py-4.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] border transition-all ${formData.appearanceType === 'IN_PERSON' ? 'bg-primary text-primary-foreground border-primary shadow-xl shadow-primary/20' : 'bg-muted border-border text-muted-foreground hover:border-primary/20'}`}
-                                        onClick={() => setFormData({ ...formData, appearanceType: 'IN_PERSON' })}
-                                    >
-                                        On-Site Deployment
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-2">Logistics Meta Data</label>
-                                <textarea
-                                    className="w-full bg-muted/50 border border-border rounded-2xl px-6 py-6 text-xs font-black uppercase outline-none focus:ring-4 focus:ring-primary/10 text-foreground min-h-[120px] resize-none placeholder:text-muted-foreground/30"
-                                    placeholder="ENTER SPECIAL INSTRUCTIONS OR EXHIBIT PROTOCOLS..."
-                                    value={formData.specialRequirements}
-                                    onChange={(e) => setFormData({ ...formData, specialRequirements: e.target.value })}
-                                />
-                            </div>
-
-                            <div className="mt-12">
-                                <button
-                                    type="submit"
-                                    disabled={saving}
-                                    className="w-full luxury-button py-6 shadow-3xl flex items-center justify-center gap-4 group"
-                                >
-                                    {saving ? (
-                                        <div className="h-6 w-6 border-3 border-primary-foreground/20 border-t-primary-foreground rounded-full animate-spin"></div>
-                                    ) : (
-                                        <>
-                                            <span className="uppercase tracking-[0.4em] text-[10px] font-black">Authorize Schedule Deployment</span>
-                                            <Globe className="h-5 w-5 group-hover:rotate-180 transition-transform duration-700" />
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                        </form>
+                        <div className="flex items-center gap-3 px-6 py-4 border-t border-border flex-shrink-0">
+                            <button onClick={() => setIsModalOpen(false)} className="btn-secondary flex-1 text-sm">Cancel</button>
+                            <button type="submit" form="booking-form" disabled={saving} className="btn-primary flex-1 text-sm">
+                                {saving ? 'Scheduling…' : 'Confirm Booking'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

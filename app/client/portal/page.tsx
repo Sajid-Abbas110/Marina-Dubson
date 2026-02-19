@@ -151,9 +151,9 @@ export default function ClientPortal() {
 
     if (loading) return (
         <div className="min-h-screen bg-background flex items-center justify-center">
-            <div className="flex flex-col items-center gap-6">
-                <div className="h-16 w-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Initialising Elite Portal...</p>
+            <div className="flex flex-col items-center gap-4">
+                <div className="h-10 w-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                <p className="text-sm text-muted-foreground">Loading your portal…</p>
             </div>
         </div>
     )
@@ -163,110 +163,103 @@ export default function ClientPortal() {
 
 
     return (
-        <div className="animate-in fade-in duration-500">
-            {/* Header removed - provided by layout */}
-
-            {/* Welcome Hero - Simplifed */}
-            <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="space-y-1">
-                    <h2 className="text-3xl font-black text-foreground tracking-tighter uppercase">
-                        Welcome, <span className="text-primary">{user.firstName}</span>
+        <div className="p-5 lg:p-8 max-w-[1400px] mx-auto animate-fade-in">
+            {/* Welcome header */}
+            <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 className="text-2xl font-bold text-foreground">
+                        Welcome back, {user.firstName}
                     </h2>
-                    <p className="text-muted-foreground font-medium text-sm">Manage your legal transcripts and reporting schedules.</p>
+                    <p className="text-sm text-muted-foreground mt-1">Manage your bookings, transcripts, and reporting services.</p>
                 </div>
-                <div className="flex items-center gap-4">
-                    <Link href="/client/bookings/new" className="luxury-button py-3 px-6 shadow-xl shadow-primary/20 flex items-center gap-2 rounded-xl text-xs font-black uppercase tracking-wider bg-primary text-primary-foreground hover:bg-primary/90 transition-all">
-                        <Plus className="h-4 w-4" /> New Booking
-                    </Link>
-                </div>
+                <Link href="/client/bookings/new" className="btn-primary text-sm">
+                    <Plus className="h-4 w-4" /> New Booking
+                </Link>
             </div>
 
             {/* Content Area */}
-            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-700">
+            <div className="space-y-6">
                 {activeTab === 'overview' && (
                     <>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <StatsCard
-                                label="Active Cases"
-                                value={String(stats.active).padStart(2, '0')}
-                                icon={<TrendingUp className="text-primary" />}
-                                onClick={() => navigateTab('bookings')}
-                            />
-                            <StatsCard
-                                label="Unpaid Ledger"
-                                value={`$${stats.unpaid.toLocaleString()}`}
-                                icon={<CreditCard className="text-primary" />}
-                                onClick={() => navigateTab('invoices')}
-                            />
-                            <StatsCard
-                                label="Vault Files"
-                                value={String(stats.files).padStart(2, '0')}
-                                icon={<FileText className="text-purple-500" />}
-                                onClick={() => navigateTab('documents')}
-                            />
+                        {/* Stats */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 stagger">
+                            <button onClick={() => navigateTab('bookings')} className="stat-card text-left">
+                                <div className="h-9 w-9 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center text-blue-600 mb-3">
+                                    <TrendingUp className="h-4 w-4" />
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-1">Active Bookings</p>
+                                <p className="text-2xl font-bold text-foreground">{stats.active}</p>
+                            </button>
+                            <button onClick={() => navigateTab('financials')} className="stat-card text-left">
+                                <div className="h-9 w-9 rounded-lg bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 mb-3">
+                                    <CreditCard className="h-4 w-4" />
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-1">Outstanding Balance</p>
+                                <p className="text-2xl font-bold text-foreground">${stats.unpaid.toLocaleString()}</p>
+                            </button>
+                            <button onClick={() => navigateTab('transcripts')} className="stat-card text-left">
+                                <div className="h-9 w-9 rounded-lg bg-violet-50 dark:bg-violet-950/30 flex items-center justify-center text-violet-600 mb-3">
+                                    <FileText className="h-4 w-4" />
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-1">Documents</p>
+                                <p className="text-2xl font-bold text-foreground">{stats.files}</p>
+                            </button>
                         </div>
-                        <div className="glass-panel rounded-[2.5rem] p-10 overflow-hidden">
-                            <div className="flex items-center justify-between mb-10">
-                                <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Recent Activity Feed</h3>
-                                <button
-                                    onClick={() => {
-                                        const allBookings = bookings.map(b => `${b.bookingNumber}: ${b.proceedingType} - ${format(new Date(b.bookingDate), 'MMM dd, yyyy')}`).join('\n');
-                                        alert(`Historical Archive\n\nAll Bookings:\n${allBookings || 'No bookings found'}`);
-                                    }}
-                                    className="text-[10px] font-black text-primary uppercase tracking-widest px-4 py-2 bg-primary/5 rounded-xl hover:bg-primary/10 transition-all"
-                                >
-                                    Historical Archive
-                                </button>
+
+                        {/* Recent bookings */}
+                        <div className="md-card overflow-hidden">
+                            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+                                <h3 className="font-semibold text-foreground">Recent Bookings</h3>
+                                <button onClick={() => navigateTab('bookings')}
+                                    className="text-sm text-primary hover:underline font-medium">View all</button>
                             </div>
-                            <div className="space-y-2">
+                            <div className="divide-y divide-border">
                                 {bookings.length > 0 ? (
                                     bookings.slice(0, 5).map(booking => (
                                         <ActivityRow
                                             key={booking.id}
                                             id={booking.bookingNumber}
-                                            title={`${booking.proceedingType} - ${booking.service.serviceName}`}
-                                            date={format(new Date(booking.bookingDate), 'MMM dd, yyyy').toUpperCase()}
+                                            title={`${booking.proceedingType} — ${booking.service?.serviceName ?? ''}`}
+                                            date={format(new Date(booking.bookingDate), 'MMM d, yyyy')}
                                             status={booking.bookingStatus}
                                             reporter={booking.reporter}
                                             onClick={() => booking.bookingStatus === 'ACCEPTED' && router.push(`/client/confirm/${booking.id}`)}
                                         />
                                     ))
                                 ) : (
-                                    <div className="py-20 text-center border-2 border-dashed border-border rounded-[2rem]">
-                                        <Clock className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-                                        <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">No recent activity detected.</p>
+                                    <div className="py-16 text-center">
+                                        <Clock className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+                                        <p className="text-sm text-muted-foreground">No bookings yet.</p>
+                                        <Link href="/client/bookings/new" className="btn-primary mt-4 inline-flex text-sm">
+                                            Schedule your first booking
+                                        </Link>
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        <div className="bg-gradient-to-br from-gray-900 to-[#001a12] rounded-[2.5rem] p-8 text-white relative overflow-hidden group border border-white/10 mt-8">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl group-hover:bg-primary/20 transition-all"></div>
-                            <div className="flex items-center gap-6">
-                                <div className="h-16 w-16 rounded-2xl bg-white/10 flex items-center justify-center text-primary border border-white/10">
-                                    <ShieldCheck className="h-8 w-8" />
-                                </div>
-                                <div>
-                                    <h4 className="text-lg font-black uppercase tracking-tight mb-1">Priority Support Channel</h4>
-                                    <p className="text-xs text-gray-400 font-medium leading-relaxed max-w-lg">Direct escalation path to Marina for critical case management.</p>
-                                </div>
-                                <button
-                                    onClick={() => alert('Priority Support Activated\n\nConnecting you to Marina Dubson\'s direct line...\n\nPhone: (555) 123-4567\nEmail: marina@marinadubson.com')}
-                                    className="ml-auto px-6 py-3 bg-white text-gray-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all shadow-lg"
-                                >
-                                    Secure Call
-                                </button>
+                        {/* Contact card */}
+                        <div className="md-card p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                            <div className="h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/20">
+                                <ShieldCheck className="h-6 w-6 text-white" />
                             </div>
+                            <div className="flex-1">
+                                <h4 className="font-semibold text-foreground mb-0.5">Need assistance?</h4>
+                                <p className="text-sm text-muted-foreground">Contact our team directly for any questions about scheduling or transcripts.</p>
+                            </div>
+                            <button onClick={() => navigateTab('messages')} className="btn-secondary text-sm flex-shrink-0">
+                                Send a message
+                            </button>
                         </div>
                     </>
                 )}
 
                 {activeTab === 'bookings' && (
-                    <div className="glass-panel rounded-[2.5rem] p-10">
-                        <div className="flex items-center justify-between mb-10">
-                            <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Booking Registry</h3>
-                            <Link href="/client/bookings/new" className="text-[10px] font-black text-primary uppercase tracking-widest px-4 py-2 bg-primary/5 rounded-xl flex items-center gap-2">
-                                <Plus className="h-4 w-4" /> New Request
+                    <div className="md-card overflow-hidden">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+                            <h3 className="font-semibold text-foreground">My Bookings</h3>
+                            <Link href="/client/bookings/new" className="btn-primary text-sm">
+                                <Plus className="h-4 w-4" /> New Booking
                             </Link>
                         </div>
                         <div className="space-y-4">
@@ -347,7 +340,7 @@ export default function ClientPortal() {
                                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                         <input className="pl-12 pr-4 py-3 rounded-xl bg-muted/50 border border-border text-[10px] font-black uppercase outline-none focus:ring-2 focus:ring-primary/10" placeholder="Search Vault..." />
                                     </div>
-                                    <label className="h-10 px-4 bg-gray-900 text-white rounded-xl text-[10px] font-black uppercase flex items-center gap-2 cursor-pointer hover:bg-black transition-colors">
+                                    <label className="h-10 px-4 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase flex items-center gap-2 cursor-pointer hover:opacity-90 transition-colors">
                                         <Upload className="h-4 w-4" /> Upload
                                         <input
                                             type="file"
@@ -460,7 +453,7 @@ export default function ClientPortal() {
                 {
                     activeTab === 'messages' && (
                         <div className="glass-panel rounded-[2.5rem] h-[700px] flex flex-col overflow-hidden">
-                            <div className="p-8 border-b border-border flex items-center justify-between bg-card/50 backdrop-blur-sm">
+                            <div className="p-8 border-b border-border flex items-center justify-between bg-card/60 backdrop-blur-md">
                                 <div className="flex items-center gap-4">
                                     <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center text-white font-black text-sm shadow-lg shadow-primary/20">M</div>
                                     <div>
@@ -485,8 +478,8 @@ export default function ClientPortal() {
                                             <div key={msg.id} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-in fade-in duration-300`}>
                                                 <div className={`flex flex-col max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
                                                     <div className={`px-6 py-4 rounded-[1.8rem] shadow-sm border ${isMe
-                                                        ? 'bg-gradient-to-br from-gray-900 to-indigo-900 border-white/10 text-white rounded-tr-none'
-                                                        : 'bg-slate-800 border-slate-700 text-slate-100 rounded-tl-none'
+                                                        ? 'bg-primary text-primary-foreground border-primary/20 rounded-tr-none'
+                                                        : 'bg-muted border-border text-foreground rounded-tl-none'
                                                         }`}>
                                                         <p className="text-xs font-medium leading-relaxed">{msg.content}</p>
                                                         <div className={`flex items-center gap-2 mt-3 opacity-40 ${isMe ? 'justify-end' : 'justify-start'}`}>
@@ -522,7 +515,7 @@ export default function ClientPortal() {
                                     <button
                                         onClick={handleSendMessage}
                                         disabled={sendingMessage || !messageContent.trim()}
-                                        className="h-12 w-12 bg-primary text-white rounded-xl flex items-center justify-center hover:scale-105 transition-all disabled:opacity-50 disabled:scale-100"
+                                        className="h-12 w-12 bg-primary text-primary-foreground rounded-xl flex items-center justify-center hover:scale-105 transition-all disabled:opacity-50 disabled:scale-100"
                                     >
                                         <Send className="h-5 w-5" />
                                     </button>
@@ -567,100 +560,6 @@ export default function ClientPortal() {
                         </div>
                     )}
 
-                {activeTab === 'transcripts' && (
-                    <div className="p-10 text-center border-2 border-dashed border-gray-100 rounded-[2rem]">
-                        <FileText className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-                        <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Transcript Vault Offline</p>
-                    </div>
-                )}
-
-                {activeTab === 'financials' && (
-                    <div className="p-10 text-center border-2 border-dashed border-gray-100 rounded-[2rem]">
-                        <CreditCard className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-                        <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Financial Ledger Offline</p>
-                    </div>
-                )}
-
-                {activeTab === 'messages' && (
-                    <div className="glass-panel rounded-[2.5rem] overflow-hidden h-[600px] flex flex-col relative">
-                        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white relative z-10">
-                            <div className="flex items-center gap-4">
-                                <div className="relative">
-                                    <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-primary/20">
-                                        <MessageSquare className="h-5 w-5" />
-                                    </div>
-                                    <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-emerald-500 border-2 border-white rounded-full"></div>
-                                </div>
-                                <div>
-                                    <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight">Marina Dubson</h3>
-                                    <p className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                        Secure Line Active
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex-1 p-8 overflow-y-auto space-y-6 bg-gray-50/30">
-                            {messages.length > 0 ? (
-                                messages.map(msg => {
-                                    const isMe = msg.senderId === user?.id || msg.senderId === user?.userId;
-                                    return (
-                                        <div key={msg.id} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-in fade-in duration-300`}>
-                                            <div className={`flex flex-col max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
-                                                <div className={`px-6 py-4 rounded-[1.8rem] shadow-sm border ${isMe
-                                                    ? 'bg-gradient-to-br from-gray-900 to-indigo-900 border-white/10 text-white rounded-tr-none'
-                                                    : 'bg-slate-800 border-slate-700 text-slate-100 rounded-tl-none'
-                                                    }`}>
-                                                    <p className="text-xs font-medium leading-relaxed">{msg.content}</p>
-                                                    <div className={`flex items-center gap-2 mt-3 opacity-40 ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                                        <p className="text-[7px] font-black uppercase tracking-[0.2em] text-white">
-                                                            {format(new Date(msg.createdAt), 'HH:mm • MMM dd')}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <span className="text-[7px] font-black text-muted-foreground uppercase tracking-widest mt-1.5 px-2">
-                                                    {isMe ? 'CLIENT TRANSMISSION' : 'MARINA DUBSON SUPPORT'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    );
-                                })
-                            ) : (
-                                <div className="h-full flex flex-col justify-center items-center text-gray-300">
-                                    <MessageSquare className="h-16 w-16 mb-6 opacity-20" />
-                                    <p className="text-[10px] font-black uppercase tracking-[0.4em]">Initialize Tactical Comms...</p>
-                                </div>
-                            )}
-                            <div ref={msgScrollRef} />
-                        </div>
-                        <div className="p-8 border-t border-gray-100 bg-white">
-                            <div className="flex gap-4 p-2 pl-6 pr-2 rounded-2xl bg-gray-50 border border-gray-100 focus-within:border-primary/20 transition-all">
-                                <input
-                                    type="text"
-                                    value={messageContent}
-                                    onChange={(e) => setMessageContent(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                                    placeholder="Type your secure message..."
-                                    className="flex-1 bg-transparent text-xs font-medium outline-none text-gray-900 placeholder:text-gray-400"
-                                />
-                                <button
-                                    onClick={handleSendMessage}
-                                    disabled={!messageContent.trim() || sendingMessage}
-                                    className="h-10 w-10 flex items-center justify-center rounded-xl bg-gray-900 text-white shadow-lg hover:bg-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {sendingMessage ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <Send className="h-4 w-4" />}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === 'settings' && (
-                    <div className="p-10 text-center border-2 border-dashed border-gray-100 rounded-[2rem]">
-                        <Settings className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-                        <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Settings Module Offline</p>
-                    </div>
-                )}
 
             </div>
         </div>

@@ -3,33 +3,13 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import {
-    LayoutDashboard,
-    Calendar,
-    Briefcase,
-    Users,
-    MessageSquare,
-    BookOpen,
-    Mail,
-    BarChart3,
-    Settings,
-    LogOut,
-    Menu,
-    X,
-    Globe,
-    FileText,
-    ChevronLeft,
-    ChevronRight,
-    Shield,
-    Zap
-} from 'lucide-react'
-import { useTheme } from '@/lib/theme-context'
+import { Menu, X, ChevronLeft, ChevronRight, LogOut, Scale } from 'lucide-react'
 
 interface NavigationItem {
     name: string
     href: string
     icon: any
-    matchPath?: boolean // If true, matches path strictly. If false (default), might match query.
+    matchPath?: boolean
 }
 
 interface PortalSidebarProps {
@@ -41,106 +21,117 @@ interface PortalSidebarProps {
     userRole: string
 }
 
-export default function PortalSidebar({ navigation, isCollapsed, toggleCollapse, isOpen, setIsOpen, userRole }: PortalSidebarProps) {
+export default function PortalSidebar({
+    navigation, isCollapsed, toggleCollapse, isOpen, setIsOpen, userRole
+}: PortalSidebarProps) {
     const pathname = usePathname()
     const searchParams = useSearchParams()
-    const { theme } = useTheme()
-    const [scrolled, setScrolled] = useState(false)
+    const [user, setUser] = useState<any>(null)
 
     useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 10)
-        window.addEventListener('scroll', handleScroll)
-        return () => window.removeEventListener('scroll', handleScroll)
+        const stored = localStorage.getItem('user')
+        if (stored) setUser(JSON.parse(stored))
     }, [])
+
+    const handleLogout = () => {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        window.location.href = '/'
+    }
+
+    const isActive = (item: NavigationItem) => {
+        const currentUrl = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '')
+        if (item.href === currentUrl) return true
+        if (item.href.includes('?')) {
+            const tabParam = new URLSearchParams(item.href.split('?')[1]).get('tab')
+            const currentTab = searchParams.get('tab')
+            if (tabParam && currentTab === tabParam) return true
+        }
+        if (!item.href.includes('?') && !item.matchPath) {
+            return pathname === item.href
+        }
+        return false
+    }
+
+    const portalLabel = userRole === 'CLIENT' ? 'Client Portal' : 'Reporter Portal'
+    const initials = user ? `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}` : '?'
 
     return (
         <>
-            {/* Mobile menu button */}
-            <button
-                type="button"
-                className="lg:hidden fixed top-4 left-4 z-50 p-2.5 rounded-2xl text-foreground bg-card border border-border shadow-2xl active:scale-90 transition-all"
-                onClick={() => setIsOpen(!isOpen)}
-            >
-                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
 
-            {/* Sidebar for desktop */}
+            {/* Sidebar */}
             <aside
-                className={`fixed inset-y-0 left-0 z-[500] flex flex-col border-r border-border transition-all duration-300 ease-in-out transform lg:translate-x-0 
-                    bg-card
+                className={`
+                    fixed inset-y-0 left-0 z-[500] flex flex-col
+                    border-r transition-all duration-300 ease-in-out
+                    lg:translate-x-0
                     ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}
-                    ${isCollapsed ? 'lg:w-20 w-64' : 'lg:w-64 w-64'}`}
+                    ${isCollapsed ? 'lg:w-[68px] w-64' : 'lg:w-60 w-64'}
+                `}
+                style={{
+                    background: 'hsl(210 45% 17%)',
+                    borderColor: 'hsl(210 35% 23%)'
+                }}
             >
-                {/* Brand Identity Section */}
-                <div className={`flex flex-col relative overflow-hidden h-[100px] justify-center border-b border-border transition-all duration-300 ${isCollapsed ? 'px-0' : 'px-6'}`}>
-                    {/* Animated background glow */}
-                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-tr from-primary/5 via-transparent to-primary/10 animate-pulse"></div>
-
-                    <div className={`flex items-center gap-4 relative z-10 ${isCollapsed ? 'justify-center' : ''}`}>
-                        <div className="relative group">
-                            <div className="absolute -inset-1.5 bg-primary rounded-xl blur-lg opacity-10 group-hover:opacity-100 transition duration-500 animate-pulse"></div>
-                            <div className="relative h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-black text-lg shadow-2xl border border-primary/20 transform group-hover:rotate-12 transition-transform duration-500">
-                                MD
-                            </div>
-                        </div>
-
-                        {!isCollapsed && (
-                            <div className="flex flex-col transition-opacity duration-300 opacity-100 group">
-                                <span className="text-lg font-black tracking-tight text-foreground uppercase flex items-center gap-1">
-                                    MARINA <span className="text-primary">DUBSON</span>
-                                </span>
-                                <span className="text-[9px] font-black tracking-[0.25em] text-muted-foreground uppercase flex items-center gap-1">
-                                    <Shield className="h-2.5 w-2.5 text-primary" />
-                                    Global Network
-                                </span>
-                            </div>
-                        )}
+                {/* Logo */}
+                <div
+                    className={`flex items-center h-[64px] border-b gap-3 flex-shrink-0
+                        ${isCollapsed ? 'lg:justify-center lg:px-0 px-5' : 'px-5'}`}
+                    style={{ borderColor: 'hsl(210 35% 23%)' }}
+                >
+                    <div className="h-8 w-8 rounded-lg flex items-center justify-center text-white flex-shrink-0"
+                        style={{ background: 'hsl(38 80% 55%)' }}>
+                        <Scale className="h-4 w-4" />
                     </div>
+                    {!isCollapsed && (
+                        <div className="overflow-hidden animate-fade-in">
+                            <p className="text-white font-bold text-sm leading-none">
+                                Marina Dubson
+                            </p>
+                            <p className="text-[11px] mt-0.5" style={{ color: 'hsl(210 15% 60%)' }}>
+                                {portalLabel}
+                            </p>
+                        </div>
+                    )}
                 </div>
 
-                {/* Navigation Items */}
-                <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
+                {/* Nav */}
+                <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5" style={{ scrollbarWidth: 'none' }}>
                     {navigation.map((item) => {
-                        // Check if active: strict path match OR query param match
-                        const isActive = item.matchPath
-                            ? pathname === item.href
-                            : pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '') === item.href || (pathname === item.href && !searchParams.toString())
-
-                        // Fallback matching logic for query params:
-                        const isActiveQuery = !item.matchPath && item.href.includes('?') && (pathname + '?' + searchParams.toString()).includes(item.href.split('?')[1])
-
-                        const active = isActive || isActiveQuery
-
+                        const active = isActive(item)
                         return (
                             <Link
                                 key={item.name}
                                 href={item.href}
-                                className={`relative group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-300 mb-1
-                                    ${active
-                                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 translate-x-1'
-                                        : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:translate-x-1'
-                                    }
-                                    ${isCollapsed ? 'justify-center' : ''}`}
+                                onClick={() => { if (window.innerWidth < 1024) setIsOpen(false) }}
+                                title={isCollapsed ? item.name : undefined}
+                                className={`
+                                    group relative flex items-center gap-3 rounded-lg
+                                    transition-all duration-150
+                                    ${isCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'}
+                                `}
+                                style={{
+                                    background: active ? 'hsl(38 80% 55% / 0.18)' : 'transparent',
+                                    color: active ? 'hsl(38 80% 70%)' : 'hsl(210 15% 68%)',
+                                    borderLeft: active ? '2px solid hsl(38 80% 55%)' : '2px solid transparent',
+                                }}
                             >
-                                <div className={`flex items-center justify-center transition-colors duration-300 ${active ? 'text-primary-foreground' : 'group-hover:text-primary'}`}>
-                                    <item.icon
-                                        className={`flex-shrink-0 transition-all duration-300 ${isCollapsed ? 'h-6 w-6' : 'h-5 w-5'} ${active ? 'scale-110' : 'group-hover:scale-110'}`}
-                                        aria-hidden="true"
-                                    />
-                                </div>
+                                <item.icon className="h-4 w-4 flex-shrink-0" />
                                 {!isCollapsed && (
-                                    <span className="ml-3 font-bold uppercase tracking-wider text-[11px] truncate flex-1 transition-all duration-300 group-hover:tracking-widest">
-                                        {item.name}
-                                    </span>
+                                    <span className="text-sm font-medium">{item.name}</span>
                                 )}
-                                {active && !isCollapsed && (
-                                    <div className="h-1.5 w-1.5 rounded-full bg-white ml-auto animate-pulse shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
-                                )}
+
+                                {/* Tooltip */}
                                 {isCollapsed && (
-                                    <div className="absolute left-full ml-4 px-3 py-1.5 bg-popover text-popover-foreground text-xs font-bold rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 shadow-xl whitespace-nowrap z-50 border border-border uppercase tracking-wider">
+                                    <div className="absolute left-full ml-3 px-2.5 py-1.5 rounded-lg text-xs font-medium
+                                                    opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap
+                                                    z-50 transition-opacity duration-150 shadow-lg"
+                                        style={{
+                                            background: 'hsl(210 40% 22%)',
+                                            color: 'hsl(40 20% 90%)',
+                                            border: '1px solid hsl(210 35% 28%)'
+                                        }}>
                                         {item.name}
-                                        {/* Little triangle pointer */}
-                                        <div className="absolute top-1/2 right-full -mt-1 -mr-1 border-4 border-transparent border-r-popover"></div>
                                     </div>
                                 )}
                             </Link>
@@ -148,32 +139,58 @@ export default function PortalSidebar({ navigation, isCollapsed, toggleCollapse,
                     })}
                 </nav>
 
-                {/* Footer / Collapse Button */}
-                <div className="border-t border-border p-4 bg-card/50 backdrop-blur-sm">
-                    <button
-                        onClick={toggleCollapse}
-                        className={`w-full flex items-center justify-center p-2 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-300 group ring-1 ring-transparent hover:ring-border ${isCollapsed ? 'bg-muted/50' : ''}`}
-                    >
-                        {isCollapsed ? (
-                            <LogOut className="h-5 w-5 transform rotate-180 group-hover:text-primary transition-colors" />
-                        ) : (
-                            <div className="flex items-center gap-3 w-full px-2">
-                                <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                                    <LogOut className="h-4 w-4 group-hover:text-primary" />
-                                </div>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">Collapse Menu</span>
-                                <ChevronLeft className="h-4 w-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                {/* Footer */}
+                <div className="flex-shrink-0 border-t p-3"
+                    style={{ borderColor: 'hsl(210 35% 23%)' }}>
+                    {user && !isCollapsed && (
+                        <div className="flex items-center gap-2.5 px-2 py-2 mb-2">
+                            <div className="h-7 w-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                                style={{ background: 'hsl(210 65% 45%)' }}>
+                                {initials}
                             </div>
-                        )}
-                    </button>
-                    {!isCollapsed && (
-                        <div className="mt-4 flex justify-center">
-                            <p className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] hover:text-primary/60 transition-colors cursor-default">
-                                v2.5.0 • SECURE MODE
-                            </p>
+                            <div className="overflow-hidden">
+                                <p className="text-xs font-medium text-white truncate leading-none">
+                                    {user.firstName} {user.lastName}
+                                </p>
+                                <p className="text-[10px] mt-0.5 truncate capitalize"
+                                    style={{ color: 'hsl(210 15% 55%)' }}>
+                                    {user.role?.toLowerCase()}
+                                </p>
+                            </div>
                         </div>
                     )}
+
+                    <button
+                        onClick={handleLogout}
+                        className={`flex items-center gap-2.5 rounded-lg px-3 py-2 w-full text-sm
+                                    transition-all duration-150 opacity-60 hover:opacity-100
+                                    ${isCollapsed ? 'justify-center' : ''}`}
+                        style={{ color: 'hsl(0 65% 65%)' }}
+                        title={isCollapsed ? 'Sign out' : undefined}
+                    >
+                        <LogOut className="h-4 w-4 flex-shrink-0" />
+                        {!isCollapsed && <span className="font-medium">Sign out</span>}
+                    </button>
                 </div>
+
+                {/* Collapse control */}
+                <button
+                    onClick={toggleCollapse}
+                    className="absolute -right-3 top-[76px] h-6 w-6 rounded-full
+                               flex items-center justify-center shadow-md
+                               border-2 transition-all hover:scale-110 duration-200 lg:flex hidden"
+                    style={{
+                        background: 'hsl(38 80% 55%)',
+                        borderColor: 'hsl(210 45% 17%)',
+                        color: 'white'
+                    }}
+                    aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                >
+                    {isCollapsed
+                        ? <ChevronRight className="h-3 w-3" />
+                        : <ChevronLeft className="h-3 w-3" />
+                    }
+                </button>
             </aside>
         </>
     )

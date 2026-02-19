@@ -1,6 +1,6 @@
 'use client'
 
-import LoginPortal from '../page'
+import LoginPortal from '../components/auth/LoginPortal'
 
 export default function LoginPage() {
     return <LoginPortal />

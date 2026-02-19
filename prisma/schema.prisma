@@ -188,6 +188,7 @@ model Invoice {
   afterHoursFee    Float?
   afterHoursCount  Int?
   waitTimeFee      Float?
+  waitTimeCount    Int?
   cancellationFee  Float?
   minimumFee       Float     @default(400)
   subtotal         Float

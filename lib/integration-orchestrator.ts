@@ -92,8 +92,6 @@ export class IntegrationOrchestrator {
      */
     async createInvoiceAfterApproval(data: BookingIntegrationData): Promise<void> {
         try {
-            // Simplified version of generateFinalInvoice specifically for the automated trigger
-            // This is primarily to ensure the invoice exists in the system once confirmed
             const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`
 
             await prisma.invoice.create({
@@ -113,7 +111,7 @@ export class IntegrationOrchestrator {
                 }
             })
 
-            // Requirement 7.1: Also sync to Zoho Books if possible
+            // Requirement 7.1: Also sync to Zoho Books
             try {
                 const customerResult = await zohoBooks.upsertCustomer({
                     contact_name: `${data.contactFirstName} ${data.contactLastName}`,
@@ -137,6 +135,14 @@ export class IntegrationOrchestrator {
             } catch (zohoError) {
                 console.error('Initial Zoho Books sync failed, will retry at completion:', zohoError)
             }
+
+            // Requirement 8.1: Mailchimp Stage Update
+            await mailchimp.updateMemberForBookingStage(
+                data.contactEmail,
+                data.contactFirstName,
+                data.contactLastName,
+                'approved'
+            )
         } catch (error) {
             console.error('createInvoiceAfterApproval failed:', error)
             throw error
@@ -167,7 +173,6 @@ export class IntegrationOrchestrator {
 
             if (!booking) throw new Error('Booking not found')
 
-            // Priority: Locked Rates on Booking > Custom Pricing > Service Defaults
             const baseRates = await PricingEngine.getApplicableRates(booking.contactId, booking.serviceId)
 
             const rates = {
@@ -183,11 +188,10 @@ export class IntegrationOrchestrator {
                 isRemote: booking.location?.toLowerCase().includes('remote')
             })
 
-            // 1. Create Invoice in Local DB
             const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`
             const jobNumber = booking.bookingNumber
 
-            const localInvoice = await prisma.invoice.create({
+            const localInvoice = await (prisma.invoice as any).create({
                 data: {
                     invoiceNumber,
                     jobNumber,
@@ -212,13 +216,14 @@ export class IntegrationOrchestrator {
                     afterHoursFee: billingData.afterHoursCount ? (billingData.afterHoursCount * rates.afterHoursRate) : 0,
                     afterHoursCount: billingData.afterHoursCount,
                     waitTimeFee: billingData.waitTimeCount ? (billingData.waitTimeCount * rates.waitTimeRate) : 0,
+                    waitTimeCount: billingData.waitTimeCount,
                     subtotal,
+                    minimumFee: rates.minimumFee,
                     total,
                     notes: billingData.notes || `Job: ${booking.proceedingType}`
                 }
             })
 
-            // 2. Sync to Zoho Books (Wrapped in try-catch to be non-blocking)
             let zohoInvoiceId = null
             try {
                 const customerResult = await zohoBooks.upsertCustomer({
@@ -288,6 +293,24 @@ export class IntegrationOrchestrator {
                     })
                 }
 
+                if (billingData.afterHoursCount && billingData.afterHoursCount > 0) {
+                    lineItems.push({
+                        name: 'After-hours Surcharge',
+                        description: `(${billingData.afterHoursCount} hours after 5:30 PM)`,
+                        rate: rates.afterHoursRate,
+                        quantity: billingData.afterHoursCount
+                    })
+                }
+
+                if (billingData.waitTimeCount && billingData.waitTimeCount > 0) {
+                    lineItems.push({
+                        name: 'Wait Time Surcharge',
+                        description: `(${billingData.waitTimeCount} hours wait time)`,
+                        rate: rates.waitTimeRate,
+                        quantity: billingData.waitTimeCount
+                    })
+                }
+
                 const zohoInvoice = await zohoBooks.createInvoice({
                     customer_id: customerResult.id,
                     date: new Date().toISOString().split('T')[0],
@@ -300,7 +323,6 @@ export class IntegrationOrchestrator {
                 console.error('Zoho Books sync failed during completion:', zohoError)
             }
 
-            // 3. Automation Sync
             const currentMetadata = JSON.parse(booking.notes || '{}')
             await prisma.booking.update({
                 where: { id: bookingId },
@@ -314,27 +336,23 @@ export class IntegrationOrchestrator {
                 }
             })
 
-            // 4. Trigger Notifications
             try {
-                // Official Zoho Books Email (Only if sync was successful)
                 if (zohoInvoiceId) {
                     await zohoBooks.sendInvoiceEmail(zohoInvoiceId)
                 }
 
-                // Custom Client Portal Email
                 const clientEmailData = emailTemplates.invoiceGenerated(
                     booking.contact.firstName,
                     localInvoice.invoiceNumber,
                     localInvoice.total,
                     `${process.env.NEXT_PUBLIC_APP_URL}/client/invoices/${localInvoice.id}`,
-                    `${process.env.NEXT_PUBLIC_APP_URL}/client/invoices/${localInvoice.id}` // Using same link for payment for now
+                    `${process.env.NEXT_PUBLIC_APP_URL}/client/invoices/${localInvoice.id}`
                 )
                 await sendEmail({
                     to: booking.contact.email,
                     ...clientEmailData
                 })
 
-                // Admin Notification
                 const adminEmailData = emailTemplates.adminInvoiceNotification(
                     'Marina',
                     `${booking.contact.firstName} ${booking.contact.lastName}`,
@@ -347,6 +365,13 @@ export class IntegrationOrchestrator {
                     ...adminEmailData
                 })
 
+                await mailchimp.updateMemberForBookingStage(
+                    booking.contact.email,
+                    booking.contact.firstName,
+                    booking.contact.lastName,
+                    'invoiced'
+                )
+
                 console.log('Automated invoice notifications dispatched.')
             } catch (emailError) {
                 console.error('Notification dispatch failed:', emailError)
@@ -358,7 +383,6 @@ export class IntegrationOrchestrator {
             throw error
         }
     }
-
 
     /**
      * Step 3: Record payment from Stripe/PayPal webhook
@@ -380,7 +404,6 @@ export class IntegrationOrchestrator {
                 throw new Error('No Zoho Books invoice found for this booking')
             }
 
-            // Record payment in Zoho Books
             await zohoBooks.recordPayment(invoiceId, {
                 amount: paymentData.amount,
                 payment_mode: paymentData.paymentMethod === 'stripe' ? 'Credit Card' : 'PayPal',
@@ -389,7 +412,6 @@ export class IntegrationOrchestrator {
                 notes: `Payment via ${paymentData.paymentMethod}`
             })
 
-            // Update local database
             await prisma.booking.update({
                 where: { id: bookingId },
                 data: {
@@ -397,12 +419,10 @@ export class IntegrationOrchestrator {
                 }
             })
 
-            // Update Zoho CRM deal stage
             if (metadata.zohoCRMDealId) {
                 await zohoCRM.updateDealStage(metadata.zohoCRMDealId, 'Closed Won')
             }
 
-            // Update Mailchimp
             const contact = await prisma.contact.findUnique({ where: { id: booking.contactId } })
             if (contact) {
                 await mailchimp.updateMemberForBookingStage(
@@ -430,7 +450,6 @@ export class IntegrationOrchestrator {
 
             if (!booking) throw new Error('Booking not found')
 
-            // Update local database
             await prisma.booking.update({
                 where: { id: bookingId },
                 data: {
@@ -438,13 +457,11 @@ export class IntegrationOrchestrator {
                 }
             })
 
-            // Update Zoho CRM
             const metadata = JSON.parse(booking.notes || '{}')
             if (metadata.zohoCRMDealId) {
                 await zohoCRM.updateDealStage(metadata.zohoCRMDealId, 'Closed Won')
             }
 
-            // Update Mailchimp
             if (booking.contact) {
                 await mailchimp.updateMemberForBookingStage(
                     booking.contact.email,

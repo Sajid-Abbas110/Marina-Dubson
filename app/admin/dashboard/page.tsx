@@ -8,17 +8,14 @@ import {
     Users,
     Calendar,
     Clock,
-    TrendingUp,
-    TrendingDown,
     ArrowUpRight,
     Download,
     Plus,
-    Filter,
-    FileText,
-    Zap,
-    Shield,
-    Smartphone,
-    Activity
+    CheckCircle2,
+    AlertCircle,
+    Briefcase,
+    TrendingUp,
+    BarChart3
 } from 'lucide-react'
 
 export default function DashboardPage() {
@@ -36,320 +33,318 @@ export default function DashboardPage() {
         try {
             const token = localStorage.getItem('token')
 
-            const bookingsRes = await fetch('/api/bookings', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const bookingsData = await bookingsRes.json()
-            const allBookings = Array.isArray(bookingsData.bookings) ? bookingsData.bookings : []
-            setRecentBookings(allBookings.slice(0, 5))
+            const [bookingsRes, invoicesRes, usersRes] = await Promise.allSettled([
+                fetch('/api/bookings', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('/api/invoices', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('/api/admin/users', { headers: { 'Authorization': `Bearer ${token}` } }),
+            ])
 
-            const invoicesRes = await fetch('/api/invoices', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const invoicesData = await invoicesRes.json()
-            const allInvoices = Array.isArray(invoicesData.invoices) ? invoicesData.invoices : []
-
-            const totalRevenue = allInvoices
-                .filter((i: any) => i && i.status === 'PAID')
-                .reduce((sum: number, i: any) => sum + (i.total || 0), 0)
-
+            // Bookings
+            let allBookings: any[] = []
+            if (bookingsRes.status === 'fulfilled' && bookingsRes.value.ok) {
+                const d = await bookingsRes.value.json()
+                allBookings = Array.isArray(d.bookings) ? d.bookings : []
+            }
+            setRecentBookings(allBookings.slice(0, 6))
             const upcoming = allBookings.filter((b: any) =>
                 ['SUBMITTED', 'ACCEPTED', 'CONFIRMED'].includes(b.bookingStatus)
             ).length
+            const pendingApprovals = allBookings.filter((b: any) => b.bookingStatus === 'SUBMITTED').length
 
-            const pendingApprovals = allBookings.filter((b: any) =>
-                b.bookingStatus === 'SUBMITTED'
-            ).length
-
-            setStats({
-                totalRevenue,
-                upcomingJobs: upcoming,
-                activeReporters: 0,
-                reviewQueue: pendingApprovals,
-            } as any)
-
-            const usersRes = await fetch('/api/admin/users', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            if (usersRes.ok) {
-                const usersData = await usersRes.json()
-                const reporters = usersData.users?.filter((u: any) => u.role === 'REPORTER').length || 0
-                setStats(prev => ({ ...prev, activeReporters: reporters }))
+            // Invoices
+            let totalRevenue = 0
+            if (invoicesRes.status === 'fulfilled' && invoicesRes.value.ok) {
+                const d = await invoicesRes.value.json()
+                const allInvoices = Array.isArray(d.invoices) ? d.invoices : []
+                totalRevenue = allInvoices
+                    .filter((i: any) => i.status === 'PAID')
+                    .reduce((sum: number, i: any) => sum + (i.total || 0), 0)
             }
 
-        } catch (error) {
-            console.error('Failed to fetch dashboard data:', error)
+            // Users
+            let reporters = 0
+            if (usersRes.status === 'fulfilled' && usersRes.value.ok) {
+                const d = await usersRes.value.json()
+                reporters = d.users?.filter((u: any) => u.role === 'REPORTER').length || 0
+            }
+
+            setStats({ totalRevenue, upcomingJobs: upcoming, activeReporters: reporters, reviewQueue: pendingApprovals })
+        } catch (err) {
+            console.error('Dashboard fetch error:', err)
         } finally {
             setLoading(false)
         }
     }, [])
 
-    useEffect(() => {
-        fetchDashboardData()
-    }, [fetchDashboardData])
+    useEffect(() => { fetchDashboardData() }, [fetchDashboardData])
 
-    const handleExportAnalytics = () => {
-        const csvData = `Dashboard Analytics Export
-Generated: ${new Date().toLocaleString()}
-
-Metric,Value
-Total Revenue,$${stats.totalRevenue.toLocaleString()}
-Upcoming Jobs,${stats.upcomingJobs}
-Active Reporters,${stats.activeReporters}
-Review Queue,${stats.reviewQueue}
-`
-        const blob = new Blob([csvData], { type: 'text/csv' })
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `dashboard-analytics-${new Date().toISOString().split('T')[0]}.csv`
+    const handleExport = () => {
+        const csv = [
+            'Metric,Value',
+            `Total Revenue,$${stats.totalRevenue.toLocaleString()}`,
+            `Upcoming Bookings,${stats.upcomingJobs}`,
+            `Active Reporters,${stats.activeReporters}`,
+            `Pending Review,${stats.reviewQueue}`,
+        ].join('\n')
+        const a = Object.assign(document.createElement('a'), {
+            href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })),
+            download: `dashboard-${new Date().toISOString().slice(0, 10)}.csv`
+        })
         a.click()
-        window.URL.revokeObjectURL(url)
     }
 
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString)
-        const month = date.toLocaleString('default', { month: 'short' }).toUpperCase()
-        const day = date.getDate()
-        return `${month} ${day}`
+    const getStatusStyle = (status: string) => {
+        switch (status) {
+            case 'CONFIRMED': return 'badge-success'
+            case 'ACCEPTED': return 'badge-info'
+            case 'SUBMITTED': return 'badge-warning'
+            case 'COMPLETED': return 'badge-neutral'
+            default: return 'badge-neutral'
+        }
     }
 
-    const formatTime = (timeString: string) => {
-        if (timeString.includes('AM') || timeString.includes('PM')) return timeString
-        const [hours, minutes] = timeString.split(':')
-        const hour = parseInt(hours)
-        const ampm = hour >= 12 ? 'PM' : 'AM'
-        const displayHour = hour % 12 || 12
-        return `${displayHour}:${minutes} ${ampm}`
+    const getStatusLabel = (status: string) => {
+        const map: Record<string, string> = {
+            SUBMITTED: 'Pending Review',
+            ACCEPTED: 'Accepted',
+            CONFIRMED: 'Confirmed',
+            COMPLETED: 'Completed',
+            CANCELLED: 'Cancelled',
+        }
+        return map[status] ?? status
     }
+
+    const formatDate = (dateStr: string) => {
+        const d = new Date(dateStr)
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    }
+
+    const formatTime = (t: string) => {
+        if (!t) return ''
+        if (t.includes('AM') || t.includes('PM')) return t
+        const [h, m] = t.split(':').map(Number)
+        const ampm = h >= 12 ? 'PM' : 'AM'
+        return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${ampm}`
+    }
+
+    const kpiCards = [
+        {
+            label: 'Total Revenue',
+            value: `$${stats.totalRevenue.toLocaleString()}`,
+            icon: <DollarSign className="h-5 w-5" />,
+            color: 'text-emerald-600',
+            bg: 'bg-emerald-50 dark:bg-emerald-950/30',
+            href: '/admin/analytics',
+        },
+        {
+            label: 'Active Bookings',
+            value: stats.upcomingJobs,
+            icon: <Calendar className="h-5 w-5" />,
+            color: 'text-blue-600',
+            bg: 'bg-blue-50 dark:bg-blue-950/30',
+            href: '/admin/calendar',
+        },
+        {
+            label: 'Active Reporters',
+            value: stats.activeReporters,
+            icon: <Users className="h-5 w-5" />,
+            color: 'text-violet-600',
+            bg: 'bg-violet-50 dark:bg-violet-950/30',
+            href: '/admin/reporters',
+        },
+        {
+            label: 'Pending Review',
+            value: stats.reviewQueue,
+            icon: <Clock className="h-5 w-5" />,
+            color: 'text-amber-600',
+            bg: 'bg-amber-50 dark:bg-amber-950/30',
+            href: '/admin/bookings?status=SUBMITTED',
+            alert: stats.reviewQueue > 0,
+        },
+    ]
 
     return (
-        <div className="max-w-[1600px] w-[98%] mx-auto p-4 lg:p-6 space-y-8 pb-24 animate-in fade-in duration-1000">
-            {/* Header Area */}
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-                <div className="space-y-2">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[8px] font-black uppercase tracking-[0.2em] animate-pulse">
-                        <Activity className="h-2.5 w-2.5" /> System Operational
-                    </div>
-                    <h1 className="text-2xl font-black text-foreground tracking-tight uppercase leading-none">
-                        COMMAND <span className="brand-gradient italic">CENTER</span>
-                    </h1>
-                    <p className="text-muted-foreground font-black uppercase text-[9px] tracking-[0.3em]">Monitoring Marina Dubson Stenographic Infrastructure</p>
+        <div className="max-w-[1400px] mx-auto p-5 lg:p-8 space-y-8 animate-fade-in">
+            {/* ── Page header ── */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 className="text-2xl font-bold text-foreground">
+                        Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'} 👋
+                    </h2>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                        Here's what's happening at Marina Dubson Stenographic today.
+                    </p>
                 </div>
-
-                <div className="flex flex-wrap items-center gap-3">
-                    <button
-                        onClick={handleExportAnalytics}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-card border border-border hover:border-primary/50 transition-all hover:translate-y-[-2px] group"
-                    >
-                        <Download className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors" />
-                        <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">Export Analytics</span>
+                <div className="flex items-center gap-3">
+                    <button onClick={handleExport}
+                        className="btn-secondary flex items-center gap-2 text-sm">
+                        <Download className="h-4 w-4" />
+                        Export
                     </button>
-                    <Link
-                        href="/admin/bookings"
-                        className="luxury-button flex items-center gap-2 px-6 py-2.5"
-                    >
-                        <Plus className="h-3.5 w-3.5" />
-                        <span className="uppercase tracking-widest text-[8px] font-black">Initiate Booking</span>
+                    <Link href="/admin/bookings" className="btn-primary text-sm">
+                        <Plus className="h-4 w-4" />
+                        New Booking
                     </Link>
                 </div>
             </div>
 
-            {/* KPI Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <KPICard
-                    title="Revenue Performance"
-                    value={`$${stats.totalRevenue.toLocaleString()}`}
-                    icon={<DollarSign />}
-                    trend="+12.5%"
-                    trendUp={true}
-                    onClick={() => router.push('/admin/analytics')}
-                />
-                <KPICard
-                    title="Operational Load"
-                    value={stats.upcomingJobs}
-                    icon={<Calendar />}
-                    trend={`+${stats.upcomingJobs} New`}
-                    trendUp={true}
-                    onClick={() => router.push('/admin/calendar')}
-                />
-                <KPICard
-                    title="Active Reporters"
-                    value={stats.activeReporters}
-                    icon={<Users />}
-                    trend="Verified"
-                    trendUp={true}
-                    onClick={() => router.push('/admin/team')}
-                />
-                <KPICard
-                    title="Review Queue"
-                    value={stats.reviewQueue}
-                    icon={<Clock />}
-                    trend={`${stats.reviewQueue} Ready`}
-                    trendUp={false}
-                    onClick={() => router.push('/admin/bookings?status=SUBMITTED')}
-                />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Feed */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="glass-panel rounded-[2rem] overflow-hidden bg-card border border-border shadow-xl">
-                        <div className="px-6 py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/30">
-                            <h3 className="text-sm font-black text-foreground uppercase tracking-tight">Recent Assignments</h3>
-                            <Link href="/admin/bookings" className="text-[8px] font-black text-primary hover:text-primary/80 uppercase tracking-widest transition-all hover:translate-x-1">View All Operations →</Link>
-                        </div>
-                        <div className="divide-y divide-border">
-                            {loading ? (
-                                <div className="px-6 py-12 text-center text-muted-foreground text-[9px] font-black uppercase tracking-[0.3em] animate-pulse">Scanning Assignments Matrix...</div>
-                            ) : recentBookings.length === 0 ? (
-                                <div className="px-6 py-12 text-center text-muted-foreground text-[9px] font-black uppercase tracking-[0.3em]">No recent assignments found</div>
-                            ) : (
-                                recentBookings.map((booking) => (
-                                    <JobRow
-                                        key={booking.id}
-                                        id={booking.bookingNumber}
-                                        client={booking.contact?.companyName || `${booking.contact?.firstName} ${booking.contact?.lastName}`}
-                                        types={[booking.appearanceType === 'REMOTE' ? 'Remote' : 'In-Person', booking.proceedingType]}
-                                        time={formatTime(booking.bookingTime)}
-                                        date={formatDate(booking.bookingDate)}
-                                        status={booking.bookingStatus === 'ACCEPTED' ? 'Confirmed' : booking.bookingStatus === 'SUBMITTED' ? 'Pending' : 'Draft'}
-                                        bookingId={booking.id}
-                                    />
-                                ))
+            {/* ── KPI Cards ── */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 stagger">
+                {kpiCards.map((kpi) => (
+                    <button
+                        key={kpi.label}
+                        onClick={() => router.push(kpi.href)}
+                        className="stat-card text-left group"
+                    >
+                        <div className="flex items-start justify-between mb-4">
+                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${kpi.bg} ${kpi.color}`}>
+                                {kpi.icon}
+                            </div>
+                            {kpi.alert && (
+                                <span className="badge badge-warning text-xs">
+                                    <AlertCircle className="h-3 w-3" />
+                                    Action needed
+                                </span>
                             )}
                         </div>
-                    </div>
-                </div>
+                        <p className="text-sm text-muted-foreground mb-1">{kpi.label}</p>
+                        <p className="text-2xl font-bold text-foreground">{loading ? '—' : kpi.value}</p>
+                        <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1
+                                      opacity-0 group-hover:opacity-100 transition-opacity">
+                            View details <ArrowUpRight className="h-3 w-3" />
+                        </p>
+                    </button>
+                ))}
+            </div>
 
-                {/* Sidebar Column */}
-                <div className="space-y-6">
-                    <div className="bg-primary rounded-[2rem] p-8 text-primary-foreground relative overflow-hidden group shadow-xl">
-                        <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:rotate-12 transition-transform duration-700">
-                            <Zap className="h-32 w-32" />
+            {/* ── Main content ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                {/* Recent bookings table */}
+                <div className="lg:col-span-2 md-card overflow-hidden">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+                        <h3 className="font-semibold text-foreground">Recent Bookings</h3>
+                        <Link href="/admin/bookings"
+                            className="text-sm text-primary hover:underline font-medium flex items-center gap-1">
+                            View all <ArrowUpRight className="h-3.5 w-3.5" />
+                        </Link>
+                    </div>
+
+                    {loading ? (
+                        <div className="divide-y divide-border">
+                            {[...Array(4)].map((_, i) => (
+                                <div key={i} className="px-6 py-4 flex items-center gap-4">
+                                    <div className="skeleton h-9 w-9 rounded-lg" />
+                                    <div className="flex-1 space-y-2">
+                                        <div className="skeleton h-3.5 w-1/3 rounded" />
+                                        <div className="skeleton h-3 w-1/2 rounded" />
+                                    </div>
+                                    <div className="skeleton h-6 w-20 rounded-full" />
+                                </div>
+                            ))}
                         </div>
-                        <div className="relative z-10">
-                            <Zap className="h-6 w-6 text-yellow-400 mb-3 animate-pulse" />
-                            <h4 className="text-lg font-black tracking-tight leading-tight mb-1 uppercase">Elite Concierge</h4>
-                            <p className="text-primary-foreground/90 text-[10px] font-medium mb-4 leading-relaxed uppercase tracking-tight">Direct channel for immediate case escalations and priority logistical adjustments.</p>
-                            <Link
-                                href="/admin/messages"
-                                className="block w-full py-3 bg-background text-foreground rounded-lg font-black text-[8px] uppercase tracking-[0.3em] hover:bg-muted transition-all text-center shadow-md"
-                            >
-                                Connect Now
+                    ) : recentBookings.length === 0 ? (
+                        <div className="py-16 text-center">
+                            <Calendar className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+                            <p className="text-sm text-muted-foreground">No bookings yet</p>
+                            <Link href="/admin/bookings" className="btn-primary mt-4 inline-flex text-sm">
+                                Create first booking
                             </Link>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="divide-y divide-border">
+                            {recentBookings.map((b) => (
+                                <div
+                                    key={b.id}
+                                    onClick={() => router.push('/admin/bookings')}
+                                    className="px-6 py-4 flex items-center gap-4 hover:bg-muted/40 cursor-pointer transition-colors group"
+                                >
+                                    {/* Date chip */}
+                                    <div className="flex flex-col items-center justify-center h-11 w-11 rounded-xl bg-muted border border-border flex-shrink-0">
+                                        <span className="text-[10px] font-semibold text-muted-foreground uppercase">
+                                            {formatDate(b.bookingDate).split(' ')[0]}
+                                        </span>
+                                        <span className="text-base font-bold text-foreground leading-none">
+                                            {formatDate(b.bookingDate).split(' ')[1].replace(',', '')}
+                                        </span>
+                                    </div>
 
-                    <div className="glass-panel rounded-[2rem] p-8 space-y-6 border border-border bg-card shadow-lg">
-                        <div>
-                            <div className="flex justify-between items-center mb-6">
-                                <h4 className="text-[9px] font-black text-foreground uppercase tracking-[0.3em]">Node Integrity</h4>
-                                <Shield className="h-3.5 w-3.5 text-primary" />
-                            </div>
-                            <div className="space-y-4">
-                                <ResourceStat label="Storage Cluster" used={78} color="bg-primary" />
-                                <ResourceStat label="Network Traffic" used={32} color="bg-primary/60" />
-                            </div>
-                        </div>
-                        <div className="pt-6 border-t border-border">
-                            <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-xl bg-muted border border-border flex items-center justify-center">
-                                    <Smartphone className="h-5 w-5 text-primary" />
+                                    {/* Info */}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-0.5">
+                                            <p className="text-xs text-muted-foreground font-mono">{b.bookingNumber}</p>
+                                        </div>
+                                        <p className="text-sm font-semibold text-foreground truncate">
+                                            {b.contact?.companyName
+                                                || `${b.contact?.firstName ?? ''} ${b.contact?.lastName ?? ''}`.trim()
+                                                || 'Unknown Client'}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {b.proceedingType} · {formatTime(b.bookingTime)}
+                                        </p>
+                                    </div>
+
+                                    {/* Status & action */}
+                                    <div className="flex items-center gap-3 flex-shrink-0">
+                                        <span className={`badge ${getStatusStyle(b.bookingStatus)} text-xs`}>
+                                            {getStatusLabel(b.bookingStatus)}
+                                        </span>
+                                        <ArrowUpRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </div>
                                 </div>
-                                <div className="space-y-0.5">
-                                    <p className="text-[9px] font-black text-foreground uppercase tracking-widest">Mobile Device Sync</p>
-                                    <p className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter italic">Last Pulse: 2m ago</p>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Side column */}
+                <div className="space-y-5">
+                    {/* Quick actions */}
+                    <div className="md-card p-5">
+                        <h3 className="font-semibold text-foreground mb-4">Quick Actions</h3>
+                        <div className="space-y-2">
+                            {[
+                                { label: 'Schedule booking', href: '/admin/bookings', icon: <Calendar className="h-4 w-4" /> },
+                                { label: 'Post a job', href: '/admin/jobs', icon: <Briefcase className="h-4 w-4" /> },
+                                { label: 'Send email campaign', href: '/admin/email-campaigns', icon: <BarChart3 className="h-4 w-4" /> },
+                                { label: 'View reports', href: '/admin/reports', icon: <TrendingUp className="h-4 w-4" /> },
+                            ].map((action) => (
+                                <Link
+                                    key={action.href}
+                                    href={action.href}
+                                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-colors group"
+                                >
+                                    <span className="text-muted-foreground group-hover:text-primary transition-colors">
+                                        {action.icon}
+                                    </span>
+                                    <span className="text-sm font-medium text-foreground">{action.label}</span>
+                                    <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Status overview */}
+                    <div className="md-card p-5">
+                        <h3 className="font-semibold text-foreground mb-4">Platform Status</h3>
+                        <div className="space-y-3">
+                            {[
+                                { label: 'Booking system', ok: true },
+                                { label: 'Message service', ok: true },
+                                { label: 'Email delivery', ok: true },
+                                { label: 'File storage', ok: true },
+                            ].map((item) => (
+                                <div key={item.label} className="flex items-center justify-between text-sm">
+                                    <span className="text-muted-foreground">{item.label}</span>
+                                    <span className={`flex items-center gap-1.5 text-xs font-medium ${item.ok ? 'text-emerald-600' : 'text-red-600'}`}>
+                                        <CheckCircle2 className="h-3.5 w-3.5" />
+                                        Operational
+                                    </span>
                                 </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    )
-}
-
-function KPICard({ title, value, icon, trend, trendUp, onClick }: any) {
-    return (
-        <div
-            onClick={onClick}
-            className="bg-card p-6 rounded-[2rem] border border-border hover:border-primary/20 transition-all duration-500 cursor-pointer group hover:shadow-xl relative overflow-hidden"
-        >
-            <div className="absolute top-0 right-0 p-6 opacity-[0.02] group-hover:scale-110 transition-transform duration-700">
-                {icon}
-            </div>
-            <div className="flex justify-between items-start relative z-10">
-                <div className="h-10 w-10 rounded-xl bg-muted border border-border flex items-center justify-center text-primary shadow-sm group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500">
-                    <div className="scale-90">{icon}</div>
-                </div>
-                <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${trendUp ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}`}>
-                    {trend}
-                </div>
-            </div>
-            <div className="mt-6 relative z-10">
-                <h3 className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-2">{title}</h3>
-                <p className="text-2xl font-black text-foreground tracking-tighter uppercase">{value}</p>
-            </div>
-        </div>
-    )
-}
-
-function JobRow({ id, client, types, time, date, status, bookingId }: any) {
-    const router = useRouter()
-
-    return (
-        <div
-            onClick={() => router.push(`/admin/bookings`)}
-            className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-primary/5 transition-all cursor-pointer group gap-4 border-l-4 border-transparent hover:border-primary"
-        >
-            <div className="flex items-center gap-4 lg:gap-6">
-                <div className="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-muted border border-border shadow-sm group-hover:border-primary/20 transition-all flex-shrink-0 min-w-[70px]">
-                    <span className="text-[7px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">{date.split(' ')[0]}</span>
-                    <span className="text-lg font-black text-foreground">{date.split(' ')[1]}</span>
-                </div>
-                <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-3">
-                        <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em]">{id}</span>
-                        <h4 className="text-sm font-black text-foreground uppercase tracking-tight">{client}</h4>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                        {types.map((t: string) => (
-                            <span key={t} className="px-2 py-0.5 rounded-md bg-muted border border-border text-[8px] font-black text-muted-foreground uppercase tracking-widest">{t}</span>
-                        ))}
-                    </div>
-                </div>
-            </div>
-            <div className="flex items-center justify-between sm:justify-end gap-6 lg:gap-8">
-                <div className="text-right hidden sm:block">
-                    <p className="text-xs font-black text-foreground">{time}</p>
-                    <p className="text-[7px] font-black text-muted-foreground uppercase tracking-widest">Start</p>
-                </div>
-                <div className={`px-4 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-[0.2em] border ${status === 'Confirmed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                    status === 'Pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-                        'bg-muted text-muted-foreground border-border'
-                    }`}>
-                    {status}
-                </div>
-                <button
-                    className="h-8 w-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground group-hover:text-primary group-hover:bg-card transition-all"
-                >
-                    <ArrowUpRight className="h-4 w-4" />
-                </button>
-            </div>
-        </div>
-    )
-}
-
-function ResourceStat({ label, used, color }: any) {
-    return (
-        <div className="space-y-4">
-            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                <span className="text-muted-foreground">{label}</span>
-                <span className="text-foreground">{used}%</span>
-            </div>
-            <div className="h-2 w-full bg-muted border border-border rounded-full overflow-hidden">
-                <div className={`h-full ${color} transition-all duration-1000`} style={{ width: `${used}%` }}></div>
             </div>
         </div>
     )

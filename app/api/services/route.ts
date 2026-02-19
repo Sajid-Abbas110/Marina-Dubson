@@ -23,12 +23,9 @@ const serviceSchema = z.object({
 // GET all services
 export async function GET(request: NextRequest) {
     try {
+        // Public access allowed for listing services (Requirement 6.1 redaction will apply)
         const token = extractTokenFromHeader(request.headers.get('Authorization'))
         const payload = token ? verifyToken(token) : null
-
-        if (!payload) {
-            return NextResponse.json({ error: 'Unauthorized access to registry rates blocked.' }, { status: 401 })
-        }
 
         const { searchParams } = new URL(request.url)
         const category = searchParams.get('category')
@@ -45,7 +42,7 @@ export async function GET(request: NextRequest) {
 
         // Redact pricing for non-admin/staff
         let resultServices = services as any[]
-        if (payload.role !== 'ADMIN' && payload.role !== 'STAFF') {
+        if (!payload || (payload.role !== 'ADMIN' && payload.role !== 'STAFF')) {
             resultServices = services.map((s: any) => ({
                 id: s.id,
                 serviceName: s.serviceName,

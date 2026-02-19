@@ -81,7 +81,9 @@ export class BookingRulesService {
         const invoiceNumber = `INV-${new Date().getFullYear()}-${String(invoiceCount + 1).padStart(5, '0')}`
 
         // Create cancellation invoice
-        const invoice = await prisma.invoice.create({
+        const minFee = booking.lockedMinimumFee || MINIMUM_BOOKING_FEE
+
+        const invoice = await (prisma.invoice as any).create({
             data: {
                 invoiceNumber,
                 bookingId: booking.id,
@@ -95,12 +97,12 @@ export class BookingRulesService {
                 pages: 0,
                 pageRate: 0,
                 appearanceFee: 0,
-                minimumFee: MINIMUM_BOOKING_FEE,
-                cancellationFee: MINIMUM_BOOKING_FEE,
+                minimumFee: minFee,
+                cancellationFee: minFee,
 
-                subtotal: MINIMUM_BOOKING_FEE,
+                subtotal: minFee,
                 tax: 0,
-                total: MINIMUM_BOOKING_FEE,
+                total: minFee,
 
                 notes: `CANCELLATION FEE - Booking cancelled after deadline.\n\nOriginal Booking: ${booking.bookingNumber}\nBooking Date: ${booking.bookingDate.toLocaleDateString()}\nCancellation Deadline: ${this.calculateCancellationDeadline(new Date(booking.bookingDate)).toLocaleString()}\nCancelled: ${new Date().toLocaleString()}\n\nPer our cancellation policy, cancellations made after 3 PM on the previous business day are subject to the $400 minimum booking fee.`
             }
