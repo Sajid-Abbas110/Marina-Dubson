@@ -259,7 +259,6 @@ model EmailLog {
   @@index([sentAt])
 }
 
-
 model Bid {
   id         String   @id @default(cuid())
   bookingId  String
@@ -284,8 +283,8 @@ model TeamMember {
   lastName      String
   email         String   @unique
   phone         String?
-  position      String   // e.g., "Operations Manager", "Client Relations", "Billing Specialist"
-  department    String?  // e.g., "Operations", "Sales", "Finance"
+  position      String // e.g., "Operations Manager", "Client Relations", "Billing Specialist"
+  department    String? // e.g., "Operations", "Sales", "Finance"
   status        String   @default("ACTIVE") // ACTIVE, INACTIVE, ON_LEAVE
   hireDate      DateTime @default(now())
   avatar        String?
@@ -300,16 +299,16 @@ model TeamMember {
 }
 
 model Task {
-  id             String      @id @default(cuid())
-  title          String
-  description    String?
-  priority       String      @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
-  status         String      @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, CANCELLED
-  dueDate        DateTime?
-  completedAt    DateTime?
+  id               String      @id @default(cuid())
+  title            String
+  description      String?
+  priority         String      @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status           String      @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, CANCELLED
+  dueDate          DateTime?
+  completedAt      DateTime?
   assignedToUserId String?
   assignedToTeamId String?
-  assignedToType   String?     // "USER" or "TEAM_MEMBER"
+  assignedToType   String? // "USER" or "TEAM_MEMBER"
   createdById      String
   bookingId        String?
   createdAt        DateTime    @default(now())
@@ -317,7 +316,7 @@ model Task {
   booking          Booking?    @relation(fields: [bookingId], references: [id])
   assignedToUser   User?       @relation("AssignedTasks", fields: [assignedToUserId], references: [id])
   assignedToTeam   TeamMember? @relation("AssignedToTeamMember", fields: [assignedToTeamId], references: [id])
-  createdBy      User        @relation("CreatedTasks", fields: [createdById], references: [id])
+  createdBy        User        @relation("CreatedTasks", fields: [createdById], references: [id])
 
   @@index([assignedToUserId])
   @@index([assignedToTeamId])
@@ -326,5 +325,3 @@ model Task {
   @@index([status])
   @@index([priority])
 }
-
-

@@ -191,7 +191,7 @@ export class IntegrationOrchestrator {
             const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`
             const jobNumber = booking.bookingNumber
 
-            const localInvoice = await (prisma.invoice as any).create({
+            const localInvoice = await prisma.invoice.create({
                 data: {
                     invoiceNumber,
                     jobNumber,
@@ -216,7 +216,7 @@ export class IntegrationOrchestrator {
                     afterHoursFee: billingData.afterHoursCount ? (billingData.afterHoursCount * rates.afterHoursRate) : 0,
                     afterHoursCount: billingData.afterHoursCount,
                     waitTimeFee: billingData.waitTimeCount ? (billingData.waitTimeCount * rates.waitTimeRate) : 0,
-                    waitTimeCount: billingData.waitTimeCount,
+                    waitTimeCount: billingData.waitTimeCount ?? null,
                     subtotal,
                     minimumFee: rates.minimumFee,
                     total,
