@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from 'next'
+import { Poppins } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/lib/theme-context'
+
+const poppins = Poppins({
+    subsets: ['latin'],
+    weight: ['300', '400', '500', '600', '700'],
+    variable: '--font-poppins',
+    display: 'swap',
+})
 
 export const viewport: Viewport = {
     themeColor: '#1d3557',
@@ -26,25 +34,12 @@ export default function RootLayout({
     children: React.ReactNode
 }) {
     return (
-        <html lang="en" suppressHydrationWarning>
+        <html lang="en" suppressHydrationWarning className={poppins.variable}>
             <head>
                 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
                 <link rel="apple-touch-icon" href="/favicon.svg" />
-                <link
-                    rel="preconnect"
-                    href="https://fonts.googleapis.com"
-                />
-                <link
-                    rel="preconnect"
-                    href="https://fonts.gstatic.com"
-                    crossOrigin="anonymous"
-                />
-                <link
-                    href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap"
-                    rel="stylesheet"
-                />
             </head>
-            <body>
+            <body className="font-poppins">
                 <ThemeProvider>
                     <main className="min-h-screen">
                         {children}

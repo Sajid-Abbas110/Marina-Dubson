@@ -5,9 +5,10 @@ import {
     Search, Send, Shield, Globe, Camera, Mic, MoreHorizontal,
     Paperclip, Smile, Lock, CheckCheck, Zap, Filter, Monitor,
     Sparkles, Loader2, AlertTriangle, RefreshCw, Link2, X,
-    Download, FileText, Image, MicOff, StopCircle, Copy,
+    Download, FileText, ImageIcon, MicOff, StopCircle, Copy,
     Trash2, ChevronDown, ExternalLink
 } from 'lucide-react'
+import NextImage from 'next/image'
 
 // ─── Emoji Data ───────────────────────────────────────────────────────────────
 const EMOJIS = {
@@ -85,11 +86,13 @@ function CameraModal({ onCapture, onClose }: { onCapture: (dataUrl: string) => v
     const [error, setError] = useState('')
 
     useEffect(() => {
+        let currentStream: MediaStream | null = null
         navigator.mediaDevices.getUserMedia({ video: true }).then(s => {
+            currentStream = s
             setStream(s)
             if (videoRef.current) videoRef.current.srcObject = s
         }).catch(() => setError('Camera access denied. Please allow camera permissions.'))
-        return () => { stream?.getTracks().forEach(t => t.stop()) }
+        return () => { currentStream?.getTracks().forEach(t => t.stop()) }
     }, [])
 
     const capture = () => {
@@ -114,7 +117,13 @@ function CameraModal({ onCapture, onClose }: { onCapture: (dataUrl: string) => v
                 </div>
                 {error ? <p className="text-rose-500 text-xs font-black uppercase text-center py-8">{error}</p> : (
                     <>
-                        {!preview ? <video ref={videoRef} autoPlay className="w-full rounded-xl bg-black aspect-video" /> : <img src={preview} className="w-full rounded-xl aspect-video object-cover" alt="Preview" />}
+                        {!preview ? (
+                            <video ref={videoRef} autoPlay className="w-full rounded-xl bg-black aspect-video" />
+                        ) : (
+                            <div className="relative w-full aspect-video rounded-xl overflow-hidden">
+                                <NextImage src={preview} fill className="object-cover" alt="Preview" unoptimized />
+                            </div>
+                        )}
                         <canvas ref={canvasRef} className="hidden" />
                         <div className="flex gap-3 mt-4">
                             {!preview ? <button onClick={capture} className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"><Camera className="h-3.5 w-3.5" /> Capture</button>
@@ -140,7 +149,18 @@ function MessageBubble({ body, time, isMe, name, isPending, onCopy, onDelete }: 
     const isAudio = body?.startsWith('[AUDIO:')
 
     const renderContent = () => {
-        if (isImage) return <img src={body} alt="Image" className="max-w-[260px] rounded-xl cursor-pointer" onClick={() => window.open(body, '_blank')} />
+        if (isImage) return (
+            <div className="relative max-w-[260px] aspect-auto rounded-xl overflow-hidden cursor-pointer" onClick={() => window.open(body, '_blank')}>
+                <NextImage
+                    src={body}
+                    alt="Image"
+                    width={260}
+                    height={200}
+                    className="w-full h-auto rounded-xl"
+                    unoptimized
+                />
+            </div>
+        )
         if (isLink) {
             const [, url, text] = body.match(/\[LINK:(.*?)\|(.*?)\]/) || []
             return <a href={url} target="_blank" rel="noreferrer" className="flex items-center gap-2 underline text-xs font-medium"><ExternalLink className="h-3.5 w-3.5 flex-shrink-0" />{text}</a>

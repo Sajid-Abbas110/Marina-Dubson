@@ -202,7 +202,7 @@ export default function InvoiceDetailPage() {
                         <p className="text-sm text-gray-700 mt-1">Marina Dubson Stenographic Services, LLC</p>
                         <p className="text-sm text-gray-600">12A Saturn Lane, Staten Island, NY 10314</p>
                         <p className="text-sm text-gray-600">(917) 494-1859 &nbsp;|&nbsp; MarinaDubson@gmail.com</p>
-                        <p className="text-xs text-gray-500 italic mt-2">"Committed to accuracy, high quality and excellent customer service"</p>
+                        <p className="text-xs text-gray-500 italic mt-2">&quot;Committed to accuracy, high quality and excellent customer service&quot;</p>
                     </div>
 
                     {/* Invoice title + meta */}

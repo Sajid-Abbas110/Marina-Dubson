@@ -108,7 +108,6 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isOpen, setI
 
             {/* Sidebar */}
             <aside
-                style={{ background: 'hsl(var(--sidebar-bg))' }}
                 className={`
                     fixed inset-y-0 left-0 z-[500] flex flex-col
                     border-r transition-all duration-300 ease-in-out

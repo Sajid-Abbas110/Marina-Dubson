@@ -2,8 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Google Font Import ─── */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+/* ─── Google Font managed via next/font in layout.tsx ─── */
 
 /* ─── Design Tokens ─── */
 @layer base {
@@ -107,7 +106,7 @@
   }
 
   html {
-    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-poppins), system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
@@ -125,7 +124,7 @@
   h4,
   h5,
   h6 {
-    font-family: 'Poppins', system-ui, sans-serif;
+    font-family: var(--font-poppins), system-ui, sans-serif;
     line-height: 1.25;
     letter-spacing: -0.01em;
   }

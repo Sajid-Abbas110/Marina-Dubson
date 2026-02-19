@@ -172,7 +172,7 @@ export default function DashboardPage() {
                         Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'} 👋
                     </h2>
                     <p className="text-sm text-muted-foreground mt-0.5">
-                        Here's what's happening at Marina Dubson Stenographic today.
+                        Here&apos;s what&apos;s happening at Marina Dubson Stenographic today.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
