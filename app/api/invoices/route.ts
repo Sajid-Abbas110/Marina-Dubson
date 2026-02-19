@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { sendEmail, emailTemplates } from '@/lib/email'
 import { z } from 'zod'
+import { integrationOrchestrator } from '@/lib/integration-orchestrator'
 
 const invoiceSchema = z.object({
     bookingId: z.string(),
