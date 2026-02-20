@@ -22,8 +22,17 @@ import {
     Search,
     BadgeCheck,
     MessageSquare,
-    ShieldCheck
+    ShieldCheck,
+    Copy,
+    CheckCircle2,
+    Mail,
+    Phone,
+    Hash,
+    KeyRound,
+    Loader2,
+    Send
 } from 'lucide-react'
+import ProfileUpload from '@/app/components/ui/ProfileUpload'
 
 export default function ReporterPortal() {
     const router = useRouter()
@@ -32,6 +41,33 @@ export default function ReporterPortal() {
 
     // Helper to switch tabs via URL
     const navigateTab = (tab: string) => router.push(`/reporter/portal?tab=${tab}`)
+
+    const handleLogout = () => {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        router.push('/login')
+    }
+
+    const handleAvatarUpdate = async (url: string) => {
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/profile/update', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ avatar: url })
+            })
+            if (res.ok) {
+                const data = await res.json()
+                setUser(data.user)
+                localStorage.setItem('user', JSON.stringify(data.user))
+            }
+        } catch (error) {
+            console.error('Failed to update avatar:', error)
+        }
+    }
 
     const [user, setUser] = useState<any>(null)
     // const [activeTab, setActiveTab] = useState('overview') // Removed local state
@@ -98,10 +134,41 @@ export default function ReporterPortal() {
         }
     }, [activeTab, shouldScroll])
 
-    const handleLogout = () => {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        router.push('/login')
+    const [contactMessage, setContactMessage] = useState('')
+    const [contactSending, setContactSending] = useState(false)
+    const [contactSent, setContactSent] = useState(false)
+    const [copied, setCopied] = useState<string | null>(null)
+
+    const copyToClipboard = (text: string, key: string) => {
+        navigator.clipboard.writeText(text).then(() => {
+            setCopied(key)
+            setTimeout(() => setCopied(null), 2000)
+        })
+    }
+
+    const handleContactAdmin = async () => {
+        if (!contactMessage.trim()) return
+        setContactSending(true)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ content: `[ADMIN REQUEST] ${contactMessage}` })
+            })
+            if (res.ok) {
+                setContactSent(true)
+                setContactMessage('')
+                setTimeout(() => setContactSent(false), 4000)
+            }
+        } catch (err) {
+            console.error('Failed to contact admin:', err)
+        } finally {
+            setContactSending(false)
+        }
     }
 
 
@@ -554,58 +621,212 @@ export default function ReporterPortal() {
                 )}
 
                 {activeTab === 'settings' && (
-                    <div className="bg-card rounded-[3rem] p-12 shadow-xl border border-border animate-in fade-in slide-in-from-bottom-4 duration-700">
-                        <h3 className="text-2xl font-black text-foreground uppercase tracking-tight mb-10">Network Profile Configuration</h3>
-                        <form className="grid grid-cols-1 md:grid-cols-2 gap-10" onSubmit={async (e) => {
-                            e.preventDefault();
-                            const formData = new FormData(e.currentTarget);
-                            const update = {
-                                firstName: formData.get('firstName'),
-                                lastName: formData.get('lastName'),
-                                certification: formData.get('certification'),
-                                company: formData.get('company'),
-                            };
-                            const token = localStorage.getItem('token');
-                            const res = await fetch('/api/profile', {
-                                method: 'PATCH',
-                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                                body: JSON.stringify(update)
-                            });
-                            if (res.ok) {
-                                alert('Profile Protocol Updated Successfully');
-                                fetchUserData(true);
-                            }
-                        }}>
-                            <div className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Security ID (First Name)</label>
-                                    <input name="firstName" defaultValue={user.firstName} className="w-full bg-muted border border-border rounded-2xl p-5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-foreground" />
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+
+                        {/* ── Profile (editable fields) ── */}
+                        <div className="bg-card rounded-[2.5rem] p-6 sm:p-10 shadow-xl border border-border">
+                            <h3 className="text-xl font-black text-foreground uppercase tracking-tight mb-8">Network Profile Configuration</h3>
+                            <form className="grid grid-cols-1 md:grid-cols-2 gap-8" onSubmit={async (e) => {
+                                e.preventDefault();
+                                const formData = new FormData(e.currentTarget);
+                                const update = {
+                                    firstName: formData.get('firstName'),
+                                    lastName: formData.get('lastName'),
+                                    certification: formData.get('certification'),
+                                    company: formData.get('company'),
+                                };
+                                const token = localStorage.getItem('token');
+                                const res = await fetch('/api/profile', {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                    body: JSON.stringify(update)
+                                });
+                                if (res.ok) {
+                                    alert('Profile Protocol Updated Successfully');
+                                    fetchUserData(true);
+                                }
+                            }}>
+                                <div className="space-y-5">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Security ID (First Name)</label>
+                                        <input name="firstName" defaultValue={user.firstName} className="w-full bg-muted border border-border rounded-2xl p-5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-foreground" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Asset Code (Last Name)</label>
+                                        <input name="lastName" defaultValue={user.lastName} className="w-full bg-muted border border-border rounded-2xl p-5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-foreground" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Certification ID</label>
+                                        <input name="certification" defaultValue={user.certification} className="w-full bg-muted border border-border rounded-2xl p-5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-foreground" />
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Asset Code (Last Name)</label>
-                                    <input name="lastName" defaultValue={user.lastName} className="w-full bg-muted border border-border rounded-2xl p-5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-foreground" />
+                                <div className="space-y-5">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Associated Corporation</label>
+                                        <input name="company" defaultValue={user.company} className="w-full bg-muted border border-border rounded-2xl p-5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-foreground" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Authorized Email Node</label>
+                                        <input disabled value={user.email} className="w-full bg-muted/50 border border-border rounded-2xl p-5 text-xs font-bold outline-none opacity-50 cursor-not-allowed text-foreground" />
+                                    </div>
+                                    <div className="pt-2">
+                                        <button type="submit" className="luxury-button w-full py-5">
+                                            Commit Configuration
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Certification ID</label>
-                                    <input name="certification" defaultValue={user.certification} className="w-full bg-muted border border-border rounded-2xl p-5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-foreground" />
+                            </form>
+                        </div>
+
+                        {/* ── Account Identity & Credentials ── */}
+                        <div className="glass-panel rounded-[2rem] p-6 sm:p-8 border border-border">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+                                    <ShieldCheck className="h-5 w-5 text-primary" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-black text-foreground uppercase tracking-tight">Identity Management</h3>
+                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Biometric &amp; system credentials</p>
                                 </div>
                             </div>
-                            <div className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Associated Corporation</label>
-                                    <input name="company" defaultValue={user.company} className="w-full bg-muted border border-border rounded-2xl p-5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-foreground" />
+
+                            {/* Profile Pic Upload */}
+                            <div className="mb-8">
+                                <ProfileUpload
+                                    label="Your Digital Avatar"
+                                    currentImage={user.avatar}
+                                    onUploadComplete={handleAvatarUpdate}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                                        <Hash className="h-3 w-3" /> Your User ID
+                                    </label>
+                                    <div className="flex items-center gap-2 p-3 rounded-xl bg-muted border border-border">
+                                        <code className="flex-1 text-xs font-mono text-foreground truncate select-all">{user.id}</code>
+                                        <button
+                                            onClick={() => copyToClipboard(user.id, 'id')}
+                                            className="h-7 w-7 rounded-lg bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-primary transition-all flex-shrink-0"
+                                        >
+                                            {copied === 'id' ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Authorized Email Node</label>
-                                    <input disabled value={user.email} className="w-full bg-muted/50 border border-border rounded-2xl p-5 text-xs font-bold outline-none opacity-50 cursor-not-allowed text-foreground" />
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                                        <Mail className="h-3 w-3" /> Login Email
+                                    </label>
+                                    <div className="flex items-center gap-2 p-3 rounded-xl bg-muted border border-border">
+                                        <code className="flex-1 text-xs font-mono text-foreground truncate select-all">{user.email}</code>
+                                        <button
+                                            onClick={() => copyToClipboard(user.email, 'email')}
+                                            className="h-7 w-7 rounded-lg bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-primary transition-all flex-shrink-0"
+                                        >
+                                            {copied === 'email' ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="pt-6">
-                                    <button type="submit" className="luxury-button w-full py-5">
-                                        Commit Configuration
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                                        <ShieldCheck className="h-3 w-3" /> Account Role
+                                    </label>
+                                    <div className="p-3 rounded-xl bg-muted border border-border">
+                                        <span className="text-xs font-black text-foreground uppercase">{user.role}</span>
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                                        <KeyRound className="h-3 w-3" /> Password
+                                    </label>
+                                    <div className="flex items-center justify-between gap-2 p-3 rounded-xl bg-muted border border-border">
+                                        <span className="text-sm text-muted-foreground tracking-widest">••••••••••••</span>
+                                        <span className="text-[9px] font-black text-primary uppercase tracking-widest cursor-pointer hover:underline" onClick={() => navigateTab('messages')}>Reset via Admin</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-5 flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30">
+                                <ShieldCheck className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                                <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+                                    Contact the admin to update credentials or reset your password. For security, credentials cannot be self-modified.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* ── Contact Admin ── */}
+                        <div className="glass-panel rounded-[2rem] p-6 sm:p-8 border border-border">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="h-10 w-10 rounded-2xl bg-indigo-500/10 flex items-center justify-center">
+                                    <MessageSquare className="h-5 w-5 text-indigo-500" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-black text-foreground uppercase tracking-tight">Contact Admin</h3>
+                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">For credential changes, ID updates, or account support</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                                {[
+                                    { icon: <MessageSquare className="h-4 w-4" />, label: 'Portal Message', desc: 'Fastest — avg 2h response', action: () => navigateTab('messages'), color: 'text-primary bg-primary/10 border-primary/20' },
+                                    { icon: <Mail className="h-4 w-4" />, label: 'Email Admin', desc: 'admin@marinadubson.com', action: () => window.open('mailto:admin@marinadubson.com'), color: 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20' },
+                                    { icon: <Phone className="h-4 w-4" />, label: 'Phone Support', desc: '(212) 555-0100', action: () => window.open('tel:+12125550100'), color: 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20' },
+                                ].map((ch, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={ch.action}
+                                        className={`flex flex-col items-start gap-2 p-4 rounded-2xl border hover:shadow-lg transition-all text-left ${ch.color}`}
+                                    >
+                                        <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest">
+                                            {ch.icon} {ch.label}
+                                        </div>
+                                        <p className="text-[9px] text-muted-foreground font-medium">{ch.desc}</p>
                                     </button>
-                                </div>
+                                ))}
                             </div>
-                        </form>
+
+                            <div className="space-y-3">
+                                <label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Quick Message to Admin</label>
+                                <textarea
+                                    className="w-full p-4 rounded-2xl bg-muted/50 border border-border text-sm font-medium text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/20 min-h-[110px] resize-none"
+                                    placeholder="Describe your request — e.g. 'Please reset my password' or 'Update my User ID credentials to...' "
+                                    value={contactMessage}
+                                    onChange={(e) => setContactMessage(e.target.value)}
+                                />
+                                {contactSent && (
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/30 animate-in fade-in duration-300">
+                                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                                        <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">Message sent! Admin team will respond shortly.</p>
+                                    </div>
+                                )}
+                                <button
+                                    onClick={handleContactAdmin}
+                                    disabled={contactSending || !contactMessage.trim()}
+                                    className="luxury-button w-full py-4 flex items-center justify-center gap-2 disabled:opacity-50"
+                                >
+                                    {contactSending ? (
+                                        <><Loader2 className="h-4 w-4 animate-spin" /> Sending...</>
+                                    ) : (
+                                        <><Send className="h-4 w-4" /> Send to Admin</>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Sign Out */}
+                        <div className="glass-panel rounded-[2rem] p-6 border border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div>
+                                <h4 className="text-sm font-black text-foreground uppercase">Sign Out</h4>
+                                <p className="text-xs text-muted-foreground mt-0.5">You will be redirected to the login page.</p>
+                            </div>
+                            <button
+                                onClick={handleLogout}
+                                className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-destructive/30 text-destructive text-xs font-black uppercase tracking-widest hover:bg-destructive hover:text-white transition-all flex-shrink-0"
+                            >
+                                <LogOut className="h-4 w-4" /> Sign Out
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>

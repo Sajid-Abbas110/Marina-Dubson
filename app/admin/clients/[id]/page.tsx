@@ -24,8 +24,10 @@ import {
     Award,
     Save,
     Zap,
-    X
+    X,
+    Check
 } from 'lucide-react'
+import ProfileUpload from '@/app/components/ui/ProfileUpload'
 
 export default function UserProfilePage() {
     const router = useRouter()
@@ -231,7 +233,13 @@ export default function UserProfilePage() {
                             <ProfileField icon={<Building2 />} label="Affiliation" value={isClient ? user.company : user.certification} isEditing={isEditing} field={isClient ? "company" : "certification"} val={isClient ? editData.company : editData.certification} onChange={(v: any) => setEditData({ ...editData, [isClient ? 'company' : 'certification']: v })} />
                             <ProfileField icon={<Calendar />} label="Inauguration" value={format(new Date(user.createdAt), 'MMMM dd, yyyy')} isEditing={false} />
                             {isEditing && (
-                                <ProfileField icon={<Upload />} label="Avatar Stream" value={user.avatar} isEditing={true} field="avatar" val={editData.avatar} onChange={(v: any) => setEditData({ ...editData, avatar: v })} />
+                                <div className="pt-2">
+                                    <ProfileUpload
+                                        label="Avatar Stream"
+                                        currentImage={editData.avatar}
+                                        onUploadComplete={(url) => setEditData({ ...editData, avatar: url })}
+                                    />
+                                </div>
                             )}
                         </div>
                     </div>
@@ -387,26 +395,23 @@ export default function UserProfilePage() {
                                 />
                             </div>
 
-                            <div className="flex gap-4 pt-6">
+                            <div className="flex gap-4 pt-8">
                                 <button
                                     type="button"
                                     onClick={() => setShowTaskModal(false)}
-                                    className="flex-1 py-5 rounded-2xl bg-gray-50 dark:bg-white/5 text-[10px] font-black uppercase text-gray-400 hover:text-gray-900 transition-all font-poppins"
+                                    className="flex-1 py-4 px-6 rounded-2xl bg-muted text-muted-foreground font-black text-[10px] uppercase tracking-widest hover:bg-muted/80 transition-all border border-border"
                                 >
                                     Abort
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={savingTask}
-                                    className="flex-[2] luxury-btn py-6 vibrant-collage shadow-2xl shadow-primary/20 flex items-center justify-center gap-4 group disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-[2] py-4 px-6 rounded-2xl bg-primary text-white font-black text-[11px] uppercase tracking-widest hover:shadow-xl hover:shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 group relative overflow-hidden"
                                 >
-                                    {savingTask ? (
-                                        <Loader2 className="h-5 w-5 animate-spin" />
-                                    ) : (
-                                        <>
-                                            Authorize Mission Deployment <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                                        </>
-                                    )}
+                                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                                    {savingTask ? <Loader2 className="h-4 w-4 animate-spin text-white" /> : <Check className="h-4 w-4" />}
+                                    <span>Authorize Deployment</span>
+                                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                 </button>
                             </div>
                         </form>

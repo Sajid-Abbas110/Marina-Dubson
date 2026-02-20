@@ -204,6 +204,14 @@
     @apply block text-sm font-semibold text-foreground mb-1.5;
   }
 
+  .luxury-input {
+    @apply w-full bg-muted/30 border border-border rounded-2xl px-5 py-4 text-sm font-medium text-foreground placeholder:text-muted-foreground/50 outline-none focus:bg-background focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all duration-300;
+  }
+
+  .luxury-select {
+    @apply w-full bg-muted/30 border border-border rounded-2xl px-5 py-4 text-sm font-black uppercase tracking-widest text-foreground appearance-none outline-none focus:bg-background focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all duration-300 cursor-pointer;
+  }
+
   /* Status Badges */
   .badge {
     @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold;

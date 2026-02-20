@@ -297,3 +297,4 @@ The foundation is solid with:
 - Cross-platform support
 
 Start by setting up the database and creating your first admin user!
+it must reme

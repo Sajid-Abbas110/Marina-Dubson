@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -27,6 +27,32 @@ export default function LoginPortal() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState(false)
+    const [rememberMe, setRememberMe] = useState(false)
+
+    // On mount: restore remembered email, check if already logged in
+    useEffect(() => {
+        const rememberedEmail = localStorage.getItem('rememberedEmail')
+        const rememberedFlag = localStorage.getItem('rememberMe')
+        if (rememberedEmail && rememberedFlag === 'true') {
+            setEmail(rememberedEmail)
+            setRememberMe(true)
+        }
+
+        // Auto-redirect if token already exists
+        const token = localStorage.getItem('token')
+        const userStr = localStorage.getItem('user')
+        if (token && userStr) {
+            try {
+                const user = JSON.parse(userStr)
+                if (user.role === 'ADMIN') router.replace('/admin/dashboard')
+                else if (user.role === 'REPORTER') router.replace('/reporter/portal')
+                else if (user.role === 'STAFF') router.replace('/staff/portal')
+                else router.replace('/client/portal')
+            } catch {
+                // invalid stored user, stay on login
+            }
+        }
+    }, [router])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -47,9 +73,19 @@ export default function LoginPortal() {
                 localStorage.setItem('token', data.token)
                 localStorage.setItem('user', JSON.stringify(data.user))
 
+                // Handle Remember Me
+                if (rememberMe) {
+                    localStorage.setItem('rememberedEmail', email)
+                    localStorage.setItem('rememberMe', 'true')
+                } else {
+                    localStorage.removeItem('rememberedEmail')
+                    localStorage.setItem('rememberMe', 'false')
+                }
+
                 setTimeout(() => {
                     if (data.user.role === 'ADMIN') router.push('/admin/dashboard')
                     else if (data.user.role === 'REPORTER') router.push('/reporter/portal')
+                    else if (data.user.role === 'STAFF') router.push('/staff/portal')
                     else router.push('/client/portal')
                 }, 1000)
             } else {
@@ -231,6 +267,34 @@ export default function LoginPortal() {
                                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                     </button>
                                 </div>
+                            </div>
+
+                            {/* Remember Me */}
+                            <div className="flex items-center gap-3 py-1">
+                                <button
+                                    type="button"
+                                    onClick={() => setRememberMe(!rememberMe)}
+                                    id="remember-me-toggle"
+                                    className={`relative h-5 w-5 rounded flex items-center justify-center border-2 transition-all duration-200 flex-shrink-0 ${rememberMe
+                                        ? 'bg-primary border-primary'
+                                        : 'bg-transparent border-border hover:border-primary/50'
+                                        }`}
+                                    aria-checked={rememberMe}
+                                    role="checkbox"
+                                >
+                                    {rememberMe && (
+                                        <svg className="h-3 w-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    )}
+                                </button>
+                                <label
+                                    htmlFor="remember-me-toggle"
+                                    className="text-sm text-muted-foreground cursor-pointer select-none"
+                                    onClick={() => setRememberMe(!rememberMe)}
+                                >
+                                    Remember my email on this device
+                                </label>
                             </div>
 
                             {/* Submit */}
