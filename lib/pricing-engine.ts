@@ -90,36 +90,41 @@ export class PricingEngine {
         waitTimeCount?: number,
         isRemote?: boolean
     }): { subtotal: number, total: number } {
-        let subtotal = 0
+        // BASE CHARGES: Appearance, Congestion, Pages, Copies
+        let baseSubtotal = 0
+        baseSubtotal += (data.pages * rates.pageRate * data.originalCopies)
+        baseSubtotal += (data.pages * rates.copyRate * data.additionalCopies)
+        baseSubtotal += (data.isRemote ? rates.appearanceFeeRemote : rates.appearanceFeeInPerson)
+        baseSubtotal += rates.congestionFee
 
-        // 1. Original + Copies
-        subtotal += (data.pages * rates.pageRate * data.originalCopies)
-        subtotal += (data.pages * rates.copyRate * data.additionalCopies)
+        // Apply Minimum Fee only to base charges
+        const baseTotal = Math.max(baseSubtotal, rates.minimumFee)
 
-        // 2. Appearance + Congestion
-        subtotal += (data.isRemote ? rates.appearanceFeeRemote : rates.appearanceFeeInPerson)
-        subtotal += rates.congestionFee
+        // PREMIUM EXTRAS: These add ON TOP of the base coverage
+        let extrasTotal = 0
 
-        // 3. Realtime
+        // 1. Realtime
         if (data.realtimeDevices && data.realtimeDevices > 0) {
-            subtotal += (data.pages * rates.realtimeDeviceRate * data.realtimeDevices)
+            extrasTotal += (data.pages * rates.realtimeDeviceRate * data.realtimeDevices)
         }
 
-        // 4. Rough
+        // 2. Rough
         if (data.hasRough) {
-            subtotal += (data.pages * rates.roughRate)
+            extrasTotal += (data.pages * rates.roughRate)
         }
 
-        // 5. Add-ons
-        if (data.hasVideographer) subtotal += (data.pages * rates.videographerRate)
-        if (data.hasInterpreter) subtotal += (data.pages * rates.interpreterRate)
-        if (data.hasExpert) subtotal += (data.pages * rates.expertRate)
+        // 3. Specialized Components
+        if (data.hasVideographer) extrasTotal += (data.pages * rates.videographerRate)
+        if (data.hasInterpreter) extrasTotal += (data.pages * rates.interpreterRate)
+        if (data.hasExpert) extrasTotal += (data.pages * rates.expertRate)
 
-        // 6. Hourly Surcharges
-        if (data.afterHoursCount) subtotal += (data.afterHoursCount * rates.afterHoursRate)
-        if (data.waitTimeCount) subtotal += (data.waitTimeCount * rates.waitTimeRate)
+        // 4. Hourly Surcharges
+        if (data.afterHoursCount) extrasTotal += (data.afterHoursCount * rates.afterHoursRate)
+        if (data.waitTimeCount) extrasTotal += (data.waitTimeCount * rates.waitTimeRate)
 
-        const total = Math.max(subtotal, rates.minimumFee)
+        const total = baseTotal + extrasTotal
+        const subtotal = baseSubtotal + extrasTotal
+
         return { subtotal, total }
     }
 

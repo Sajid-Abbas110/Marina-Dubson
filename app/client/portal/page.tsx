@@ -181,6 +181,25 @@ export default function ClientPortal() {
         }
     }
 
+    const handleDeleteBooking = async (id: string) => {
+        if (!confirm('Are you sure you want to cancel this assignment protocol? This action is irreversible.')) return
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch(`/api/bookings?id=${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            if (res.ok) {
+                setBookings(bookings.filter(b => b.id !== id))
+            } else {
+                const err = await res.json()
+                alert(`Cancellation Failed: ${err.error}`)
+            }
+        } catch (error) {
+            console.error('Delete booking failed:', error)
+        }
+    }
+
     const [contactMessage, setContactMessage] = useState('')
     const [contactSending, setContactSending] = useState(false)
     const [contactSent, setContactSent] = useState(false)
@@ -347,14 +366,25 @@ export default function ClientPortal() {
                                                 <p className="text-xs font-medium text-muted-foreground">{format(new Date(booking.bookingDate), 'EEEE, MMMM dd, yyyy')}</p>
                                             </div>
                                         </div>
-                                        <div className="flex flex-col items-end gap-3">
-                                            <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-colors
-                                                        ${booking.bookingStatus === 'COMPLETED' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-                                                    booking.bookingStatus === 'ACCEPTED' ? 'bg-rose-50 text-rose-600 border-rose-100 animate-pulse' :
-                                                        booking.bookingStatus === 'CONFIRMED' ? 'bg-primary/5 text-primary border-primary/10' :
-                                                            'bg-muted text-muted-foreground border-border'}`}>
-                                                {booking.bookingStatus}
-                                            </span>
+                                        <div className="flex flex-col items-end gap-3 shrink-0">
+                                            <div className="flex items-center gap-3">
+                                                <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-colors
+                                                            ${booking.bookingStatus === 'COMPLETED' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
+                                                        booking.bookingStatus === 'ACCEPTED' ? 'bg-rose-50 text-rose-600 border-rose-100 animate-pulse' :
+                                                            booking.bookingStatus === 'CONFIRMED' ? 'bg-primary/5 text-primary border-primary/10' :
+                                                                'bg-muted text-muted-foreground border-border'}`}>
+                                                    {booking.bookingStatus}
+                                                </span>
+                                                {booking.bookingStatus === 'SUBMITTED' && (
+                                                    <button
+                                                        onClick={() => handleDeleteBooking(booking.id)}
+                                                        className="h-8 w-8 rounded-lg bg-rose-500/10 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all"
+                                                        title="Cancel Assignment"
+                                                    >
+                                                        <Clock className="h-4 w-4" />
+                                                    </button>
+                                                )}
+                                            </div>
                                             {booking.bookingStatus === 'ACCEPTED' && (
                                                 <Link href={`/client/confirm/${booking.id}`} className="text-[10px] font-black text-rose-600 uppercase underline tracking-widest">
                                                     Confirm Now

@@ -202,70 +202,70 @@ export default function BookingManagementPage() {
             expertRate: 2.00,
             afterHoursRate: 125,
             waitTimeRate: 100,
-            minFee: booking.lockedMinimumFee || 500
+            minFee: booking.lockedMinimumFee || 400 // Corrected to 400 default as per user request
         }
 
         const breakdown = []
-        let currentSub = 0
 
-        // 1. Pages Base
+        // 1. BASE CHARGES
+        let currentBase = 0
         const pageCharge = billingData.pages * rates.pageRate
         if (pageCharge > 0) {
             breakdown.push({ label: 'Original Transcript', value: pageCharge, detail: `${billingData.pages} pgs @ $${rates.pageRate}` })
-            currentSub += pageCharge
+            currentBase += pageCharge
         }
 
-        // 2. Copies (Printing)
         if (billingData.additionalCopies > 0) {
             const copyCharge = billingData.pages * rates.copyRate * billingData.additionalCopies
             breakdown.push({ label: 'Transcript Copies (Printing)', value: copyCharge, detail: `${billingData.additionalCopies} sets @ $${rates.copyRate}/pg` })
-            currentSub += copyCharge
+            currentBase += copyCharge
         }
 
-        // 3. Logistics
+        // Logistics (Base + Congestion)
         breakdown.push({ label: 'Logistics & Appearance', value: rates.appearance + rates.congestion, detail: 'Base + Congestion Fee' })
-        currentSub += (rates.appearance + rates.congestion)
+        currentBase += (rates.appearance + rates.congestion)
 
-        // 4. Components Matrix
+        // Apply Minimum Fee floor to BASE
+        const baseTotal = Math.max(currentBase, rates.minFee)
+        if (baseTotal > currentBase) {
+            breakdown.push({ label: 'Minimum Fee Offset', value: rates.minFee - currentBase, detail: `Adjusted to $${rates.minFee}` })
+        }
+
+        // 2. EXTRAS (Additive)
+        let currentExtras = 0
         if (billingData.hasRough) {
             const rough = billingData.pages * rates.roughRate
-            breakdown.push({ label: 'Rough Draft Premium', value: rough, detail: `+$${rates.roughRate}/pg` })
-            currentSub += rough
+            breakdown.push({ label: 'Rough Draft Premium', value: rough, detail: `+$${rates.roughRate}/pg (Additive)` })
+            currentExtras += rough
         }
         if (billingData.hasVideographer) {
             const video = billingData.pages * rates.videoRate
-            breakdown.push({ label: 'Videography Component', value: video, detail: `+$${rates.videoRate}/pg` })
-            currentSub += video
+            breakdown.push({ label: 'Videography Component', value: video, detail: `+$${rates.videoRate}/pg (Additive)` })
+            currentExtras += video
         }
         if (billingData.hasInterpreter) {
             const interp = billingData.pages * rates.interpreterRate
-            breakdown.push({ label: 'Interpreter Coordination', value: interp, detail: `+$${rates.interpreterRate}/pg` })
-            currentSub += interp
+            breakdown.push({ label: 'Interpreter Coordination', value: interp, detail: `+$${rates.interpreterRate}/pg (Additive)` })
+            currentExtras += interp
         }
         if (billingData.hasExpert) {
             const expert = billingData.pages * rates.expertRate
-            breakdown.push({ label: 'Expert Witness Logistics', value: expert, detail: `+$${rates.expertRate}/pg` })
-            currentSub += expert
+            breakdown.push({ label: 'Expert Witness Logistics', value: expert, detail: `+$${rates.expertRate}/pg (Additive)` })
+            currentExtras += expert
         }
 
-        // 5. Hourly
         if (billingData.afterHoursCount > 0) {
             const ah = billingData.afterHoursCount * rates.afterHoursRate
             breakdown.push({ label: 'Afterhours Surcharge', value: ah, detail: `${billingData.afterHoursCount} hrs @ $${rates.afterHoursRate}` })
-            currentSub += ah
+            currentExtras += ah
         }
         if (billingData.waitTimeCount > 0) {
             const wt = billingData.waitTimeCount * rates.waitTimeRate
             breakdown.push({ label: 'Wait Time Surcharge', value: wt, detail: `${billingData.waitTimeCount} hrs @ $${rates.waitTimeRate}` })
-            currentSub += wt
+            currentExtras += wt
         }
 
-        const total = Math.max(currentSub, rates.minFee)
-        if (total > currentSub) {
-            breakdown.push({ label: 'Minimum Fee Offset', value: rates.minFee - currentSub, detail: `Adjusted to $${rates.minFee}` })
-        }
-
-        return { subtotal: currentSub, total, breakdown }
+        return { subtotal: currentBase + currentExtras, total: baseTotal + currentExtras, breakdown }
     }
 
     const calculation = getDraftCalculation()

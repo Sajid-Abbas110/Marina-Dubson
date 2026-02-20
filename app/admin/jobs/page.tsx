@@ -252,7 +252,7 @@ export default function AdministrativeJobNexus() {
                     </div>
                     <button
                         onClick={() => setShowAddModal(true)}
-                        className="luxury-button flex items-center gap-2 px-6 py-2.5 text-[9px] w-full sm:w-auto justify-center h-10"
+                        className="luxury-btn flex items-center gap-2 px-6 py-2.5 text-[9px] w-full sm:w-auto justify-center h-10"
                     >
                         <Plus className="h-4 w-4" /> Initiate Job Node
                     </button>
@@ -417,7 +417,7 @@ export default function AdministrativeJobNexus() {
                                 <button
                                     type="submit"
                                     disabled={saving}
-                                    className="flex-[2] luxury-button py-5 shadow-xl shadow-primary/20 flex items-center justify-center gap-3"
+                                    className="flex-[2] luxury-btn py-5 shadow-xl shadow-primary/20 flex items-center justify-center gap-3"
                                 >
                                     {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Authorize Deployment <ArrowRight className="h-4 w-4" /></>}
                                 </button>
@@ -512,7 +512,7 @@ export default function AdministrativeJobNexus() {
                                 <button
                                     type="submit"
                                     disabled={saving}
-                                    className="flex-[2] luxury-button py-5 shadow-xl transition-all"
+                                    className="flex-[2] luxury-btn py-5 shadow-xl transition-all"
                                 >
                                     {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Update Job Node'}
                                 </button>

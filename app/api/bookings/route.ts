@@ -284,3 +284,54 @@ export async function POST(request: NextRequest) {
         )
     }
 }
+
+// DELETE a booking
+export async function DELETE(request: NextRequest) {
+    try {
+        const token = extractTokenFromHeader(request.headers.get('Authorization'))
+        const payload = token ? verifyToken(token) : null
+
+        if (!payload) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        const { searchParams } = new URL(request.url)
+        const id = searchParams.get('id')
+
+        if (!id) {
+            return NextResponse.json({ error: 'Booking ID required' }, { status: 400 })
+        }
+
+        // Fetch booking to verify ownership
+        const booking = await prisma.booking.findUnique({
+            where: { id },
+            include: { contact: true }
+        })
+
+        if (!booking) {
+            return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
+        }
+
+        // Authorization: Admin can delete any, users/reporters can only delete their own
+        const isOwner = booking.contact?.email === payload.email || booking.userId === payload.userId || booking.reporterId === payload.userId
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(payload.role?.toUpperCase() || '')
+
+        if (!isOwner && !isAdmin) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+        }
+
+        // Only allow deletion if NOT completed
+        if (booking.bookingStatus === 'COMPLETED' && !isAdmin) {
+            return NextResponse.json({ error: 'Cannot delete completed bookings' }, { status: 400 })
+        }
+
+        await prisma.booking.delete({
+            where: { id }
+        })
+
+        return NextResponse.json({ message: 'Booking deleted successfully' })
+    } catch (error) {
+        console.error('Delete booking error:', error)
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
+}

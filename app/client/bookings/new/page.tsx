@@ -19,7 +19,8 @@ import {
     ChevronRight,
     Globe,
     Briefcase,
-    Zap
+    Zap,
+    Loader2
 } from 'lucide-react'
 
 export default function NewBookingPage() {
@@ -268,11 +269,21 @@ export default function NewBookingPage() {
                                 </button>
                                 <button
                                     onClick={handleSubmit}
-                                    className="luxury-btn py-5 px-12 shadow-2xl shadow-blue-500/30"
+                                    disabled={loading}
+                                    className="luxury-btn py-5 px-12 shadow-2xl shadow-blue-500/30 flex items-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed group"
                                 >
-                                    Confirm & Deploy <Zap className="h-5 w-5" />
+                                    {loading ? (
+                                        <>Deploying Node... <Loader2 className="h-5 w-5 animate-spin" /></>
+                                    ) : (
+                                        <>Confirm & Deploy <Zap className="h-5 w-5 group-hover:scale-125 transition-transform" /></>
+                                    )}
                                 </button>
                             </div>
+                            {loading && (
+                                <p className="text-[10px] font-black text-primary animate-pulse text-center mt-6 uppercase tracking-[0.3em]">
+                                    Establishing Secure Connection to Reporter Node...
+                                </p>
+                            )}
                         </div>
                     )}
 

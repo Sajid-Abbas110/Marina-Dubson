@@ -231,10 +231,10 @@ export default function BookingConfirmationPage() {
                                     <button
                                         onClick={handleSubmit}
                                         disabled={submitting || !confirmedScheduling || !confirmedCancellation || !confirmedFinancial}
-                                        className={`w-full py-5 rounded-2xl font-black text-xs uppercase tracking-[0.4em] transition-all flex items-center justify-center gap-3 shadow-2xl
+                                        className={`luxury-btn w-full py-5 shadow-2xl transition-all flex items-center justify-center gap-3
                                             ${submitting || !confirmedScheduling || !confirmedCancellation || !confirmedFinancial
-                                                ? 'bg-muted text-muted-foreground cursor-not-allowed'
-                                                : 'bg-primary text-white hover:scale-[1.02] active:scale-95 shadow-primary/30'
+                                                ? 'opacity-50 grayscale cursor-not-allowed shadow-none scale-100'
+                                                : ''
                                             }`}
                                     >
                                         {submitting ? (

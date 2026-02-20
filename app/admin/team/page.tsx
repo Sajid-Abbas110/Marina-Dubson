@@ -437,9 +437,8 @@ export default function TeamManagementPage() {
                                 <button
                                     type="submit"
                                     disabled={saving}
-                                    className="flex-[2] py-4 px-6 rounded-2xl bg-primary text-white font-black text-[11px] uppercase tracking-widest hover:shadow-xl hover:shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 group relative overflow-hidden"
+                                    className="flex-[2] luxury-btn py-4 px-6 shadow-xl shadow-primary/20 flex items-center justify-center gap-3 active:scale-95"
                                 >
-                                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                                     {saving ? <Loader2 className="h-4 w-4 animate-spin text-white" /> : <Check className="h-4 w-4" />}
                                     <span>Authorize Assignment</span>
                                     <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
