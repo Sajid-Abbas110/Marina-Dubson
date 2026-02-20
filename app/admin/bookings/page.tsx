@@ -34,6 +34,9 @@ export default function BookingManagementPage() {
     useEffect(() => {
         const q = searchParams.get('q')
         if (q) setSearchQuery(q)
+        const f = searchParams.get('filter')
+        if (f) setFilter(f)
+        else setFilter('ALL')
     }, [searchParams])
 
     const [showBidsModal, setShowBidsModal] = useState(false)
@@ -296,11 +299,13 @@ export default function BookingManagementPage() {
             </div>
 
             {/* Matrix Filters */}
-            <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                <FilterTab active={filter === 'ALL'} onClick={() => setFilter('ALL')} label="Full Matrix" count={(bookings || []).length.toString()} />
-                <FilterTab active={filter === 'SUBMITTED'} onClick={() => setFilter('SUBMITTED')} label="Requires Review" count={(bookings || []).filter(b => b.bookingStatus === 'SUBMITTED').length.toString()} />
-                <FilterTab active={filter === 'ACCEPTED'} onClick={() => setFilter('ACCEPTED')} label="Active Logistics" count={(bookings || []).filter(b => b.bookingStatus === 'ACCEPTED').length.toString()} />
-                <div className="ml-auto h-10 w-10 rounded-xl bg-card border border-border flex items-center justify-center shadow-sm cursor-pointer hover:bg-muted hover:border-primary/20 transition-all text-muted-foreground">
+            <div className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar px-1 sm:px-0 relative">
+                <div className="flex items-center gap-2 flex-nowrap pr-16 sm:pr-0 w-max sm:w-auto">
+                    <FilterTab active={filter === 'ALL'} onClick={() => setFilter('ALL')} label="Full Matrix" count={(bookings || []).length.toString()} />
+                    <FilterTab active={filter === 'SUBMITTED'} onClick={() => setFilter('SUBMITTED')} label="Requires Review" count={(bookings || []).filter(b => b.bookingStatus === 'SUBMITTED').length.toString()} />
+                    <FilterTab active={filter === 'ACCEPTED'} onClick={() => setFilter('ACCEPTED')} label="Active Logistics" count={(bookings || []).filter(b => b.bookingStatus === 'ACCEPTED').length.toString()} />
+                </div>
+                <div className="ml-auto flex-shrink-0 h-10 w-10 rounded-xl bg-card border border-border flex items-center justify-center shadow-sm cursor-pointer hover:bg-muted hover:border-primary/20 transition-all text-muted-foreground sticky right-0 bg-background/80 backdrop-blur-sm sm:static sm:bg-transparent sm:backdrop-none">
                     <Filter className="h-3.5 w-3.5" />
                 </div>
             </div>
@@ -361,7 +366,7 @@ export default function BookingManagementPage() {
                                 </div>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6 lg:gap-12 px-2 sm:px-0">
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-6 lg:gap-12 w-full sm:w-auto px-1 sm:px-0">
                                 {/* Assignment Bridge */}
                                 <div className="flex flex-row sm:flex-col gap-3 items-center sm:items-end min-w-[120px]">
                                     <p className="hidden sm:block text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">Assignment</p>

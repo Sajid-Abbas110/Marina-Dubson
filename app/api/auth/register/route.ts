@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
 
         // Send Welcome Email
         try {
-            const loginLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login`
+            const loginLink = `${process.env.NEXT_PUBLIC_APP_URL || 'https://marina-dubson.vercel.app'}/login`
             const emailTemplate = emailTemplates.welcomeEmail(user.firstName, user.role, loginLink)
 
             await sendEmail({

@@ -36,7 +36,7 @@ export async function POST(
             return NextResponse.json({ error: 'Invoice already paid' }, { status: 400 })
         }
 
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://marina-dubson.vercel.app'
 
         // Build line items from the invoice
         const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = []

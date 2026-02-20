@@ -122,7 +122,7 @@ $body = @{
     role = "ADMIN"
 } | ConvertTo-Json
 
-Invoke-RestMethod -Uri "http://localhost:3000/api/auth/register" -Method POST -Body $body -ContentType "application/json"
+Invoke-RestMethod -Uri "https://marina-dubson.vercel.app/api/auth/register" -Method POST -Body $body -ContentType "application/json"
 ```
 
 ### 4. Configure Email Service
@@ -255,7 +255,7 @@ Before deploying to production:
 
 ## 📊 Current Status
 
-**Development Server:** ✅ Running on http://localhost:3000
+**Production Server:** ✅ Running on https://marina-dubson.vercel.app
 
 **Build Status:** ✅ Successfully passing `npm run build`
 

@@ -4,19 +4,31 @@ import { useState } from 'react'
 import AdminSidebar from './components/AdminSidebar'
 import AdminHeader from './components/AdminHeader'
 import ProtectedRoute from '@/app/components/ProtectedRoute'
-import { LayoutDashboard, Calendar, Users, FileText, Settings, BarChart3, Zap, MessageSquare } from 'lucide-react'
+import { LayoutDashboard, CalendarDays, ClipboardList, Users, FileText, Settings, BarChart3, Zap, MessageSquare, UsersRound, UserCheck, UserCog } from 'lucide-react'
 import MobileTabNavigation from '@/app/components/MobileTabNavigation'
 
 const adminMobileNav = [
     { name: 'Home', href: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Book', href: '/admin/calendar', icon: Calendar },
-    { name: 'Clients', href: '/admin/clients', icon: Users },
+    {
+        name: 'Bookings',
+        href: '/admin/bookings',
+        icon: ClipboardList,
+        subTabs: [
+            { name: 'Pending', href: '/admin/bookings?filter=SUBMITTED' },
+            { name: 'Active', href: '/admin/bookings?filter=ACCEPTED' },
+            { name: 'Completed', href: '/admin/bookings?filter=COMPLETED' },
+            { name: 'Declined', href: '/admin/bookings?filter=DECLINED' },
+        ]
+    },
+    { name: 'Calendar', href: '/admin/calendar', icon: CalendarDays, variant: 'calendar' as const },
+    { name: 'Messages', href: '/admin/messages', icon: MessageSquare },
     { name: 'Invoices', href: '/admin/invoices', icon: FileText },
-    { name: 'Team', href: '/admin/team', icon: Users },
+    { name: 'Clients', href: '/admin/clients', icon: UserCheck },
+    { name: 'Team', href: '/admin/team', icon: UsersRound },
+    { name: 'Reporters', href: '/admin/reporters', icon: UserCog },
     { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
     { name: 'Analytics', href: '/admin/analytics', icon: Zap },
-    { name: 'Messages', href: '/admin/messages', icon: MessageSquare },
-    { name: 'Core', href: '/admin/settings', icon: Settings },
+    { name: 'Settings', href: '/admin/settings', icon: Settings },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

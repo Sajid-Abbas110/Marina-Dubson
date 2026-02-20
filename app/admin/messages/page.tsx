@@ -23,7 +23,7 @@ function EmojiPicker({ onSelect, onClose }: { onSelect: (e: string) => void; onC
     const tabs = Object.keys(EMOJIS)
     const emojis = Object.values(EMOJIS)[tab]
     return (
-        <div className="absolute bottom-full mb-3 left-0 w-[320px] bg-card border border-border rounded-2xl shadow-2xl z-[200] animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div className="absolute bottom-full mb-3 right-0 w-[280px] sm:w-[320px] bg-card border border-border rounded-2xl shadow-2xl z-[200] animate-in fade-in slide-in-from-bottom-4 duration-200 overflow-hidden">
             <div className="flex items-center justify-between p-3 border-b border-border">
                 <div className="flex gap-1">
                     {tabs.map((t, i) => (
@@ -547,8 +547,8 @@ export default function TacticalCommMatrix() {
             <input ref={fileInputRef} type="file" className="hidden" accept="image/*,.pdf,.doc,.docx,.txt,.xlsx" onChange={e => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); e.target.value = '' }} />
 
             {/* ── Sidebar ── */}
-            <div className="xl:w-[300px] w-full flex flex-col gap-4 flex-shrink-0 animate-in fade-in slide-in-from-left-8 duration-700">
-                <div className="glass-panel p-5 space-y-4 rounded-[2rem] border border-border bg-card">
+            <div className={`xl:w-[300px] w-full flex-col gap-4 flex-shrink-0 animate-in fade-in slide-in-from-left-8 duration-700 ${activeChat ? 'hidden xl:flex' : 'flex h-full'}`}>
+                <div className="glass-panel p-5 space-y-4 rounded-[2rem] border border-border bg-card flex-shrink-0">
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-lg font-black text-foreground tracking-tighter uppercase leading-none">Comm <span className="brand-gradient italic">Matrix</span></h1>
@@ -570,8 +570,8 @@ export default function TacticalCommMatrix() {
                     </div>
                 </div>
 
-                <div className="flex-1 glass-panel rounded-[2rem] flex flex-col overflow-hidden min-h-[280px] border border-border bg-card">
-                    <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-muted/30">
+                <div className="flex-1 glass-panel rounded-[2rem] flex flex-col overflow-hidden min-h-0 border border-border bg-card">
+                    <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-muted/30 flex-shrink-0">
                         <span className="text-[9px] font-black tracking-[0.3em] text-muted-foreground uppercase">Linked Channels</span>
                         <Filter className="h-3.5 w-3.5 text-muted-foreground" />
                     </div>
@@ -608,12 +608,15 @@ export default function TacticalCommMatrix() {
             </div>
 
             {/* ── Chat Panel ── */}
-            <div className="flex-1 glass-panel rounded-[2.5rem] flex flex-col overflow-hidden relative animate-in fade-in slide-in-from-right-8 duration-700 shadow-2xl shadow-primary/5 border border-border bg-card">
+            <div className={`flex-1 glass-panel rounded-[2.5rem] flex-col overflow-hidden relative animate-in fade-in slide-in-from-right-8 duration-700 shadow-2xl shadow-primary/5 border border-border bg-card ${activeChat ? 'flex h-full' : 'hidden xl:flex'}`}>
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-emerald-500 to-teal-500 z-50" />
 
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-border bg-background/50 flex items-center justify-between backdrop-blur-3xl">
+                <div className="px-6 py-4 border-b border-border bg-background/50 flex items-center justify-between backdrop-blur-3xl flex-shrink-0">
                     <div className="flex items-center gap-4">
+                        <button onClick={() => setActiveChat(null)} className="xl:hidden h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-all">
+                            <ChevronDown className="h-5 w-5 rotate-90" />
+                        </button>
                         {activeConv ? (
                             <>
                                 <div className="relative">
@@ -621,8 +624,8 @@ export default function TacticalCommMatrix() {
                                     <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 border-2 border-background rounded-full ${sseConnected ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'}`} />
                                 </div>
                                 <div>
-                                    <div className="flex items-center gap-2"><h3 className="text-lg font-black text-foreground tracking-widest uppercase">{activeConv.name}</h3><Shield className="h-3 w-3 text-primary" /></div>
-                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em]">{activeConv.role} • {sseConnected ? '🟢 LIVE' : '🟡 Connecting...'}</p>
+                                    <div className="flex items-center gap-2"><h3 className="text-lg font-black text-foreground tracking-widest uppercase truncate max-w-[150px] sm:max-w-none">{activeConv.name}</h3><Shield className="h-3 w-3 text-primary" /></div>
+                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em]">{activeConv.role} • {sseConnected ? 'LIVE' : 'Connecting...'}</p>
                                 </div>
                             </>
                         ) : (
@@ -658,7 +661,7 @@ export default function TacticalCommMatrix() {
                 </div>
 
                 {/* Messages */}
-                <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-5 custom-scrollbar">
+                <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-5 custom-scrollbar bg-background/50">
                     {activeChat && <div className="flex justify-center opacity-40"><div className="px-4 py-1.5 rounded-xl bg-muted/50 border border-border flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase tracking-widest"><Lock className="h-3 w-3 text-emerald-500" /> End-to-End Encrypted</div></div>}
 
                     {loadingChat ? (
@@ -701,7 +704,7 @@ export default function TacticalCommMatrix() {
                 )}
 
                 {/* Toolbar */}
-                <div className="p-5 bg-background/80 border-t border-border backdrop-blur-3xl">
+                <div className="p-5 bg-background/80 border-t border-border backdrop-blur-3xl flex-shrink-0 mb-safe">
                     <form onSubmit={sendMessage} className="flex items-center gap-3 bg-muted rounded-[2rem] px-4 py-3 border border-border shadow-inner relative">
                         {/* Attachment */}
                         <button type="button" onClick={() => fileInputRef.current?.click()} disabled={!activeChat || uploadingFile} title="Attach file" className="h-9 w-9 rounded-xl bg-card border border-border text-muted-foreground hover:text-primary hover:border-primary/40 transition-all flex items-center justify-center flex-shrink-0 disabled:opacity-40">
@@ -716,7 +719,7 @@ export default function TacticalCommMatrix() {
                         <input ref={inputRef} className="flex-1 bg-transparent border-none outline-none text-xs font-medium px-1 py-1 text-foreground placeholder:text-muted-foreground/40 disabled:cursor-not-allowed" placeholder={!activeChat ? 'Select a channel first...' : isRecording ? '🔴 Recording voice...' : 'Type a message...'} value={newMessage} onChange={e => setNewMessage(e.target.value)} disabled={!activeChat || isRecording || sending} />
 
                         {/* Emoji */}
-                        <div className="relative">
+                        <div>
                             {showEmoji && <EmojiPicker onSelect={insertEmoji} onClose={() => setShowEmoji(false)} />}
                             <button type="button" onClick={() => setShowEmoji(!showEmoji)} disabled={!activeChat} title="Emoji" className="h-9 w-9 rounded-xl bg-card border border-border text-muted-foreground hover:text-yellow-500 hover:border-yellow-500/40 transition-all flex items-center justify-center disabled:opacity-40">
                                 <Smile className="h-4 w-4" />
