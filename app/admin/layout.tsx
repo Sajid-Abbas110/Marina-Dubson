@@ -18,6 +18,7 @@ const adminMobileNav = [
             { name: 'Active', href: '/admin/bookings?filter=ACCEPTED' },
             { name: 'Completed', href: '/admin/bookings?filter=COMPLETED' },
             { name: 'Declined', href: '/admin/bookings?filter=DECLINED' },
+            { name: 'Availability', href: '/admin/bookings?filter=REPORTERS' },
         ]
     },
     { name: 'Calendar', href: '/admin/calendar', icon: CalendarDays, variant: 'calendar' as const },

@@ -3,7 +3,19 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { format } from 'date-fns'
+import {
+    format,
+    addMonths,
+    subMonths,
+    startOfMonth,
+    endOfMonth,
+    startOfWeek,
+    endOfWeek,
+    isSameMonth,
+    isSameDay,
+    eachDayOfInterval,
+    isToday as isTodayFn
+} from 'date-fns'
 import {
     Calendar,
     FileText,
@@ -18,6 +30,7 @@ import {
     Bell,
     Settings,
     MapPin,
+    ChevronLeft,
     ChevronRight,
     Search,
     BadgeCheck,
@@ -30,17 +43,31 @@ import {
     Hash,
     KeyRound,
     Loader2,
-    Send
+    Send,
+    Plus,
+    Trash2,
+    Edit3,
+    Save,
+    AlertCircle
 } from 'lucide-react'
 import ProfileUpload from '@/app/components/ui/ProfileUpload'
+import LoadingOverlay from '@/app/components/ui/LoadingOverlay'
 
 export default function ReporterPortal() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const activeTab = searchParams.get('tab') || 'overview'
+    const [isPending, setIsPending] = useState(false)
 
     // Helper to switch tabs via URL
-    const navigateTab = (tab: string) => router.push(`/reporter/portal?tab=${tab}`)
+    const navigateTab = (tab: string) => {
+        if (tab === activeTab) return
+        setIsPending(true)
+        setTimeout(() => {
+            router.push(`/reporter/portal?tab=${tab}`)
+            setIsPending(false)
+        }, 500) // Artificial delay for "buffering" effect as requested
+    }
 
     const handleLogout = () => {
         localStorage.removeItem('token')
@@ -70,6 +97,8 @@ export default function ReporterPortal() {
     }
 
     const [user, setUser] = useState<any>(null)
+    const [currentMonth, setCurrentMonth] = useState(new Date())
+    const [selectedDate, setSelectedDate] = useState(new Date())
     // const [activeTab, setActiveTab] = useState('overview') // Removed local state
     const [assignedJobs, setAssignedJobs] = useState<any[]>([])
     const [marketplaceJobs, setMarketplaceJobs] = useState<any[]>([])
@@ -203,10 +232,26 @@ export default function ReporterPortal() {
         }
     }
 
-    const handleSetAvailability = () => {
+    const handleSetAvailability = async () => {
         const slots = prompt("Enter your available days (e.g. Mon, Wed, Fri) or 'ALL' for full availability:");
         if (slots) {
-            alert("Availability Updated: Your status has been broadcasted to the Command Center.");
+            handleSetAvailabilityUI(slots);
+        }
+    }
+
+    const handleSetAvailabilityUI = async (slots: string) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/api/profile', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ availability: slots })
+            });
+            if (res.ok) {
+                fetchUserData(true);
+            }
+        } catch (e) {
+            console.error(e);
         }
     }
 
@@ -293,7 +338,7 @@ export default function ReporterPortal() {
                                         }}
                                     />
                                 )) : (
-                                    <div className="py-12 text-center text-gray-400 font-bold uppercase text-[10px]">No active assignments detected.</div>
+                                    <div className="py-12 text-center text-muted-foreground font-bold uppercase text-[10px]">No active assignments detected.</div>
                                 )}
                             </div>
                         </div>
@@ -367,7 +412,7 @@ export default function ReporterPortal() {
                 {activeTab === 'jobs' && (
                     <div className="space-y-8">
                         <section>
-                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-8">Confirmed Assignments</h3>
+                            <h3 className="text-xl font-black text-foreground uppercase tracking-tight mb-8">Confirmed Assignments</h3>
                             <div className="space-y-3">
                                 {assignedJobs.length > 0 ? assignedJobs.map(job => (
                                     <AssignmentRow
@@ -417,6 +462,176 @@ export default function ReporterPortal() {
                                 )}
                             </div>
                         </section>
+                    </div>
+                )}
+                {activeTab === 'calendar' && (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-700">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                            <div>
+                                <h3 className="text-2xl font-black text-foreground uppercase tracking-tight">Deployment Matrix</h3>
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">Operational calendar and availability protocol</p>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <button
+                                    onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                                    className="p-3 rounded-xl bg-card border border-border text-muted-foreground hover:text-primary transition-all"
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </button>
+                                <h4 className="text-lg font-black text-foreground uppercase italic min-w-[180px] text-center">
+                                    {format(currentMonth, 'MMMM yyyy')}
+                                </h4>
+                                <button
+                                    onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                                    className="p-3 rounded-xl bg-card border border-border text-muted-foreground hover:text-primary transition-all"
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                            <div className="lg:col-span-3 space-y-6">
+                                {/* Calendar Grid */}
+                                <div className="bg-card rounded-[2.5rem] border border-border overflow-hidden shadow-xl">
+                                    <div className="grid grid-cols-7 border-b border-border bg-muted/30">
+                                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+                                            <div key={d} className="py-4 text-center text-[10px] font-black text-muted-foreground uppercase tracking-widest">{d}</div>
+                                        ))}
+                                    </div>
+                                    <div className="grid grid-cols-7 bg-border gap-px">
+                                        {eachDayOfInterval({
+                                            start: startOfWeek(startOfMonth(currentMonth)),
+                                            end: endOfWeek(endOfMonth(currentMonth))
+                                        }).map((day, i) => {
+                                            const isSelected = isSameDay(day, selectedDate);
+                                            const isCurrentMonth = isSameMonth(day, currentMonth);
+                                            const isToday = isTodayFn(day);
+                                            const dayBookings = assignedJobs.filter(j => isSameDay(new Date(j.bookingDate), day));
+
+                                            // Availability slots
+                                            const daySlots = (user.availability || "").split('|').filter((s: string) => {
+                                                const [d] = s.trim().split(': ');
+                                                return d === format(day, 'yyyy-MM-dd');
+                                            });
+
+                                            return (
+                                                <div
+                                                    key={i}
+                                                    onClick={() => setSelectedDate(day)}
+                                                    className={`min-h-[120px] p-3 transition-all cursor-pointer group relative
+                                                        ${isCurrentMonth ? 'bg-card' : 'bg-muted/10 opacity-30'}
+                                                        ${isSelected ? 'ring-2 ring-primary ring-inset z-10' : 'hover:bg-primary/[0.02]'}
+                                                    `}
+                                                >
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <span className={`text-[10px] font-black
+                                                            ${isToday ? 'bg-primary text-white h-5 w-5 rounded-lg flex items-center justify-center' : 'text-muted-foreground'}
+                                                        `}>
+                                                            {format(day, 'd')}
+                                                        </span>
+                                                        {dayBookings.length > 0 && (
+                                                            <div className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="space-y-1">
+                                                        {dayBookings.map(j => (
+                                                            <div key={j.id} className="px-2 py-1 rounded-md bg-blue-500/10 border border-blue-500/20 text-[8px] font-black text-blue-500 uppercase truncate">
+                                                                {j.bookingTime?.split(' ')[0]} {j.proceedingType}
+                                                            </div>
+                                                        ))}
+                                                        {daySlots.map((s: string, idx: number) => {
+                                                            const [, status] = s.trim().split(': ');
+                                                            return (
+                                                                <div key={idx} className={`px-2 py-1 rounded-md border text-[8px] font-black uppercase truncate
+                                                                    ${status === 'Available' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-amber-500/10 border-amber-500/20 text-amber-500'}
+                                                                `}>
+                                                                    {status}
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-8">
+                                <div className="bg-card rounded-[2.5rem] border border-border p-8 shadow-xl">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+                                            <Calendar className="h-5 w-5 text-primary" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-sm font-black text-foreground uppercase tracking-tight">{format(selectedDate, 'MMMM d')}</h4>
+                                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">{format(selectedDate, 'EEEE')}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div className="space-y-3">
+                                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Protocol Action</p>
+                                            <div className="grid grid-cols-1 gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        const status = 'Available';
+                                                        const dateStr = format(selectedDate, 'yyyy-MM-dd');
+                                                        const current = user.availability || "";
+                                                        const updated = current ? `${current} | ${dateStr}: ${status}` : `${dateStr}: ${status}`;
+                                                        handleSetAvailabilityUI(updated);
+                                                    }}
+                                                    className="w-full py-3 px-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-600 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500/10 transition-all flex items-center justify-between"
+                                                >
+                                                    Set Available <Plus className="h-3 w-3" />
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        const status = 'Busy';
+                                                        const dateStr = format(selectedDate, 'yyyy-MM-dd');
+                                                        const current = user.availability || "";
+                                                        const updated = current ? `${current} | ${dateStr}: ${status}` : `${dateStr}: ${status}`;
+                                                        handleSetAvailabilityUI(updated);
+                                                    }}
+                                                    className="w-full py-3 px-4 rounded-xl border border-amber-500/20 bg-amber-500/5 text-amber-600 text-[10px] font-black uppercase tracking-widest hover:bg-amber-500/10 transition-all flex items-center justify-between"
+                                                >
+                                                    Set Busy <Clock className="h-3 w-3" />
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        const dateStr = format(selectedDate, 'yyyy-MM-dd');
+                                                        const updated = (user.availability || "").split('|').filter((s: string) => !s.trim().startsWith(dateStr)).join('|');
+                                                        handleSetAvailabilityUI(updated);
+                                                    }}
+                                                    className="w-full py-3 px-4 rounded-xl border border-rose-500/20 bg-rose-500/5 text-rose-600 text-[10px] font-black uppercase tracking-widest hover:bg-rose-500/10 transition-all flex items-center justify-between"
+                                                >
+                                                    Clear Markers <Trash2 className="h-3 w-3" />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4 pt-4 border-t border-border">
+                                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Active Duty</p>
+                                            {assignedJobs.filter(j => isSameDay(new Date(j.bookingDate), selectedDate)).length > 0 ? (
+                                                assignedJobs.filter(j => isSameDay(new Date(j.bookingDate), selectedDate)).map(j => (
+                                                    <div key={j.id} className="p-4 rounded-2xl bg-muted border border-border group hover:border-primary/30 transition-all">
+                                                        <p className="text-[10px] font-black uppercase text-primary mb-1">{j.bookingTime}</p>
+                                                        <p className="text-xs font-black text-foreground uppercase tracking-tight line-clamp-1">{j.proceedingType}</p>
+                                                        <p className="text-[9px] font-bold text-muted-foreground uppercase mt-2">{j.location || 'Remote'}</p>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="py-8 text-center border border-dashed border-border rounded-2xl">
+                                                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">No deployments scheduled</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -634,6 +849,9 @@ export default function ReporterPortal() {
                                     lastName: formData.get('lastName'),
                                     certification: formData.get('certification'),
                                     company: formData.get('company'),
+                                    bio: formData.get('bio'),
+                                    portfolio: formData.get('portfolio'),
+                                    availability: formData.get('availability'),
                                 };
                                 const token = localStorage.getItem('token');
                                 const res = await fetch('/api/profile', {
@@ -659,8 +877,20 @@ export default function ReporterPortal() {
                                         <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Certification ID</label>
                                         <input name="certification" defaultValue={user.certification} className="w-full bg-muted border border-border rounded-2xl p-5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-foreground" />
                                     </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Professional Bio</label>
+                                        <textarea name="bio" defaultValue={user.bio} className="w-full bg-muted border border-border rounded-2xl p-5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-foreground min-h-[100px]" />
+                                    </div>
                                 </div>
                                 <div className="space-y-5">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Portfolio / Link</label>
+                                        <input name="portfolio" defaultValue={user.portfolio} className="w-full bg-muted border border-border rounded-2xl p-5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-foreground" placeholder="https://..." />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Current Availability</label>
+                                        <input name="availability" defaultValue={user.availability} className="w-full bg-muted border border-border rounded-2xl p-5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-foreground" placeholder="e.g. Mon-Fri" />
+                                    </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Associated Corporation</label>
                                         <input name="company" defaultValue={user.company} className="w-full bg-muted border border-border rounded-2xl p-5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-foreground" />
@@ -876,7 +1106,7 @@ function MarketplaceCard({ job, onBid }: { job: any, onBid: () => void }) {
     return (
         <div className="bg-card p-8 rounded-[2.5rem] border border-border shadow-sm hover:shadow-2xl transition-all relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-4">
-                <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[8px] font-black uppercase">Open Opportunity</span>
+                <span className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-lg text-[8px] font-black uppercase border border-blue-500/20">Open Opportunity</span>
             </div>
             <div className="space-y-6">
                 <div>
@@ -915,7 +1145,7 @@ function MetricCard({ label, value, sub, color, onClick }: any) {
                 <p className={`text-4xl font-black tracking-tighter ${color}`}>{value}</p>
                 <div className="mb-2 h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></div>
             </div>
-            <p className="text-[9px] font-black text-muted-foreground/40 uppercase mt-4 tracking-widest">{sub}</p>
+            <p className="text-[9px] font-black text-muted-foreground/70 uppercase mt-4 tracking-widest">{sub}</p>
         </button>
     )
 }

@@ -1,23 +1,25 @@
 'use client'
 
 import React from 'react'
-import { LandingNavbar, LandingHero, LandingServices, LandingNewsletter, LandingContact, LandingChat } from './components/landing/LandingComponents'
-import Footer from './components/Footer'
+import { PublicTopBar, PublicHeader, PublicFooter } from './components/landing/PublicLayout'
+import { HomepageHero, WhoWeAre, SolutionsSection, ServiceGrid, BlogTeaser, ContactSection } from './components/landing/NewHomepage'
 
 export default function HomePage() {
     return (
-        <div className="bg-background min-h-screen">
-            <LandingNavbar />
+        <div className="bg-white min-h-screen">
+            <PublicTopBar />
+            <PublicHeader />
 
             <main>
-                <LandingHero />
-                <LandingServices />
-                <LandingNewsletter />
-                <LandingContact />
+                <HomepageHero />
+                <WhoWeAre />
+                <SolutionsSection />
+                <ServiceGrid />
+                <BlogTeaser />
+                <ContactSection />
             </main>
 
-            <Footer />
-            <LandingChat />
+            <PublicFooter />
         </div>
     )
 }

@@ -18,6 +18,7 @@ const updateSchema = z.object({
         'COMPLETED'
     ]).optional(),
     isMarketplace: z.boolean().optional(),
+    isOpened: z.boolean().optional(),
     reporterId: z.string().optional(),
     notes: z.string().optional(),
 })

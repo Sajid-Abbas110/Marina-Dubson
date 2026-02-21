@@ -90,6 +90,13 @@ export default function ClientCalendar({ bookings, onBookingCreated, services }:
         }
     }
 
+    const [currentTime, setCurrentTime] = useState(new Date())
+
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000)
+        return () => clearInterval(timer)
+    }, [])
+
     const renderHeader = () => {
         return (
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 mb-12">
@@ -98,7 +105,14 @@ export default function ClientCalendar({ bookings, onBookingCreated, services }:
                         <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
                             Operational <span className="text-primary italic">Timeline</span>
                         </h1>
-                        <p className="text-gray-500 font-medium text-xs">Synchronized schedule of your active case assets.</p>
+                        <div className="flex items-center gap-3">
+                            <p className="text-gray-500 font-medium text-xs">Synchronized schedule of your active case assets.</p>
+                            <div className="h-1 w-1 rounded-full bg-gray-300"></div>
+                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary/5 rounded-md border border-primary/10">
+                                <Clock className="h-3 w-3 text-primary animate-pulse" />
+                                <span className="text-[10px] font-black text-primary font-mono">{format(currentTime, 'HH:mm:ss')}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-6 bg-white dark:bg-white/5 p-4 md:p-2 rounded-[2.5rem] md:rounded-[2rem] border border-gray-100 dark:border-white/10 shadow-sm">

@@ -19,13 +19,10 @@ import {
     FileText,
     ChevronLeft,
     ChevronRight,
-    Shield,
-    Zap,
     Scale,
     UserCheck,
     UserCog
 } from 'lucide-react'
-import { useTheme } from '@/lib/theme-context'
 
 const navigation = [
     {
@@ -58,7 +55,7 @@ const navigation = [
         items: [
             { name: 'Content', href: '/admin/content', icon: BookOpen, roles: ['ADMIN', 'MANAGER'] },
             { name: 'Campaigns', href: '/admin/email-campaigns', icon: Mail, roles: ['ADMIN'] },
-            { name: 'Services', href: '/admin/services', icon: Zap, roles: ['ADMIN'] },
+            { name: 'Services', href: '/admin/services', icon: BookOpen, roles: ['ADMIN'] },
         ]
     },
     {
@@ -96,7 +93,6 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isOpen, setI
 
     return (
         <>
-            {/* Sidebar */}
             <aside
                 className={`
                     fixed inset-y-0 left-0 z-[500] flex flex-col
@@ -133,7 +129,6 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isOpen, setI
                 {/* Navigation */}
                 <div className="flex-1 overflow-y-auto py-4" style={{ scrollbarWidth: 'none' }}>
                     {navigation.map((section) => {
-                        // Filter items by role
                         const filtered = section.items.filter(item => {
                             if (!user) return false
                             if (isAdmin) return true
@@ -178,7 +173,6 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isOpen, setI
                                                     <span className="text-sm font-medium">{item.name}</span>
                                                 )}
 
-                                                {/* Tooltip for collapsed */}
                                                 {isCollapsed && (
                                                     <div className="absolute left-full ml-3 px-2.5 py-1.5 rounded-lg text-xs font-medium
                                                           opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50
@@ -201,9 +195,8 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isOpen, setI
                 </div>
 
                 {/* User footer */}
-                <div className={`flex-shrink-0 border-t p-3 ${isCollapsed ? 'items-center flex flex-col gap-2' : ''}`}
+                <div className="flex-shrink-0 border-t p-3"
                     style={{ borderColor: 'hsl(210 35% 23%)' }}>
-
                     {user && !isCollapsed && (
                         <div className="flex items-center gap-3 px-2 py-2 mb-2">
                             <div className="h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
@@ -236,12 +229,12 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isOpen, setI
                     </button>
                 </div>
 
-                {/* Collapse toggle (desktop only) */}
+                {/* Collapse toggle */}
                 <button
                     onClick={toggleCollapse}
                     className="absolute -right-3 top-[76px] h-6 w-6 rounded-full
-                               flex items-center justify-center shadow-md
-                               border-2 transition-all hover:scale-110 duration-200 lg:flex hidden"
+                                flex items-center justify-center shadow-md
+                                border-2 transition-all hover:scale-110 duration-200 lg:flex hidden"
                     style={{
                         background: 'hsl(38 80% 55%)',
                         borderColor: 'hsl(210 45% 17%)',

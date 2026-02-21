@@ -23,13 +23,23 @@ import {
     X,
     CheckCircle2
 } from 'lucide-react'
+import LoadingOverlay from '@/app/components/ui/LoadingOverlay'
 
 export default function BookingManagementPage() {
     const [filter, setFilter] = useState('ALL')
     const [bookings, setBookings] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
+    const [isPending, setIsPending] = useState(false)
     const searchParams = useSearchParams()
+
+    const handleFilterChange = (newFilter: string) => {
+        setIsPending(true)
+        setTimeout(() => {
+            setFilter(newFilter)
+            setIsPending(false)
+        }, 400)
+    }
 
     useEffect(() => {
         const q = searchParams.get('q')
@@ -38,6 +48,10 @@ export default function BookingManagementPage() {
         if (f) setFilter(f)
         else setFilter('ALL')
     }, [searchParams])
+
+    const [reporters, setReporters] = useState<any[]>([])
+    const [showAssignModal, setShowAssignModal] = useState(false)
+    const [assigningBookingId, setAssigningBookingId] = useState<string | null>(null)
 
     const [showBidsModal, setShowBidsModal] = useState(false)
     const [selectedBookingBids, setSelectedBookingBids] = useState<any[]>([])
@@ -90,6 +104,25 @@ export default function BookingManagementPage() {
             fetchBookings()
         } catch (error) {
             console.error('Failed to toggle marketplace:', error)
+        }
+    }
+
+    const markAsOpened = async (id: string) => {
+        try {
+            const booking = bookings.find(b => b.id === id)
+            if (booking?.isOpened) return
+            const token = localStorage.getItem('token')
+            await fetch(`/api/bookings/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ isOpened: true }),
+            })
+            fetchBookings()
+        } catch (error) {
+            console.error('Failed to mark as opened:', error)
         }
     }
 
@@ -271,12 +304,48 @@ export default function BookingManagementPage() {
     const calculation = getDraftCalculation()
 
 
+    const fetchReporters = async () => {
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/admin/users', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            const data = await res.json()
+            setReporters((data.users || []).filter((u: any) => u.role === 'REPORTER'))
+        } catch (error) {
+            console.error('Failed to fetch reporters:', error)
+        }
+    }
+
+    const handleAssignReporter = async (reporterId: string) => {
+        if (!assigningBookingId) return
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch(`/api/bookings/${assigningBookingId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ reporterId }),
+            })
+            if (res.ok) {
+                setShowAssignModal(false)
+                fetchBookings()
+            }
+        } catch (error) {
+            console.error('Failed to assign reporter:', error)
+        }
+    }
+
     useEffect(() => {
         fetchBookings()
+        fetchReporters()
     }, [])
 
     return (
-        <div className="max-w-full w-full sm:w-[98%] mx-auto px-3 py-6 sm:p-6 lg:p-12 space-y-8 sm:space-y-12 pb-24 animate-in fade-in duration-700">
+        <div className="max-w-full w-full sm:w-[98%] mx-auto px-3 py-6 sm:p-6 lg:p-12 space-y-8 sm:space-y-12 pb-24 animate-in fade-in duration-700 relative">
+            {isPending && <LoadingOverlay />}
             {/* Command Header */}
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
                 <div className="space-y-1 sm:space-y-2">
@@ -301,9 +370,10 @@ export default function BookingManagementPage() {
             {/* Matrix Filters */}
             <div className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar px-1 sm:px-0 relative">
                 <div className="flex items-center gap-2 flex-nowrap pr-16 sm:pr-0 w-max sm:w-auto">
-                    <FilterTab active={filter === 'ALL'} onClick={() => setFilter('ALL')} label="Full Matrix" count={(bookings || []).length.toString()} />
-                    <FilterTab active={filter === 'SUBMITTED'} onClick={() => setFilter('SUBMITTED')} label="Requires Review" count={(bookings || []).filter(b => b.bookingStatus === 'SUBMITTED').length.toString()} />
-                    <FilterTab active={filter === 'ACCEPTED'} onClick={() => setFilter('ACCEPTED')} label="Active Logistics" count={(bookings || []).filter(b => b.bookingStatus === 'ACCEPTED').length.toString()} />
+                    <FilterTab active={filter === 'ALL'} onClick={() => handleFilterChange('ALL')} label="Full Matrix" count={(bookings || []).length.toString()} />
+                    <FilterTab active={filter === 'SUBMITTED'} onClick={() => handleFilterChange('SUBMITTED')} label="Requires Review" count={(bookings || []).filter(b => b.bookingStatus === 'SUBMITTED').length.toString()} />
+                    <FilterTab active={filter === 'ACCEPTED'} onClick={() => handleFilterChange('ACCEPTED')} label="Active Logistics" count={(bookings || []).filter(b => b.bookingStatus === 'ACCEPTED').length.toString()} />
+                    <FilterTab active={filter === 'REPORTERS'} onClick={() => handleFilterChange('REPORTERS')} label="Reporter Availability" count={reporters.length.toString()} />
                 </div>
                 <div className="ml-auto flex-shrink-0 h-10 w-10 rounded-xl bg-card border border-border flex items-center justify-center shadow-sm cursor-pointer hover:bg-muted hover:border-primary/20 transition-all text-muted-foreground sticky right-0 bg-background/80 backdrop-blur-sm sm:static sm:bg-transparent sm:backdrop-none">
                     <Filter className="h-3.5 w-3.5" />
@@ -315,7 +385,9 @@ export default function BookingManagementPage() {
                 <div className="px-5 sm:px-6 py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/30">
                     <div className="flex items-center gap-3">
                         <div className="h-2.5 w-2.5 sm:h-3 w-3 rounded-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)] animate-pulse"></div>
-                        <h3 className="text-[11px] sm:text-sm font-black text-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em] truncate">Active Logistics Matrix</h3>
+                        <h3 className="text-[11px] sm:text-sm font-black text-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em] truncate">
+                            {filter === 'REPORTERS' ? 'Reporter Availability Matrix' : 'Active Logistics Matrix'}
+                        </h3>
                     </div>
                     <div className="flex items-center justify-start sm:justify-end gap-5 sm:gap-8 text-[8px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em]">
                         <span className="flex items-center gap-2 flex-shrink-0"><Activity className="h-3 w-3" /> Nominal</span>
@@ -327,6 +399,33 @@ export default function BookingManagementPage() {
                 <div className="divide-y divide-border">
                     {loading ? (
                         <div className="p-32 text-center text-muted-foreground uppercase font-black text-[10px] tracking-[0.5em] animate-pulse">Synchronizing Matrix Data...</div>
+                    ) : filter === 'REPORTERS' ? (
+                        reporters.filter(r => {
+                            const q = searchQuery.toLowerCase()
+                            return !searchQuery || `${r.firstName} ${r.lastName}`.toLowerCase().includes(q) || r.email.toLowerCase().includes(q)
+                        }).map(r => (
+                            <div key={r.id} className="px-4 sm:px-8 py-5 sm:py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/30 transition-all">
+                                <div className="flex items-center gap-5">
+                                    <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center font-black text-primary text-xs border border-primary/20 uppercase tracking-widest">{r.firstName[0]}{r.lastName[0]}</div>
+                                    <div>
+                                        <p className="text-sm font-black text-foreground uppercase tracking-tight">{r.firstName} {r.lastName}</p>
+                                        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">{r.email}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-8">
+                                    <div className="text-right">
+                                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1">Status</p>
+                                        <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${r.availability ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-muted text-muted-foreground border-border opacity-50'}`}>
+                                            {r.availability ? 'Available' : 'No Data'}
+                                        </span>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1">Schedule Intelligence</p>
+                                        <p className="text-[10px] font-black text-foreground uppercase">{r.availability || 'Awaiting Input...'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
                     ) : (bookings || []).filter(b => {
                         const matchesFilter = filter === 'ALL' || b.bookingStatus === filter
                         const q = searchQuery.toLowerCase()
@@ -336,8 +435,15 @@ export default function BookingManagementPage() {
                             b.contact?.companyName?.toLowerCase().includes(q) ||
                             `${b.contact?.firstName} ${b.contact?.lastName}`.toLowerCase().includes(q)
                         return matchesFilter && matchesSearch
+                    }).sort((a, b) => {
+                        // Un-opened first, then SUBMITTED, then most recent date
+                        if (!a.isOpened && b.isOpened) return -1
+                        if (a.isOpened && !b.isOpened) return 1
+                        if (a.bookingStatus === 'SUBMITTED' && b.bookingStatus !== 'SUBMITTED') return -1
+                        if (a.bookingStatus !== 'SUBMITTED' && b.bookingStatus === 'SUBMITTED') return 1
+                        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
                     }).map(b => (
-                        <div key={b.id} className="px-4 sm:px-8 py-5 sm:py-6 hover:bg-primary/5 transition-all cursor-pointer group flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-l-4 border-transparent hover:border-primary">
+                        <div key={b.id} onClick={() => markAsOpened(b.id)} className={`px-4 sm:px-8 py-5 sm:py-6 hover:bg-primary/5 transition-all cursor-pointer group flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-l-4 transition-all ${!b.isOpened ? 'border-amber-500 bg-amber-500/10' : 'border-transparent hover:border-primary'}`}>
                             <div className="flex flex-row items-center gap-4 sm:gap-6 lg:gap-10">
                                 {/* Date Pillar */}
                                 <div className="flex flex-col items-center justify-center h-12 w-12 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl bg-muted border border-border shadow-sm group-hover:border-primary/20 transition-all flex-shrink-0">
@@ -349,7 +455,8 @@ export default function BookingManagementPage() {
                                 <div className="space-y-1.5">
                                     <div className="flex flex-col gap-1 sm:gap-3">
                                         <div className="flex items-center gap-2">
-                                            <span className="px-1.5 py-0.5 rounded-lg bg-primary/10 text-[7px] sm:text-[9px] font-black text-primary border border-primary/20 uppercase tracking-widest leading-none">{b.bookingNumber}</span>
+                                            <span className={`px-1.5 py-0.5 rounded-lg text-[7px] sm:text-[9px] font-black border uppercase tracking-widest leading-none ${!b.isOpened ? 'bg-amber-500 text-white border-amber-600 animate-pulse' : 'bg-primary/10 text-primary border-primary/20'}`}>{b.bookingNumber}</span>
+                                            {!b.isOpened && <span className="text-[7px] font-black text-amber-600 uppercase tracking-widest bg-amber-500/10 px-1.5 py-0.5 rounded-md">NEW SIGNAL</span>}
                                         </div>
                                         <h4 className="text-sm sm:text-lg font-black text-foreground uppercase tracking-tight group-hover:text-primary transition-colors leading-tight">{b.proceedingType}</h4>
                                     </div>
@@ -362,91 +469,109 @@ export default function BookingManagementPage() {
                                             <Clock className="h-3 sm:h-3.5 w-3 sm:w-3.5 text-muted-foreground/40" />
                                             <span className="text-[8px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-[0.1em]">{b.bookingTime}</span>
                                         </div>
+                                        {b.isMarketplace && (
+                                            <div className="flex items-center gap-1.5">
+                                                <TrendingUp className="h-3 sm:h-3.5 w-3 sm:w-3.5 text-emerald-500" />
+                                                <span className="text-[8px] sm:text-[9px] font-black text-emerald-500 uppercase tracking-[0.1em]">Public Marketplace</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-6 lg:gap-12 w-full sm:w-auto px-1 sm:px-0">
-                                {/* Assignment Bridge */}
-                                <div className="flex flex-row sm:flex-col gap-3 items-center sm:items-end min-w-[120px]">
-                                    <p className="hidden sm:block text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">Assignment</p>
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6 w-full sm:w-auto px-1 sm:px-0">
+                                {/* Assignment & Controls Unified */}
+                                <div className="flex flex-wrap items-center gap-3 p-2 rounded-2xl bg-muted/50 border border-border/50">
+                                    {/* Assignment Badge */}
                                     {b.reporter ? (
-                                        <div className="flex items-center gap-3 px-3 py-1.5 rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+                                        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
                                             <User className="h-3 w-3" />
-                                            <span className="text-[8px] sm:text-[10px] font-black uppercase">{b.reporter.firstName} {b.reporter.lastName}</span>
+                                            <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.05em]">{b.reporter.firstName} {b.reporter.lastName}</span>
                                         </div>
                                     ) : (
                                         <div className="flex items-center gap-2">
                                             <button
+                                                onClick={() => {
+                                                    setAssigningBookingId(b.id)
+                                                    setShowAssignModal(true)
+                                                }}
+                                                className="px-3 py-2 rounded-xl bg-indigo-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/10"
+                                            >
+                                                Assign
+                                            </button>
+                                            <button
                                                 onClick={() => toggleMarketplace(b.id, b.isMarketplace)}
-                                                className={`px-3 py-1.5 rounded-xl text-[8px] sm:text-[9px] font-black uppercase tracking-widest border transition-all ${b.isMarketplace ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' : 'bg-muted text-muted-foreground border-border hover:border-primary/20 hover:text-primary'}`}
+                                                className={`px-3 py-2 rounded-xl text-[8px] sm:text-[9px] font-black uppercase tracking-widest border transition-all ${b.isMarketplace ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground border-border hover:border-primary/20 hover:text-primary'}`}
                                             >
                                                 {b.isMarketplace ? 'Market' : 'Push'}
                                             </button>
                                             {b.isMarketplace && (
                                                 <button
                                                     onClick={() => viewBids(b.id)}
-                                                    className="luxury-button px-3 py-1.5 h-auto text-[8px] sm:text-[9px]"
+                                                    className="luxury-button px-3 py-2 h-auto text-[8px] sm:text-[9px]"
                                                 >
                                                     Bids
                                                 </button>
                                             )}
                                         </div>
                                     )}
-                                </div>
 
-                                {/* Status Toggle Automation */}
-                                <div className="flex flex-wrap items-center gap-2 p-1.5 sm:p-2 rounded-2xl bg-muted border border-border">
-                                    {b.bookingStatus === 'SUBMITTED' && (
-                                        <>
+                                    {/* Separator */}
+                                    <div className="h-4 w-px bg-white/10 hidden sm:block"></div>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex items-center gap-2">
+                                        {b.bookingStatus === 'SUBMITTED' && (
+                                            <>
+                                                <button
+                                                    onClick={() => updateStatus(b.id, 'ACCEPTED')}
+                                                    className="px-3 sm:px-4 py-2 rounded-xl bg-primary text-primary-foreground text-[8px] sm:text-[9px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95"
+                                                >
+                                                    Approve
+                                                </button>
+                                                <button
+                                                    onClick={() => updateStatus(b.id, 'MAYBE')}
+                                                    className="px-3 sm:px-4 py-2 rounded-xl bg-amber-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest shadow-lg shadow-amber-500/20 active:scale-95"
+                                                >
+                                                    Maybe
+                                                </button>
+                                                <button
+                                                    onClick={() => updateStatus(b.id, 'DECLINED')}
+                                                    className="px-3 sm:px-4 py-2 rounded-xl bg-rose-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest shadow-lg shadow-rose-500/20 active:scale-95"
+                                                >
+                                                    Decline
+                                                </button>
+                                            </>
+                                        )}
+                                        {b.bookingStatus === 'MAYBE' && (
+                                            <>
+                                                <button
+                                                    onClick={() => updateStatus(b.id, 'ACCEPTED')}
+                                                    className="px-3 sm:px-4 py-2 rounded-xl bg-primary text-primary-foreground text-[8px] sm:text-[9px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95"
+                                                >
+                                                    Approve
+                                                </button>
+                                                <button
+                                                    onClick={() => updateStatus(b.id, 'DECLINED')}
+                                                    className="px-3 sm:px-4 py-2 rounded-xl bg-rose-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest shadow-lg shadow-rose-500/20 active:scale-95"
+                                                >
+                                                    Decline
+                                                </button>
+                                            </>
+                                        )}
+                                        {b.bookingStatus === 'ACCEPTED' && (
                                             <button
-                                                onClick={() => updateStatus(b.id, 'ACCEPTED')}
-                                                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-primary text-primary-foreground text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] transition-all shadow-md active:scale-95"
+                                                onClick={() => {
+                                                    setSelectedBookingId(b.id)
+                                                    setShowCompleteModal(true)
+                                                }}
+                                                className="px-4 py-2 rounded-xl bg-foreground text-background text-[8px] sm:text-[9px] font-black uppercase tracking-widest shadow-xl active:scale-95"
                                             >
-                                                Approve
+                                                Complete & Bill
                                             </button>
-                                            <button
-                                                onClick={() => updateStatus(b.id, 'MAYBE')}
-                                                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-amber-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] transition-all shadow-md active:scale-95"
-                                            >
-                                                Maybe
-                                            </button>
-                                            <button
-                                                onClick={() => updateStatus(b.id, 'DECLINED')}
-                                                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-rose-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] transition-all shadow-md active:scale-95"
-                                            >
-                                                Decline
-                                            </button>
-                                        </>
-                                    )}
-                                    {b.bookingStatus === 'MAYBE' && (
-                                        <>
-                                            <button
-                                                onClick={() => updateStatus(b.id, 'ACCEPTED')}
-                                                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-primary text-primary-foreground text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] transition-all shadow-md active:scale-95"
-                                            >
-                                                Approve
-                                            </button>
-                                            <button
-                                                onClick={() => updateStatus(b.id, 'DECLINED')}
-                                                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-rose-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] transition-all shadow-md active:scale-95"
-                                            >
-                                                Decline
-                                            </button>
-                                        </>
-                                    )}
-                                    {b.bookingStatus === 'ACCEPTED' && (
-                                        <button
-                                            onClick={() => {
-                                                setSelectedBookingId(b.id)
-                                                setShowCompleteModal(true)
-                                            }}
-                                            className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-foreground text-background text-[8px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all shadow-xl active:scale-95"
-                                        >
-                                            Complete & Bill
-                                        </button>
-                                    )}
-                                    <div className="px-3 sm:px-4 py-1.5 sm:py-2 text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] text-muted-foreground bg-card border border-border rounded-xl">{b.bookingStatus}</div>
+                                        )}
+                                        <div className="px-3 py-2 text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-muted-foreground border border-border rounded-xl">{b.bookingStatus}</div>
+                                    </div>
                                 </div>
 
                                 <button className="flex h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-card border border-border items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/20 transition-all flex-shrink-0">
@@ -665,6 +790,46 @@ export default function BookingManagementPage() {
                                     <span className="uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[8px] sm:text-[10px] font-black">Generate Invoice</span>
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Direct Assignment Modal */}
+            {showAssignModal && (
+                <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 sm:p-6 lg:pl-80 animate-in fade-in duration-300">
+                    <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setShowAssignModal(false)}></div>
+                    <div className="relative w-full max-w-xl bg-card rounded-[2.5rem] p-8 sm:p-12 shadow-3xl border border-border">
+                        <div className="flex items-center justify-between mb-10">
+                            <div>
+                                <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Direct Assignment</h2>
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">Select operative for node deployment</p>
+                            </div>
+                            <button onClick={() => setShowAssignModal(false)} className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+                        <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                            {reporters.length === 0 ? (
+                                <p className="text-center py-10 text-muted-foreground font-black uppercase text-[10px]">No operatives found in registry</p>
+                            ) : reporters.map(r => (
+                                <button
+                                    key={r.id}
+                                    onClick={() => handleAssignReporter(r.id)}
+                                    className="w-full p-6 rounded-[2rem] bg-muted/30 border border-border flex items-center justify-between hover:bg-primary/10 hover:border-primary/20 transition-all text-left group"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-black text-xs group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                                            {r.firstName[0]}{r.lastName[0]}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-black text-foreground uppercase tracking-tight">{r.firstName} {r.lastName}</p>
+                                            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{r.certification || 'Verified Operative'}</p>
+                                        </div>
+                                    </div>
+                                    <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                                </button>
+                            ))}
                         </div>
                     </div>
                 </div>

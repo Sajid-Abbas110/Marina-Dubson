@@ -36,14 +36,23 @@ import {
 import ClientCalendar from '../components/ClientCalendar'
 import BookingRequest from '../components/BookingRequest'
 import ProfileUpload from '@/app/components/ui/ProfileUpload'
+import LoadingOverlay from '@/app/components/ui/LoadingOverlay'
 
 export default function ClientPortal() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const activeTab = searchParams.get('tab') || 'overview'
+    const [isPending, setIsPending] = useState(false)
 
     // Helper to switch tabs via URL
-    const navigateTab = (tab: string) => router.push(`/client/portal?tab=${tab}`)
+    const navigateTab = (tab: string) => {
+        if (tab === activeTab) return
+        setIsPending(true)
+        setTimeout(() => {
+            router.push(`/client/portal?tab=${tab}`)
+            setIsPending(false)
+        }, 500)
+    }
 
     const [user, setUser] = useState<any>(null)
     // const [activeTab, setActiveTab] = useState('overview') // Removed local state
@@ -251,7 +260,8 @@ export default function ClientPortal() {
 
 
     return (
-        <div className="px-2 sm:px-4 py-6 lg:p-8 max-w-[1400px] mx-auto animate-fade-in">
+        <div className="px-2 sm:px-4 py-6 lg:p-8 max-w-[1400px] mx-auto animate-fade-in relative">
+            {isPending && <LoadingOverlay />}
             {/* Welcome header */}
             <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -271,26 +281,28 @@ export default function ClientPortal() {
                     <>
                         {/* Stats */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 stagger">
-                            <button onClick={() => navigateTab('bookings')} className="stat-card text-left">
-                                <div className="h-9 w-9 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center text-blue-600 mb-3">
-                                    <TrendingUp className="h-4 w-4" />
+                            <button onClick={() => navigateTab('bookings')} className="p-6 rounded-2xl bg-card border border-border/50 text-left hover:border-primary/40 transition-all hover:bg-primary/[0.02]">
+                                <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary mb-4 shadow-lg shadow-primary/10">
+                                    <TrendingUp className="h-5 w-5" />
                                 </div>
-                                <p className="text-sm text-muted-foreground mb-1">Active Bookings</p>
-                                <p className="text-2xl font-bold text-foreground">{stats.active}</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Active Bookings</p>
+                                <p className="text-3xl font-black text-primary tracking-tighter uppercase">{stats.active}</p>
                             </button>
-                            <button onClick={() => navigateTab('financials')} className="stat-card text-left">
-                                <div className="h-9 w-9 rounded-lg bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 mb-3">
-                                    <CreditCard className="h-4 w-4" />
+
+                            <button onClick={() => navigateTab('financials')} className="p-6 rounded-2xl bg-card border border-border/50 text-left hover:border-amber-500/40 transition-all hover:bg-amber-500/[0.02]">
+                                <div className="h-10 w-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-500 mb-4 shadow-lg shadow-amber-500/10">
+                                    <CreditCard className="h-5 w-5" />
                                 </div>
-                                <p className="text-sm text-muted-foreground mb-1">Outstanding Balance</p>
-                                <p className="text-2xl font-bold text-foreground">${stats.unpaid.toLocaleString()}</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Outstanding Balance</p>
+                                <p className="text-3xl font-black text-amber-500 tracking-tighter uppercase">${stats.unpaid.toLocaleString()}</p>
                             </button>
-                            <button onClick={() => navigateTab('transcripts')} className="stat-card text-left">
-                                <div className="h-9 w-9 rounded-lg bg-violet-50 dark:bg-violet-950/30 flex items-center justify-center text-violet-600 mb-3">
-                                    <FileText className="h-4 w-4" />
+
+                            <button onClick={() => navigateTab('transcripts')} className="p-6 rounded-2xl bg-card border border-border/50 text-left hover:border-violet-500/40 transition-all hover:bg-violet-500/[0.02]">
+                                <div className="h-10 w-10 rounded-xl bg-violet-500/20 flex items-center justify-center text-violet-500 mb-4 shadow-lg shadow-violet-500/10">
+                                    <FileText className="h-5 w-5" />
                                 </div>
-                                <p className="text-sm text-muted-foreground mb-1">Documents</p>
-                                <p className="text-2xl font-bold text-foreground">{stats.files}</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Documents</p>
+                                <p className="text-3xl font-black text-violet-500 tracking-tighter uppercase">{stats.files}</p>
                             </button>
                         </div>
 
@@ -351,11 +363,11 @@ export default function ClientPortal() {
                             </Link>
                         </div>
                         <div className="space-y-4">
-                            {bookings.map(booking => (
-                                <div key={booking.id} className="p-5 md:p-8 rounded-3xl bg-card border border-border hover:border-primary/20 hover:shadow-2xl transition-all group">
+                            {bookings.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(booking => (
+                                <div key={booking.id} className={`p-5 md:p-8 rounded-3xl border transition-all group ${booking.bookingStatus === 'SUBMITTED' ? 'bg-amber-500/5 border-amber-500/20 shadow-lg shadow-amber-500/5' : 'bg-card border-border hover:border-primary/20 hover:shadow-2xl'}`}>
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
                                         <div className="flex items-center gap-6">
-                                            <div className="h-14 w-14 rounded-2xl bg-muted/50 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                            <div className={`h-14 w-14 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform ${booking.bookingStatus === 'SUBMITTED' ? 'bg-amber-500/10 text-amber-600' : 'bg-muted/50 text-primary'}`}>
                                                 <Calendar className="h-7 w-7" />
                                             </div>
                                             <div>
@@ -369,10 +381,11 @@ export default function ClientPortal() {
                                         <div className="flex flex-col items-end gap-3 shrink-0">
                                             <div className="flex items-center gap-3">
                                                 <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-colors
-                                                            ${booking.bookingStatus === 'COMPLETED' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
+                                                                ${booking.bookingStatus === 'COMPLETED' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
                                                         booking.bookingStatus === 'ACCEPTED' ? 'bg-rose-50 text-rose-600 border-rose-100 animate-pulse' :
                                                             booking.bookingStatus === 'CONFIRMED' ? 'bg-primary/5 text-primary border-primary/10' :
-                                                                'bg-muted text-muted-foreground border-border'}`}>
+                                                                booking.bookingStatus === 'SUBMITTED' ? 'bg-amber-500 text-white border-amber-600' :
+                                                                    'bg-muted text-muted-foreground border-border'}`}>
                                                     {booking.bookingStatus}
                                                 </span>
                                                 {booking.bookingStatus === 'SUBMITTED' && (
@@ -389,6 +402,9 @@ export default function ClientPortal() {
                                                 <Link href={`/client/confirm/${booking.id}`} className="text-[10px] font-black text-rose-600 uppercase underline tracking-widest">
                                                     Confirm Now
                                                 </Link>
+                                            )}
+                                            {booking.bookingStatus === 'SUBMITTED' && (
+                                                <p className="text-[8px] font-black text-amber-600 uppercase tracking-widest animate-pulse">Awaiting Activation</p>
                                             )}
                                         </div>
                                     </div>
@@ -887,23 +903,23 @@ function ActivityRow({ id, title, date, status, reporter, onClick }: any) {
                     <div className="flex flex-wrap items-center gap-2 mt-1">
                         <p className="text-[10px] font-bold text-muted-foreground uppercase shrink-0">{id} • Global Node</p>
                         {reporter && (
-                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-md border border-indigo-100 dark:border-indigo-800">
-                                <User className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
-                                <span className="text-[8px] font-black text-indigo-600 dark:text-indigo-400 uppercase">Assigned: {reporter.firstName} {reporter.lastName}</span>
+                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary/10 rounded-md border border-primary/20">
+                                <User className="h-3 w-3 text-primary" />
+                                <span className="text-[8px] font-black text-primary uppercase tracking-widest">Node Assigned: {reporter.firstName} {reporter.lastName}</span>
                             </div>
                         )}
                     </div>
                 </div>
             </div>
-            <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
+            <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/10">
                 {status === 'ACCEPTED' && (
-                    <span className="text-[9px] font-black text-rose-600 uppercase tracking-widest animate-pulse">Action Required</span>
+                    <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest animate-pulse">Action Required</span>
                 )}
                 <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-colors shrink-0
-                    ${status === 'COMPLETED' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-                        status === 'ACCEPTED' ? 'bg-rose-600 text-white border-rose-600' :
-                            status === 'CONFIRMED' ? 'bg-primary/5 text-primary border-primary/10' :
-                                'bg-muted text-muted-foreground border-border'
+                    ${status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                        status === 'ACCEPTED' ? 'bg-rose-500 text-white border-rose-600 shadow-lg shadow-rose-500/20' :
+                            status === 'CONFIRMED' ? 'bg-primary/20 text-primary border-primary/30' :
+                                'bg-muted/30 text-muted-foreground border-border/10'
                     }`}>
                     {status === 'ACCEPTED' ? 'Confirm' : status}
                 </span>

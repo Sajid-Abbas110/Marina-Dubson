@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Globe, ArrowRight, Calendar, MapPin, Clock } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -84,6 +84,13 @@ export default function BookingRequest({ services, onBookingCreated }: BookingRe
         )
     }
 
+    const [currentTime, setCurrentTime] = useState(new Date())
+
+    useEffect(() => {
+        const id = setInterval(() => setCurrentTime(new Date()), 1000)
+        return () => clearInterval(id)
+    }, [])
+
     return (
         <div className="glass-panel rounded-[1.5rem] sm:rounded-[2.5rem] px-3 py-6 sm:p-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 pb-8 border-b border-gray-100 dark:border-white/5">
@@ -91,7 +98,14 @@ export default function BookingRequest({ services, onBookingCreated }: BookingRe
                     <h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tighter">
                         Initiate <span className="text-primary italic">Booking</span>
                     </h2>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Request Protocol</p>
+                    <div className="flex items-center gap-3 mt-1">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Request Protocol</p>
+                        <div className="h-1 w-1 rounded-full bg-gray-300"></div>
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary/5 rounded-md border border-primary/10">
+                            <Clock className="h-3 w-3 text-primary animate-pulse" />
+                            <span className="text-[10px] font-black text-primary font-mono">{format(currentTime, 'HH:mm:ss')}</span>
+                        </div>
+                    </div>
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="px-3 py-1.5 bg-primary/5 rounded-lg border border-primary/10">
