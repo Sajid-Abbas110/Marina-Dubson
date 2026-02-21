@@ -1,7 +1,7 @@
 'use client'
 
 import { Bell, Search, MessageSquare, Settings, LogOut, User, Moon, Sun, ChevronDown, Check, Clock } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useTheme } from '@/lib/theme-context'
@@ -63,7 +63,7 @@ export default function AdminHeader() {
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [])
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             const token = localStorage.getItem('token')
             if (!token) return
@@ -88,13 +88,13 @@ export default function AdminHeader() {
                 setUnreadMsgCount(msgs.filter((m: any) => !m.isRead && m.recipientId === (user?.id || user?.userId)).length)
             }
         } catch { /* silent */ }
-    }
+    }, [user?.id])
 
     useEffect(() => {
         fetchData()
         const id = setInterval(fetchData, 30_000)
         return () => clearInterval(id)
-    }, [user?.id])
+    }, [fetchData])
 
     const handleLogout = () => {
         localStorage.removeItem('token')

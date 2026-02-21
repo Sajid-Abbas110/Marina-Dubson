@@ -1,7 +1,7 @@
 'use client'
 
 import { Bell, MessageSquare, Settings, LogOut, User, Moon, Sun, ChevronDown, Check, Clock } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useTheme } from '@/lib/theme-context'
@@ -37,7 +37,7 @@ export default function PortalHeader({ userRole }: { userRole?: string }) {
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [])
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             const token = localStorage.getItem('token')
             if (!token || !userRole) return
@@ -63,13 +63,13 @@ export default function PortalHeader({ userRole }: { userRole?: string }) {
                 setUnreadMsgCount(msgs.filter((m: any) => !m.isRead && m.recipientId === (user?.id || user?.userId)).length)
             }
         } catch { /* silent */ }
-    }
+    }, [userRole, user?.id])
 
     useEffect(() => {
         fetchData()
         const id = setInterval(fetchData, 30_000)
         return () => clearInterval(id)
-    }, [userRole, user?.id])
+    }, [fetchData])
 
     const handleLogout = () => {
         localStorage.removeItem('token')

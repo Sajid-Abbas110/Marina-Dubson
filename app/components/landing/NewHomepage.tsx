@@ -3,15 +3,18 @@
 import React from 'react'
 import Link from 'next/link'
 import { ArrowRight, CheckCircle2, Globe, Clock, ShieldCheck, Newspaper } from 'lucide-react'
+import Image from 'next/image'
 
 export function HomepageHero() {
     return (
         <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
             <div className="absolute inset-0 z-0">
-                <img
+                <Image
                     src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1920&q=80"
                     alt="Courthouse Hero"
-                    className="w-full h-full object-cover brightness-[0.4]"
+                    fill
+                    className="object-cover brightness-[0.4]"
+                    priority
                 />
             </div>
 
@@ -55,13 +58,18 @@ export function WhoWeAre() {
         <section className="py-24 bg-white">
             <div className="max-w-7xl mx-auto px-4 md:px-8 text-center">
                 <h2 className="text-[#a89100] text-xs font-black uppercase tracking-[0.4em] mb-4">About Us</h2>
-                <h3 className="text-4xl font-black text-[#1a1a1a] uppercase italic mb-16">Who We Are</h3>
+                <h3 className="text-3xl md:text-4xl font-black text-[#1a1a1a] uppercase italic mb-16">Who We Are</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                     {cards.map((card, i) => (
                         <div key={i} className="space-y-6 group">
-                            <div className="aspect-[4/3] overflow-hidden rounded-2xl shadow-lg border border-gray-100">
-                                <img src={card.img} alt={card.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                            <div className="aspect-[4/3] overflow-hidden rounded-2xl shadow-lg border border-gray-100 relative">
+                                <Image
+                                    src={card.img}
+                                    alt={card.title}
+                                    fill
+                                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                                />
                             </div>
                             <h4 className="text-2xl font-black text-[#1a1a1a] uppercase italic">{card.title}</h4>
                             <p className="text-gray-500 text-sm font-medium leading-relaxed italic">{card.desc}</p>
@@ -80,10 +88,11 @@ export function SolutionsSection() {
     return (
         <section className="relative py-32 overflow-hidden flex items-center">
             <div className="absolute inset-0 z-0">
-                <img
+                <Image
                     src="https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?auto=format&fit=crop&w=1920&q=80"
                     alt="Solutions BG"
-                    className="w-full h-full object-cover brightness-[0.3]"
+                    fill
+                    className="object-cover brightness-[0.3]"
                 />
             </div>
 
@@ -127,7 +136,12 @@ export function ServiceGrid() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {services.map((s, i) => (
                         <div key={i} className="relative aspect-[3/4] group overflow-hidden rounded-3xl shadow-2xl">
-                            <img src={s.img} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                            <Image
+                                src={s.img}
+                                alt={s.title}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-700"
+                            />
                             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-10 text-white">
                                 <h4 className="text-2xl font-black uppercase italic mb-4">{s.title}</h4>
                                 <p className="text-xs text-white/70 italic mb-6">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor.</p>
@@ -146,12 +160,12 @@ export function BlogTeaser() {
         <section className="py-24 bg-white">
             <div className="max-w-7xl mx-auto px-4 md:px-8 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
                 <div className="space-y-8">
-                    <h2 className="text-[#a89100] text-xs font-black uppercase tracking-[0.4em]">Popular Articles For You</h2>
-                    <div className="aspect-video overflow-hidden rounded-3xl shadow-xl">
-                        <img
+                    <div className="aspect-video overflow-hidden rounded-3xl shadow-xl relative">
+                        <Image
                             src="https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?auto=format&fit=crop&w=800&q=80"
-                            className="w-full h-full object-cover"
+                            className="object-cover"
                             alt="Main Article"
+                            fill
                         />
                     </div>
                     <h3 className="text-3xl font-black text-[#1a1a1a] uppercase italic leading-tight">
@@ -165,10 +179,11 @@ export function BlogTeaser() {
                 <div className="space-y-12">
                     {[1, 2, 3].map((i) => (
                         <div key={i} className="flex gap-6 items-center group cursor-pointer">
-                            <div className="h-24 w-24 md:h-32 md:w-32 flex-shrink-0 rounded-2xl overflow-hidden shadow-md">
-                                <img
+                            <div className="h-24 w-24 md:h-32 md:w-32 flex-shrink-0 rounded-2xl overflow-hidden shadow-md relative">
+                                <Image
                                     src={`https://images.unsplash.com/photo-${i === 1 ? '1589829545856-d10d557cf95f' : i === 2 ? '1505664194779-8beaceb93744' : '1450101499163-c8848c66ca85'}?auto=format&fit=crop&w=300&q=80`}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-all duration-500"
+                                    fill
+                                    className="object-cover group-hover:scale-110 transition-all duration-500"
                                     alt="Side Article"
                                 />
                             </div>
@@ -198,10 +213,11 @@ export function ContactSection() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-                    <div className="aspect-[4/5] overflow-hidden rounded-[3rem] shadow-2xl relative">
-                        <img
+                    <div className="aspect-[4/5] overflow-hidden rounded-[2rem] sm:rounded-[3rem] shadow-2xl relative">
+                        <Image
                             src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80"
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
                             alt="Contact"
                         />
                         <div className="absolute inset-0 bg-blue-900/10"></div>

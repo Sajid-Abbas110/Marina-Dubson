@@ -66,6 +66,13 @@ export default function BookingRequest({ services, onBookingCreated }: BookingRe
         }
     }
 
+    const [currentTime, setCurrentTime] = useState(new Date())
+
+    useEffect(() => {
+        const id = setInterval(() => setCurrentTime(new Date()), 1000)
+        return () => clearInterval(id)
+    }, [])
+
     if (success) {
         return (
             <div className="glass-panel rounded-[2.5rem] p-12 text-center animate-in fade-in zoom-in-95 duration-500">
@@ -83,13 +90,6 @@ export default function BookingRequest({ services, onBookingCreated }: BookingRe
             </div>
         )
     }
-
-    const [currentTime, setCurrentTime] = useState(new Date())
-
-    useEffect(() => {
-        const id = setInterval(() => setCurrentTime(new Date()), 1000)
-        return () => clearInterval(id)
-    }, [])
 
     return (
         <div className="glass-panel rounded-[1.5rem] sm:rounded-[2.5rem] px-3 py-6 sm:p-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
