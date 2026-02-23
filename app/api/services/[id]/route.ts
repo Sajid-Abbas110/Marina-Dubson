@@ -66,7 +66,7 @@ export async function DELETE(
             where: { id: params.id },
         })
 
-        return NextResponse.json({ message: 'Service node decommissioned' })
+        return NextResponse.json({ message: 'Service successfully removed' })
     } catch (error) {
         console.error('Delete service error:', error)
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

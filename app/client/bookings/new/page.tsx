@@ -132,7 +132,7 @@ export default function NewBookingPage() {
                 <div className="flex items-center justify-center gap-12 mb-16">
                     <StepIndicator active={step >= 1} label="Identity" />
                     <div className={`h-0.5 w-12 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-muted'}`}></div>
-                    <StepIndicator active={step >= 2} label="Logistics" />
+                    <StepIndicator active={step >= 2} label="Details" />
                     <div className={`h-0.5 w-12 rounded-full ${step >= 3 ? 'bg-primary' : 'bg-muted'}`}></div>
                     <StepIndicator active={step >= 3} label="Deployment" />
                 </div>
@@ -154,17 +154,22 @@ export default function NewBookingPage() {
                                 </div>
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Type of Proceeding</label>
-                                    <input
+                                    <select
                                         className="luxury-input"
-                                        placeholder="DEPOSITION OF JOHN DOE"
                                         value={formData.proceedingType}
                                         onChange={(e) => setFormData({ ...formData, proceedingType: e.target.value })}
-                                    />
+                                    >
+                                        <option value="DEPOSITION">Deposition</option>
+                                        <option value="HEARING">Hearing</option>
+                                        <option value="TRIAL">Trial</option>
+                                        <option value="ARBITRATION">Arbitration</option>
+                                        <option value="MEDIATION">Mediation</option>
+                                    </select>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-end">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Select Service Node</label>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Select Service</label>
                                     <select
                                         className="luxury-input appearance-none bg-no-repeat"
                                         style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\' /%3E%3C/svg%3E")', backgroundPosition: 'right 1.5rem center', backgroundSize: '1.25rem' }}
@@ -176,20 +181,15 @@ export default function NewBookingPage() {
                                         ))}
                                     </select>
                                 </div>
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-purple-400 uppercase tracking-[0.2em] ml-2">Operational Minimum</label>
-                                    <div className="luxury-input flex items-center bg-purple-500/5 border-purple-500/10 text-purple-400 font-black">
-                                        $400.00 Base Fee Applied
-                                    </div>
+
+                                <div className="flex justify-end">
+                                    <button
+                                        onClick={() => setStep(2)}
+                                        className="luxury-btn py-5 px-12 shadow-xl shadow-blue-500/20"
+                                    >
+                                        Proceed to Details <ChevronRight className="h-5 w-5" />
+                                    </button>
                                 </div>
-                            </div>
-                            <div className="flex justify-end pt-6">
-                                <button
-                                    onClick={() => setStep(2)}
-                                    className="luxury-btn py-5 px-12 shadow-xl shadow-blue-500/20"
-                                >
-                                    Proceed to Logistics <ChevronRight className="h-5 w-5" />
-                                </button>
                             </div>
                         </div>
                     )}
@@ -273,7 +273,7 @@ export default function NewBookingPage() {
                                     className="luxury-btn py-5 px-12 shadow-2xl shadow-blue-500/30 flex items-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed group"
                                 >
                                     {loading ? (
-                                        <>Deploying Node... <Loader2 className="h-5 w-5 animate-spin" /></>
+                                        <>Deploying Assignment... <Loader2 className="h-5 w-5 animate-spin" /></>
                                     ) : (
                                         <>Confirm & Deploy <Zap className="h-5 w-5 group-hover:scale-125 transition-transform" /></>
                                     )}
@@ -281,7 +281,7 @@ export default function NewBookingPage() {
                             </div>
                             {loading && (
                                 <p className="text-[10px] font-black text-primary animate-pulse text-center mt-6 uppercase tracking-[0.3em]">
-                                    Establishing Secure Connection to Reporter Node...
+                                    Establishing Secure Connection to Reporter...
                                 </p>
                             )}
                         </div>

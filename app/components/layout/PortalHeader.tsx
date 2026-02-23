@@ -24,8 +24,15 @@ export default function PortalHeader({ userRole }: { userRole?: string }) {
     const profileRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        const stored = localStorage.getItem('user')
-        if (stored) setUser(JSON.parse(stored))
+        const syncUser = () => {
+            const stored = localStorage.getItem('user')
+            if (stored) setUser(JSON.parse(stored))
+        }
+        syncUser()
+
+        // Sync across components and tabs
+        window.addEventListener('user-profile-updated', syncUser)
+        window.addEventListener('storage', syncUser)
 
         // Click outside listener
         const handleClickOutside = (event: MouseEvent) => {
@@ -34,7 +41,11 @@ export default function PortalHeader({ userRole }: { userRole?: string }) {
             if (profileRef.current && !profileRef.current.contains(event.target as Node)) setIsProfileOpen(false)
         }
         document.addEventListener('mousedown', handleClickOutside)
-        return () => document.removeEventListener('mousedown', handleClickOutside)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+            window.removeEventListener('user-profile-updated', syncUser)
+            window.removeEventListener('storage', syncUser)
+        }
     }, [])
 
     const fetchData = useCallback(async () => {
@@ -255,8 +266,12 @@ export default function PortalHeader({ userRole }: { userRole?: string }) {
                         onClick={() => { setIsProfileOpen(!isProfileOpen); setIsNotifOpen(false); setIsMsgOpen(false); }}
                         className={`flex items-center gap-2 px-2 py-1.5 rounded-lg border transition-all ${isProfileOpen ? 'bg-muted border-border' : 'hover:bg-muted border-transparent hover:border-border'}`}
                     >
-                        <div className="h-7 w-7 rounded-full flex items-center justify-center bg-primary text-primary-foreground text-xs font-bold flex-shrink-0">
-                            {initials}
+                        <div className="h-7 w-7 rounded-full flex items-center justify-center bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 overflow-hidden">
+                            {user?.avatar ? (
+                                <img src={user.avatar} alt="Profile" className="h-full w-full object-cover" />
+                            ) : (
+                                initials
+                            )}
                         </div>
                         <div className="hidden sm:block text-left">
                             <p className="text-xs font-semibold text-foreground leading-none">

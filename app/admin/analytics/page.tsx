@@ -132,7 +132,7 @@ export default function AdministrativeAnalyticsPage() {
                     <h1 className="text-2xl font-black text-foreground tracking-tight uppercase leading-none">
                         Intelligence <span className="brand-gradient italic">Matrix</span>
                     </h1>
-                    <p className="text-muted-foreground font-black uppercase text-[9px] tracking-[0.3em]">Real-time visualization of stenographic throughput and network efficiency.</p>
+                    <p className="text-muted-foreground font-black uppercase text-[9px] tracking-[0.3em]">Real-time overview of revenue, bookings, and performance.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="relative">
@@ -188,7 +188,7 @@ export default function AdministrativeAnalyticsPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="space-y-0.5">
                             <h3 className="text-sm font-black text-foreground uppercase tracking-tight">Global Revenue Flux</h3>
-                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Tracking Daily Yield Across All Nodes</p>
+                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Daily revenue breakdown</p>
                         </div>
                         <div className="flex items-center gap-3 bg-muted/30 px-3 py-1.5 rounded-lg border border-border">
                             <div className="flex items-center gap-1.5">
@@ -212,7 +212,7 @@ export default function AdministrativeAnalyticsPage() {
                                 <Bar key={i} value={d.value} label={d.label} active={d.active} />
                             ))
                         ) : (
-                            <div className="w-full text-center text-[10px] uppercase font-black text-muted-foreground opacity-50 pb-20">Insufficient data for flux mapping</div>
+                            <div className="w-full text-center text-[10px] uppercase font-black text-muted-foreground opacity-50 pb-20">No revenue data yet</div>
                         )}
                     </div>
                 </div>
@@ -222,7 +222,7 @@ export default function AdministrativeAnalyticsPage() {
                     <div className="absolute top-0 right-0 p-6 opacity-[0.02] -rotate-12 translate-x-4">
                         <Globe className="h-32 w-32 text-primary" />
                     </div>
-                    <h3 className="text-sm font-black text-foreground uppercase tracking-tight relative z-10">Node Allocation</h3>
+                    <h3 className="text-sm font-black text-foreground uppercase tracking-tight relative z-10">Regional Breakdown</h3>
                     <div className="flex flex-col items-center justify-center h-[200px] relative z-10">
                         <div className="h-40 w-40 rounded-full border-[10px] border-muted flex items-center justify-center relative shadow-inner">
                             <div className="absolute inset-0 rounded-full border-[10px] border-primary border-r-transparent border-t-transparent -rotate-45 shadow-[0_0_15px_rgba(var(--primary),0.2)]"></div>
@@ -235,16 +235,16 @@ export default function AdministrativeAnalyticsPage() {
                     <div className="space-y-4 relative z-10">
                         <DistributionRow label="New York City" value="64%" color="bg-primary" />
                         <DistributionRow label="Remote Global" value="22%" color="bg-primary/60" />
-                        <DistributionRow label="NJ/CT Node" value="14%" color="bg-muted" />
+                        <DistributionRow label="NJ/CT Region" value="14%" color="bg-muted" />
                     </div>
                 </div>
             </div>
 
             {/* Strategic Feed */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <InsightCard title="Stenographic Bottlenecks" content="High demand in Remote Discovery nodes detected during 10:00 AM - 01:00 PM intervals." priority="CRITICAL" />
+                <InsightCard title="Peak Hours" content="High booking demand detected between 10:00 AM and 1:00 PM." priority="CRITICAL" />
                 <InsightCard title="Yield Optimization" content="Current per-page average has increased by 12% following the v2.4 protocol rollout." priority="OPTIMIZED" />
-                <InsightCard title="Reporter Retainment" status="94%" content="Network professional satisfaction rating remains in the elite top-tier percentile." priority="EXCEPTIONAL" />
+                <InsightCard title="Reporter Satisfaction" status="94%" content="Reporter satisfaction remains in the top tier." priority="EXCEPTIONAL" />
             </div>
         </div>
     )

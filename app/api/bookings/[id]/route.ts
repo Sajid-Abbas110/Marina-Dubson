@@ -19,7 +19,7 @@ const updateSchema = z.object({
     ]).optional(),
     isMarketplace: z.boolean().optional(),
     isOpened: z.boolean().optional(),
-    reporterId: z.string().optional(),
+    reporterId: z.string().nullable().optional(),
     notes: z.string().optional(),
 })
 

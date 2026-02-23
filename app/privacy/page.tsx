@@ -11,16 +11,16 @@ export default function PrivacyPolicy() {
                     <section className="space-y-6">
                         <h2 className="text-2xl font-black text-white uppercase tracking-tight">1. Signaling Data Collection</h2>
                         <p>
-                            We collect specific telemetry required to maintain the integrity of the reporting node.
+                            We collect specific telemetry required to maintain the integrity of the reporting systems.
                             This includes personal identifiers, case metadata, and logistical coordinates provided
                             during the signal synchronization process.
                         </p>
                     </section>
 
                     <section className="space-y-6">
-                        <h2 className="text-2xl font-black text-white uppercase tracking-tight">2. Node Encryption</h2>
+                        <h2 className="text-2xl font-black text-white uppercase tracking-tight">2. End-to-End Encryption</h2>
                         <p>
-                            All data transmitted through the Marina Dubson global node is protected by RSA-4096
+                            All data transmitted through the Marina Dubson global network is protected by RSA-4096
                             encryption. We do not sell your signal to third-party data harvesters. Your case
                             transcripts are sequestered in dedicated air-gapped vaults.
                         </p>

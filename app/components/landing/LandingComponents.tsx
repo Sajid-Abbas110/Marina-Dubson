@@ -141,7 +141,7 @@ export function LandingHero() {
             <div className="max-w-7xl mx-auto w-full px-6 grid grid-cols-2 md:grid-cols-4 gap-8 mt-24">
                 {[
                     { label: 'Uptime Precision', value: '99.9%' },
-                    { label: 'Licensed Nodes', value: '500+' },
+                    { label: 'Licensed Teams', value: '500+' },
                     { label: 'Data Security', value: 'AES-256' },
                     { label: 'Response Velocity', value: '< 2 Hours' },
                 ].map((stat, i) => (
@@ -179,10 +179,11 @@ export function LandingServices() {
 
     // Static fallback services if API fails or needs auth
     const fallbackServices = [
-        { serviceName: 'Standard Deposition', category: 'COURT_REPORTING', description: 'Certified stenographic reporting for legal depositions.' },
-        { serviceName: 'Complex Hearing', category: 'LEGAL_PROCEEDINGS', description: 'Multi-party hearing transcription with expedited delivery.' },
-        { serviceName: 'Arbitration Support', category: 'LEGAL_PROCEEDINGS', description: 'End-to-end transcript coordination for arbitration panels.' },
-        { serviceName: 'EUO Reporting', category: 'COURT_REPORTING', description: 'Expert examination under oath reporting services.' },
+        { serviceName: 'Premium Court Reporting', category: 'COURT_REPORTING', description: 'Certified stenographic reporting for legal depositions.' },
+        { serviceName: 'Technical Deposition Service', category: 'COURT_REPORTING', description: 'Expert technical testimony reporting with full protocol support.' },
+        { serviceName: 'Virtual Hearing Stream', category: 'LEGAL_PROCEEDINGS', description: 'High-fidelity remote hearing streaming and recording.' },
+        { serviceName: 'Arbitration Management', category: 'LEGAL_PROCEEDINGS', description: 'End-to-end transcript coordination for arbitration panels.' },
+        { serviceName: 'EUO Specialist Protocol', category: 'COURT_REPORTING', description: 'Expert examination under oath reporting services.' },
     ]
 
     const displayServices = services.length > 0 ? services : fallbackServices
@@ -204,7 +205,7 @@ export function LandingServices() {
                             </div>
                             <h4 className="text-xl font-black text-foreground uppercase tracking-tight mb-4">{s.serviceName}</h4>
                             <p className="text-sm text-muted-foreground font-medium leading-relaxed mb-6">
-                                {s.description || 'Professional stenographic nodes deployed for mission-critical legal contexts.'}
+                                {s.description || 'Professional stenographic sessions deployed for mission-critical legal contexts.'}
                             </p>
                             <Link href="/login" className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
                                 Request Quote <ArrowUpRight className="h-4 w-4" />
@@ -242,13 +243,13 @@ export function LandingNewsletter() {
                     </h3>
                     <p className="text-base text-muted-foreground font-medium max-w-md">
                         Join our technical digest for the latest updates on legal transcription protocols,
-                        industry shifts, and new Marina Dubson node deployments.
+                        industry shifts, and new Marina Dubson infrastructure deployments.
                     </p>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-10">
                         {[
                             { title: 'De-Escalating High-Conflict EUOs', date: 'Feb 14, 2026', tag: 'Protocol' },
-                            { title: 'The Shift to Remote Litigative Nodes', date: 'Feb 10, 2026', tag: 'Trends' },
+                            { title: 'The Shift to Remote Litigative Hubs', date: 'Feb 10, 2026', tag: 'Trends' },
                         ].map((post, i) => (
                             <div key={i} className="p-5 bg-card border border-border rounded-3xl hover:border-primary/40 transition-all cursor-pointer group">
                                 <span className="text-[8px] font-black uppercase text-primary bg-primary/10 px-2 py-0.5 rounded-md mb-2 inline-block">{post.tag}</span>
@@ -271,13 +272,13 @@ export function LandingNewsletter() {
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Communication Node (Email)</label>
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Communication Channel (Email)</label>
                                 <input
                                     type="email"
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="operator@legalnode.com"
+                                    placeholder="operator@legalhub.com"
                                     className="w-full bg-muted border border-border rounded-2xl p-5 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20 text-foreground transition-all"
                                 />
                             </div>
@@ -312,7 +313,7 @@ export function LandingContact() {
                             {[
                                 { icon: <MessageSquare className="h-6 w-6" />, label: 'Direct Transmission', value: '(917) 494-1859' },
                                 { icon: <Mail className="h-6 w-6" />, label: 'Data Inquiry', value: 'MarinaDubson@gmail.com' },
-                                { icon: <Scale className="h-6 w-6" />, label: 'Master Node', value: '12A Saturn Lane, Staten Island, NY' },
+                                { icon: <Scale className="h-6 w-6" />, label: 'Main Command', value: '12A Saturn Lane, Staten Island, NY' },
                             ].map((item, i) => (
                                 <div key={i} className="flex items-start gap-6 group">
                                     <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
@@ -374,7 +375,7 @@ export function LandingChat() {
                         <h4 className="text-xl font-black uppercase tracking-tight">Chat with Admin</h4>
                         <div className="flex items-center gap-2 mt-2">
                             <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></div>
-                            <span className="text-[9px] font-black uppercase tracking-widest opacity-70">Admin Node Active</span>
+                            <span className="text-[9px] font-black uppercase tracking-widest opacity-70">Admin System Online</span>
                         </div>
                     </div>
                     <div className="p-8 h-[300px] flex flex-col justify-center items-center text-center text-muted-foreground gap-4 bg-muted/10">

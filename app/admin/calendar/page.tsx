@@ -15,6 +15,7 @@ import {
     ExternalLink,
     Activity,
     Zap,
+    Loader2,
 } from 'lucide-react'
 import {
     format,
@@ -309,7 +310,7 @@ export default function CalendarPage() {
                                 <div className="h-16 w-16 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-2 border border-border/50">
                                     <Clock className="h-8 w-8 text-muted-foreground/30" />
                                 </div>
-                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">No active nodes scheduled</p>
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">No bookings on this day</p>
                                 <button
                                     onClick={() => {
                                         handleDateChange(format(selectedDate, 'yyyy-MM-dd'));
@@ -319,7 +320,7 @@ export default function CalendarPage() {
                                     className="luxury-button px-6 py-2.5 h-auto text-[9px] font-black uppercase tracking-widest"
                                 >
                                     <Plus className="h-3.5 w-3.5 inline mr-2" />
-                                    Push Deployment
+                                    Schedule Booking
                                 </button>
                             </div>
                         ) : (
@@ -354,7 +355,7 @@ export default function CalendarPage() {
                                             onClick={() => router.push(`/admin/bookings?id=${b.id}`)}
                                             className="mt-4 w-full py-2 rounded-xl border border-border text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary hover:border-primary/40 transition-all flex items-center justify-center gap-2 group-hover/item:bg-primary/5 group-hover/item:border-primary/20"
                                         >
-                                            Inspect Node <ExternalLink className="h-3 w-3" />
+                                            View Booking <ExternalLink className="h-3 w-3" />
                                         </button>
                                     </div>
                                 ))}
@@ -501,7 +502,8 @@ export default function CalendarPage() {
 
                         <div className="flex items-center gap-3 px-6 py-4 border-t border-border flex-shrink-0">
                             <button onClick={() => setIsModalOpen(false)} className="btn-secondary flex-1 text-sm">Cancel</button>
-                            <button type="submit" form="booking-form" disabled={saving} className="btn-primary flex-1 text-sm">
+                            <button type="submit" form="booking-form" disabled={saving} className="btn-primary flex-1 text-sm flex items-center justify-center gap-2">
+                                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                                 {saving ? 'Scheduling…' : 'Confirm Booking'}
                             </button>
                         </div>

@@ -103,6 +103,7 @@ export default function TeamManagementPage() {
 
     const handleCreateMember = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (saving) return
         setSaving(true)
         try {
             const token = localStorage.getItem('token')
@@ -131,6 +132,7 @@ export default function TeamManagementPage() {
 
     const handleCreateTask = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (saving) return
         setSaving(true)
         try {
             const token = localStorage.getItem('token')
@@ -147,6 +149,9 @@ export default function TeamManagementPage() {
                 fetchTasks()
                 fetchTeam()
                 setTaskData({ title: '', description: '', priority: 'MEDIUM', dueDate: '', assignedToId: '' })
+            } else {
+                const err = await res.json()
+                alert(err.error || 'Failed to deploy task assignment. Please verify the protocol.')
             }
         } catch (error) {
             console.error('Failed to create task:', error)
@@ -178,11 +183,11 @@ export default function TeamManagementPage() {
             {/* ── Header ── */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1 min-w-0">
-                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-foreground tracking-tight uppercase truncate">
-                        Service <span className="brand-gradient italic">Squadrons</span>
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight uppercase truncate">
+                        Team <span className="text-blue-600 italic">Management</span>
                     </h1>
-                    <p className="text-muted-foreground font-medium font-poppins text-sm">
-                        Managing the elite internal personnel handling operations.
+                    <p className="text-slate-500 font-medium font-poppins text-sm">
+                        Coordinate internal staff, roles, and task management.
                     </p>
                 </div>
                 <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-3 w-full sm:w-auto">
@@ -200,7 +205,7 @@ export default function TeamManagementPage() {
                         className="luxury-button flex items-center justify-center gap-2 px-6 py-3 whitespace-nowrap"
                     >
                         <UserPlus className="h-4 w-4 flex-shrink-0" />
-                        <span>Add Team Member</span>
+                        <span>Create Team Member</span>
                     </button>
                 </div>
             </div>
@@ -232,10 +237,10 @@ export default function TeamManagementPage() {
                                 {!loading && <span className="ml-2 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[8px] font-black border border-primary/20">{filteredTeam.length}</span>}
                             </h3>
                             <button
-                                onClick={() => openTaskModal()}
+                                onClick={() => setShowMemberModal(true)}
                                 className="h-9 w-9 rounded-xl bg-gray-900 dark:bg-white flex items-center justify-center text-white dark:text-gray-900 hover:scale-105 transition-all shadow-lg"
                             >
-                                <Plus className="h-4 w-4" />
+                                <UserPlus className="h-4 w-4" />
                             </button>
                         </div>
 
@@ -243,7 +248,7 @@ export default function TeamManagementPage() {
                             {loading ? (
                                 <div className="p-16 text-center">
                                     <Loader2 className="h-8 w-8 text-primary animate-spin mx-auto mb-4" />
-                                    <p className="font-black text-xs uppercase tracking-widest text-muted-foreground">Synchronizing Squadrons...</p>
+                                    <p className="font-black text-xs uppercase tracking-widest text-muted-foreground">Synchronizing Staff Data...</p>
                                 </div>
                             ) : filteredTeam.length === 0 ? (
                                 <div className="p-16 text-center">
@@ -309,15 +314,23 @@ export default function TeamManagementPage() {
                 <div className="xl:col-span-1">
                     <div className="glass-panel rounded-[2rem] overflow-hidden border border-border h-full">
                         <div className="px-6 py-5 border-b border-border bg-card/50">
-                            <h3 className="text-sm font-black text-foreground uppercase tracking-[0.2em] flex items-center gap-2">
-                                <Briefcase className="h-4 w-4 text-primary" /> Active Task Grid
+                            <h3 className="text-sm font-black text-foreground uppercase tracking-[0.2em] flex items-center justify-between w-full">
+                                <div className="flex items-center gap-2">
+                                    <Briefcase className="h-4 w-4 text-primary" /> Active Task Grid
+                                </div>
+                                <button
+                                    onClick={() => openTaskModal()}
+                                    className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center hover:bg-primary/20 transition-all"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                </button>
                             </h3>
                         </div>
                         <div className="p-4 sm:p-5 space-y-3">
                             {tasks.filter(t => t.status !== 'COMPLETED').length === 0 ? (
                                 <div className="py-10 text-center">
                                     <CheckCircle className="h-10 w-10 text-muted-foreground/20 mx-auto mb-4" />
-                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-loose">Matrix Clear.<br />No pending deployments.</p>
+                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-loose">All done!<br />No pending tasks.</p>
                                 </div>
                             ) : tasks.filter(t => t.status !== 'COMPLETED').map(task => (
                                 <div key={task.id} className="p-4 rounded-2xl bg-card border border-border hover:border-primary/20 transition-all group">

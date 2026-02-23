@@ -73,7 +73,7 @@ export default function ClientInvoicesPage() {
                         <h1 className="text-xl font-black text-foreground tracking-tight flex items-center gap-2 uppercase">
                             Financial <span className="text-primary italic">Ledger</span>
                         </h1>
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none mt-1">Enterprise Billing Node</p>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none mt-1">Enterprise Billing Portal</p>
                     </div>
                 </div>
 

@@ -19,6 +19,7 @@ export default function ServicesAdmin() {
     const [loading, setLoading] = useState(true)
     const [isEditing, setIsEditing] = useState<string | null>(null)
     const [isAdding, setIsAdding] = useState(false)
+    const [saving, setSaving] = useState(false)
     const [formData, setFormData] = useState({
         serviceName: '',
         category: 'COURT_REPORTING',
@@ -56,6 +57,7 @@ export default function ServicesAdmin() {
     }
 
     const handleSave = async (id?: string) => {
+        setSaving(true)
         try {
             const token = localStorage.getItem('token')
             const method = id ? 'PATCH' : 'POST'
@@ -78,11 +80,13 @@ export default function ServicesAdmin() {
             }
         } catch (error) {
             console.error('Failed to save service:', error)
+        } finally {
+            setSaving(false)
         }
     }
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to decommission this service node?')) return
+        if (!confirm('Are you sure you want to delete this service?')) return
         try {
             const token = localStorage.getItem('token')
             const res = await fetch(`/api/services/${id}`, {
@@ -124,7 +128,7 @@ export default function ServicesAdmin() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-1">
                     <h1 className="text-3xl font-black text-foreground tracking-tighter uppercase flex items-center gap-4">
-                        Service <span className="brand-gradient italic">Nodes</span>
+                        Service <span className="brand-gradient italic">Catalog</span>
                         <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-[10px] tracking-widest font-black uppercase border border-emerald-500/20 italic">
                             <Activity className="h-3 w-3 animate-pulse" /> Live Grid
                         </div>
@@ -135,13 +139,13 @@ export default function ServicesAdmin() {
                     onClick={() => { setIsAdding(true); resetForm(); }}
                     className="luxury-button py-4 flex items-center gap-3 shadow-xl shadow-primary/20"
                 >
-                    <Plus className="h-5 w-5" /> Initialize New Node
+                    <Plus className="h-5 w-5" /> Add Service
                 </button>
             </div>
 
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <ContentStat label="Total Nodes" value={services.length} icon={<Cpu />} color="text-primary" />
+                <ContentStat label="Total Services" value={services.length} icon={<Cpu />} color="text-primary" />
                 <ContentStat label="Active Now" value={services.filter(s => s.active).length} icon={<Activity />} color="text-emerald-500" />
                 <ContentStat label="Avg Rate" value={`$${(services.reduce((acc, s) => acc + s.pageRate, 0) / (services.length || 1)).toFixed(2)}`} icon={<DollarSign />} color="text-primary" />
                 <ContentStat label="Base Min" value="$400.00" icon={<Shield />} color="text-primary" />
@@ -155,7 +159,7 @@ export default function ServicesAdmin() {
                     </div>
                     <div>
                         <h3 className="text-2xl font-black text-amber-500 uppercase">Operational Void Detected</h3>
-                        <p className="text-muted-foreground max-w-md mx-auto mt-2 uppercase text-[10px] font-bold tracking-widest">No service nodes are currently broadcasting. Add your first node to enable client bookings.</p>
+                        <p className="text-muted-foreground max-w-md mx-auto mt-2 uppercase text-[10px] font-bold tracking-widest">No services added yet. Add your first service to enable client bookings.</p>
                     </div>
                 </div>
             )}
@@ -216,17 +220,17 @@ export default function ServicesAdmin() {
                         </button>
 
                         <h2 className="text-3xl font-black text-foreground uppercase tracking-tighter mb-10">
-                            {isEditing ? 'Reconfigure' : 'Initialize'} Service <span className="brand-gradient italic">Node</span>
+                            {isEditing ? 'Edit' : 'Add'} Service
                         </h2>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-2">Node Designation</label>
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-2">Service Name</label>
                                 <input
                                     className="w-full bg-muted/50 border border-border rounded-2xl px-6 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-bold uppercase tracking-widest placeholder:text-muted-foreground/30"
                                     value={formData.serviceName}
                                     onChange={e => setFormData({ ...formData, serviceName: e.target.value })}
-                                    placeholder="E.G. PLATINUM STENOGRAPHIC NODE"
+                                    placeholder="e.g. Platinum Stenographic"
                                 />
                             </div>
                             <div className="space-y-4">
@@ -247,7 +251,7 @@ export default function ServicesAdmin() {
                             <Field label="Real-time Stream Sync ($)" value={formData.realtimeFee} onChange={(v: any) => setFormData({ ...formData, realtimeFee: parseFloat(v) })} />
 
                             <div className="md:col-span-2 space-y-4">
-                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-2">Node Specification / Logistics</label>
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-2">Description & Details</label>
                                 <textarea
                                     className="w-full bg-muted/50 border border-border rounded-2xl px-6 py-6 min-h-[120px] outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-bold uppercase tracking-widest placeholder:text-muted-foreground/30 resize-none"
                                     value={formData.description}
@@ -266,9 +270,11 @@ export default function ServicesAdmin() {
                             </button>
                             <button
                                 onClick={() => handleSave(isEditing || undefined)}
-                                className="luxury-button px-12 py-5 shadow-2xl shadow-primary/30"
+                                disabled={saving}
+                                className="luxury-button px-12 py-5 shadow-2xl shadow-primary/30 flex items-center gap-3 disabled:opacity-50"
                             >
-                                {isEditing ? 'Commit Configuration' : 'Activate Node'}
+                                {saving ? <Cpu className="h-4 w-4 animate-spin" /> : null}
+                                {saving ? 'Processing...' : (isEditing ? 'Save Changes' : 'Add Service')}
                             </button>
                         </div>
                     </div>

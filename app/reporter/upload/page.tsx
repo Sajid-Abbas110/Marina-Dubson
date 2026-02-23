@@ -49,7 +49,7 @@ export default function ReporterUploadPage() {
 
     return (
         <div className="min-h-screen bg-background transition-colors duration-300">
-            {/* Professional Logistics Header */}
+            {/* Professional Operations Header */}
             <header className="sticky top-0 z-50 w-full bg-card/90 backdrop-blur-md border-b border-border px-8 py-6">
                 <div className="max-w-5xl mx-auto flex items-center justify-between">
                     <Link href="/reporter/portal" className="flex items-center gap-4 group">
@@ -188,7 +188,7 @@ export default function ReporterUploadPage() {
 
                 <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 opacity-60">
                     <StatusFeature icon={<Clock className="h-4 w-4" />} title="LATENCY" value="1.2ms" />
-                    <StatusFeature icon={<Building2 className="h-4 w-4" />} title="NODE" value="NYC-CENTRAL" />
+                    <StatusFeature icon={<Building2 className="h-4 w-4" />} title="POINT" value="NYC-CENTRAL" />
                     <StatusFeature icon={<AlertCircle className="h-4 w-4" />} title="CHECKS" value="PASSED" />
                 </div>
             </main>

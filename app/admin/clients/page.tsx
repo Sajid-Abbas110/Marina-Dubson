@@ -87,7 +87,7 @@ export default function ClientsPage() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full sm:min-w-[300px] pl-10 pr-4 py-3 rounded-xl bg-card border border-border text-[9px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/10 text-foreground transition-all"
-                            placeholder="DECODE CLIENT_NODE OR EMAIL..."
+                            placeholder="Search by name or email..."
                         />
                     </div>
                 </div>
@@ -101,12 +101,12 @@ export default function ClientsPage() {
                             <ShieldCheck className="h-10 w-10 text-primary animate-pulse" />
                         </div>
                     </div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground animate-pulse">Scanning Network Nodes...</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground animate-pulse">Loading clients...</p>
                 </div>
             ) : filteredUsers.length === 0 ? (
                 <div className="text-center py-32 glass-panel rounded-[3rem] border-2 border-dashed border-border bg-card shadow-2xl">
                     <Building2 className="h-20 w-20 text-muted/20 mx-auto mb-8" />
-                    <p className="font-black text-sm uppercase tracking-[0.3em] text-foreground mb-3">No active nodes matching query</p>
+                    <p className="font-black text-sm uppercase tracking-[0.3em] text-foreground mb-3">No clients found</p>
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Expand your search parameters or register new client clusters.</p>
                 </div>
             ) : (

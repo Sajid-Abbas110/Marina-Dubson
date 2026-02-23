@@ -21,12 +21,12 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
     title: 'Marina Dubson Stenographic Services — Client & Court Reporter Portal',
     description: 'Professional court reporting booking, transcript management, and team coordination for Marina Dubson Stenographic Services, LLC.',
-    manifest: '/manifest.json',
-    appleWebApp: {
-        capable: true,
-        statusBarStyle: 'default',
-        title: 'Marina Dubson',
-    },
+    // manifest: '/manifest.json',
+    // appleWebApp: {
+    //     capable: true,
+    //     statusBarStyle: 'default',
+    //     title: 'Marina Dubson',
+    // },
 }
 
 export default function RootLayout({
@@ -45,7 +45,7 @@ export default function RootLayout({
                     <main className="min-h-screen">
                         {children}
                     </main>
-                    <PWAInstallPrompt />
+                    {/* <PWAInstallPrompt /> */}
                 </ThemeProvider>
             </body>
         </html>

@@ -8,7 +8,7 @@ export default function GDPRPage() {
             <div className="max-w-4xl mx-auto space-y-16 relative z-10">
                 <div className="space-y-6">
                     <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest">
-                        <Shield className="h-3 w-3" /> GDPR Compliant Node
+                        <Shield className="h-3 w-3" /> GDPR Compliant System
                     </div>
                     <h1 className="text-6xl font-black uppercase tracking-tighter">GDPR <span className="text-emerald-500 italic">Matrix</span></h1>
                     <p className="text-slate-500 font-black uppercase tracking-[0.4em] text-xs">European Signal Protection Standards</p>
@@ -17,7 +17,7 @@ export default function GDPRPage() {
                 <div className="grid gap-8">
                     <ComplianceCard
                         title="Right to Access"
-                        desc="You have the absolute right to request a complete dump of all telemetry data linked to your node identifier."
+                        desc="You have the absolute right to request a complete dump of all telemetry data linked to your identity."
                         icon={<Globe className="h-6 w-6" />}
                     />
                     <ComplianceCard
@@ -27,7 +27,7 @@ export default function GDPRPage() {
                     />
                     <ComplianceCard
                         title="Right to Sequestration"
-                        desc="Also known as the right to be forgotten. Trigger a total wipe of your persona from our active nodes."
+                        desc="Also known as the right to be forgotten. Trigger a total wipe of your persona from our active systems."
                         icon={<Lock className="h-6 w-6" />}
                     />
                 </div>

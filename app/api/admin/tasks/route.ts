@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { verifyToken } from '@/lib/auth';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
+import { verifyToken, extractTokenFromHeader } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
     try {
-        const authHeader = req.headers.get('Authorization');
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        const token = extractTokenFromHeader(req.headers.get('Authorization'));
+        if (!token) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const token = authHeader.split(' ')[1];
         const payload = await verifyToken(token);
-
-        if (!payload || payload.role !== 'ADMIN') {
+        if (!payload || (payload.role !== 'ADMIN' && payload.role !== 'SUPER_ADMIN')) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
@@ -38,15 +34,13 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
-        const authHeader = req.headers.get('Authorization');
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        const token = extractTokenFromHeader(req.headers.get('Authorization'));
+        if (!token) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const token = authHeader.split(' ')[1];
         const payload = await verifyToken(token);
-
-        if (!payload || payload.role !== 'ADMIN') {
+        if (!payload || (payload.role !== 'ADMIN' && payload.role !== 'SUPER_ADMIN')) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
@@ -54,7 +48,7 @@ export async function POST(req: NextRequest) {
         const { title, description, priority, dueDate, assignedToId } = body;
 
         if (!title || !assignedToId) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+            return NextResponse.json({ error: 'Missing required fields (title, assignee)' }, { status: 400 });
         }
 
         // Determine if assignedToId is a TeamMember or User
@@ -66,26 +60,32 @@ export async function POST(req: NextRequest) {
         let assignedToType = user ? 'USER' : teamMember ? 'TEAM_MEMBER' : null;
 
         if (!assignedToType) {
-            return NextResponse.json({ error: 'Assignee not found' }, { status: 404 });
+            console.error(`[TASK_API] Assignee ${assignedToId} not found in User or TeamMember tables`);
+            return NextResponse.json({ error: 'Assignee not found in protocol database' }, { status: 404 });
         }
+
+        const createByUserId = payload.userId || payload.id;
 
         const task = await prisma.task.create({
             data: {
                 title,
-                description,
+                description: description || null,
                 priority: priority || 'MEDIUM',
                 dueDate: dueDate ? new Date(dueDate) : null,
                 assignedToUserId: user ? assignedToId : null,
                 assignedToTeamId: teamMember ? assignedToId : null,
                 assignedToType,
-                createdById: payload.userId,
+                createdById: createByUserId,
                 status: 'PENDING'
             }
         });
 
         return NextResponse.json(task, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating task:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Internal Server Error',
+            details: error.message
+        }, { status: 500 });
     }
 }

@@ -31,12 +31,12 @@ export default function InvoicesPage() {
         const fetchInvoices = async () => {
             try {
                 const token = localStorage.getItem('token')
-                const res = await fetch('/api/invoices', {
+                const res = await fetch('/api/admin/invoices', {
                     headers: { Authorization: `Bearer ${token}` },
                 })
                 if (res.ok) {
                     const data = await res.json()
-                    setInvoices(data.invoices || [])
+                    setInvoices(Array.isArray(data) ? data : [])
                 }
             } catch (error) {
                 console.error('Failed to fetch invoices:', error)
@@ -118,13 +118,13 @@ export default function InvoicesPage() {
                 <PulseStatCard
                     label="Revenue Collected"
                     value={`$${totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 0 })}`}
-                    sub={`${invoices.filter(i => i.status === 'PAID').length} paid nodes`}
+                    sub={`${invoices.filter(i => i.status === 'PAID').length} paid invoices`}
                     color="text-emerald-500"
                     icon={<CheckCircle className="h-5 w-5" />}
                     loading={loading}
                 />
                 <PulseStatCard
-                    label="Outstanding Flux"
+                    label="Outstanding Balance"
                     value={`$${outstandingAmount.toLocaleString('en-US', { minimumFractionDigits: 0 })}`}
                     sub={`${outstandingCount} pending cycles`}
                     color="text-amber-500"
@@ -149,7 +149,7 @@ export default function InvoicesPage() {
                             <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                             <input
                                 className="w-full xl:min-w-[450px] pl-11 sm:pl-14 pr-4 sm:pr-6 py-3.5 sm:py-4 rounded-xl bg-card border border-border text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] outline-none focus:ring-4 focus:ring-primary/10 text-foreground transition-all shadow-inner"
-                                placeholder="DECRYPT INVOICE_ID OR CLIENT..."
+                                placeholder="Search by invoice ID or client..."
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
                             />

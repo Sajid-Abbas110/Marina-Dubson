@@ -38,9 +38,14 @@ export default function ProfileUpload({ currentImage, onUploadComplete, label = 
             const data = await res.json()
             if (data.url) {
                 onUploadComplete(data.url)
+            } else {
+                alert('Server failed to save the image. Resetting preview.')
+                setPreview(currentImage)
             }
         } catch (error) {
             console.error('Upload failed:', error)
+            alert('Upload protocol failed. Please check your connection.')
+            setPreview(currentImage)
         } finally {
             setUploading(false)
         }
@@ -56,58 +61,70 @@ export default function ProfileUpload({ currentImage, onUploadComplete, label = 
     }
 
     return (
-        <div className="space-y-3">
-            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2 flex items-center gap-2">
-                <Camera className="h-3 w-3" /> {label}
-            </label>
+        <div className="relative">
+            <input
+                type="file"
+                className="hidden"
+                ref={fileInputRef}
+                accept="image/*"
+                onChange={handleFileChange}
+            />
 
-            <div className="flex items-center gap-6 p-4 rounded-[2rem] bg-muted/30 border border-border group transition-all hover:border-primary/30">
-                <div className="relative h-20 w-20 rounded-[1.5rem] overflow-hidden bg-muted border border-border flex items-center justify-center group-hover:shadow-lg transition-all">
-                    {preview ? (
+            {preview ? (
+                <div className="relative group w-fit">
+                    <div className="h-28 w-28 lg:h-32 lg:w-32 rounded-[2.5rem] overflow-hidden border-4 border-background shadow-2xl relative z-10 transition-transform duration-500 group-hover:scale-[1.02]">
                         <img src={preview} alt="Profile" className="h-full w-full object-cover" />
-                    ) : (
-                        <User className="h-10 w-10 text-muted-foreground/40" />
-                    )}
 
-                    {uploading && (
-                        <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center">
-                            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                        </div>
-                    )}
-                </div>
+                        {uploading && (
+                            <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-20">
+                                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                            </div>
+                        )}
 
-                <div className="flex-1 space-y-2">
-                    <p className="text-[11px] font-bold text-foreground">Upload your bio-metric signature</p>
-                    <p className="text-[9px] text-muted-foreground leading-relaxed">PNG, JPG or WebP up to 5MB. Recommend 400x400px.</p>
-
-                    <div className="flex items-center gap-4 pt-1">
-                        <button
-                            type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="px-4 py-2 rounded-xl bg-primary text-white text-[9px] font-black uppercase tracking-widest hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.05] transition-all"
+                        <div
+                            onClick={() => !uploading && fileInputRef.current?.click()}
+                            className={`absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer backdrop-blur-[2px] z-10 ${uploading ? 'cursor-not-allowed' : ''}`}
                         >
-                            {preview ? 'Update Biometrics' : 'Select Source'}
-                        </button>
-                        {preview && (
-                            <button
-                                type="button"
-                                onClick={() => { setPreview(''); onUploadComplete('') }}
-                                className="px-4 py-2 rounded-xl bg-muted text-muted-foreground text-[9px] font-black uppercase tracking-widest hover:bg-destructive hover:text-white transition-all"
-                            >
-                                Purge
-                            </button>
+                            <div className="h-10 w-10 rounded-full bg-white text-primary flex items-center justify-center shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                                <Camera className="h-5 w-5" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Floating Accent */}
+                    <div className="absolute -inset-2 bg-gradient-to-br from-primary/20 to-transparent rounded-[3rem] blur-xl -z-10 group-hover:opacity-100 opacity-50 transition-opacity" />
+
+                    {/* Delete button (Purge) */}
+                    <button
+                        type="button"
+                        disabled={uploading}
+                        onClick={() => { if (!uploading && confirm('Purge biometric data?')) { setPreview(''); onUploadComplete('') } }}
+                        className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-destructive text-white flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all z-30 hover:scale-110 disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Delete Image"
+                    >
+                        <X className="h-3 w-3" />
+                    </button>
+                </div>
+            ) : (
+                <div
+                    onClick={() => !uploading && fileInputRef.current?.click()}
+                    className={`flex items-center gap-6 p-6 rounded-[2.5rem] bg-muted/30 border-2 border-dashed border-border group transition-all hover:border-primary/50 hover:bg-primary/[0.02] cursor-pointer max-w-md ${uploading ? 'cursor-not-allowed opacity-70' : ''}`}
+                >
+                    <div className="relative h-16 w-16 rounded-2xl overflow-hidden bg-muted border border-border flex items-center justify-center group-hover:shadow-lg transition-all shrink-0">
+                        <User className="h-8 w-8 text-muted-foreground/40" />
+                        {uploading && (
+                            <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center">
+                                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                            </div>
                         )}
                     </div>
-                </div>
 
-                <input
-                    type="file"
-                    className="hidden"
-                    ref={fileInputRef}
-                    accept="image/*"
-                    onChange={handleFileChange}
-                />
-            </div>
+                    <div className="flex-1">
+                        <p className="text-xs font-black text-foreground uppercase tracking-widest mb-1">{label}</p>
+                        <p className="text-[10px] text-muted-foreground font-medium leading-tight">PNG, JPG or WebP up to 5MB.</p>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

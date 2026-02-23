@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, Search, MessageSquare, Settings, LogOut, User, Moon, Sun, ChevronDown, Check, Clock } from 'lucide-react'
+import { Bell, Search, MessageSquare, Settings, LogOut, User, Moon, Sun, ChevronDown, Check, Clock, Menu, RefreshCw } from 'lucide-react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
@@ -20,13 +20,14 @@ const PAGE_TITLES: Record<string, string> = {
     '/admin/reporters': 'Reporters',
     '/admin/messages': 'Messages',
     '/admin/content': 'Content',
+    '/admin/blogs': 'Blog Management',
     '/admin/email-campaigns': 'Email Campaigns',
     '/admin/services': 'Services',
     '/admin/settings': 'Settings',
     '/admin/analytics': 'Analytics',
 }
 
-export default function AdminHeader() {
+export default function AdminHeader({ onToggleSidebar }: { onToggleSidebar: () => void }) {
     const router = useRouter()
     const pathname = usePathname()
     const { theme, toggleTheme } = useTheme()
@@ -50,8 +51,15 @@ export default function AdminHeader() {
     )?.[1] ?? 'Admin'
 
     useEffect(() => {
-        const stored = localStorage.getItem('user')
-        if (stored) setUser(JSON.parse(stored))
+        const syncUser = () => {
+            const stored = localStorage.getItem('user')
+            if (stored) setUser(JSON.parse(stored))
+        }
+        syncUser()
+
+        // Sync across components and tabs
+        window.addEventListener('user-profile-updated', syncUser)
+        window.addEventListener('storage', syncUser)
 
         // Click outside listener
         const handleClickOutside = (event: MouseEvent) => {
@@ -60,7 +68,11 @@ export default function AdminHeader() {
             if (profileRef.current && !profileRef.current.contains(event.target as Node)) setIsProfileOpen(false)
         }
         document.addEventListener('mousedown', handleClickOutside)
-        return () => document.removeEventListener('mousedown', handleClickOutside)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+            window.removeEventListener('user-profile-updated', syncUser)
+            window.removeEventListener('storage', syncUser)
+        }
     }, [])
 
     const fetchData = useCallback(async () => {
@@ -118,18 +130,29 @@ export default function AdminHeader() {
                            h-[64px] px-3 sm:px-6
                            bg-card/90 backdrop-blur-md border-b border-border">
 
-            {/* Mobile Identifier */}
-            <div className="lg:hidden flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
-                    <span className="text-[10px] font-black uppercase tracking-tighter">ADM</span>
-                </div>
-            </div>
+            {/* Left: Sidebar Toggle + Page Identity */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+                <button
+                    onClick={onToggleSidebar}
+                    className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all active:scale-95"
+                    title="Toggle Sidebar"
+                >
+                    <Menu className="h-5 w-5" />
+                </button>
 
-            {/* Page title — desktop */}
-            <div className="hidden lg:block pl-2">
-                <h1 className="text-base font-semibold text-foreground tracking-tight">
-                    {pageTitle}
-                </h1>
+                {/* Mobile Identifier */}
+                <div className="lg:hidden flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                        <span className="text-[10px] font-black uppercase tracking-tighter">ADM</span>
+                    </div>
+                </div>
+
+                {/* Page title — desktop */}
+                <div className="hidden lg:block pl-1">
+                    <h1 className="text-base font-semibold text-foreground tracking-tight">
+                        {pageTitle}
+                    </h1>
+                </div>
             </div>
 
             {/* Center Search */}
@@ -143,10 +166,10 @@ export default function AdminHeader() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         onKeyDown={handleSearch}
                         className="w-full bg-muted/40 border border-border rounded-xl
-                                   pl-9 pr-3 py-1.5 text-[11px] font-black uppercase tracking-widest text-foreground
-                                   placeholder:text-muted-foreground/50
-                                   focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50
-                                   transition-all duration-200"
+                               pl-9 pr-3 py-1.5 text-[11px] font-black uppercase tracking-widest text-foreground
+                               placeholder:text-muted-foreground/50
+                               focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50
+                               transition-all duration-200"
                     />
                 </div>
             </div>
@@ -155,6 +178,12 @@ export default function AdminHeader() {
 
             {/* Actions */}
             <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                <button onClick={() => { fetchData(); window.dispatchEvent(new Event('user-profile-updated')); }}
+                    className="p-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all active:scale-90 group"
+                    aria-label="Refresh Data">
+                    <RefreshCw className="h-4 w-4 group-hover:rotate-180 transition-transform duration-500" />
+                </button>
+
                 <button onClick={toggleTheme}
                     className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all active:scale-90"
                     aria-label="Toggle theme">
@@ -163,8 +192,6 @@ export default function AdminHeader() {
                         : <Sun className="h-4 w-4 text-amber-500" />
                     }
                 </button>
-
-                {/* Messages Dropdown */}
                 <div className="relative" ref={msgRef}>
                     <button
                         onClick={() => { setIsMsgOpen(!isMsgOpen); setIsNotifOpen(false); setIsProfileOpen(false); }}
@@ -182,8 +209,8 @@ export default function AdminHeader() {
                     {isMsgOpen && (
                         <div className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-[500]">
                             <div className="px-4 py-3 border-b border-border flex justify-between items-center bg-muted/30">
-                                <h3 className="text-xs font-black uppercase tracking-widest text-foreground">Strategic Comms</h3>
-                                <Link href="/admin/messages" onClick={() => setIsMsgOpen(false)} className="text-[10px] font-bold text-primary hover:underline">Open Comms</Link>
+                                <h3 className="text-xs font-black uppercase tracking-widest text-foreground">Messages</h3>
+                                <Link href="/admin/messages" onClick={() => setIsMsgOpen(false)} className="text-[10px] font-bold text-primary hover:underline">Open Messages</Link>
                             </div>
                             <div className="max-h-[350px] overflow-y-auto">
                                 {recentMessages.length > 0 ? (
@@ -214,7 +241,7 @@ export default function AdminHeader() {
                                 ) : (
                                     <div className="py-8 text-center">
                                         <MessageSquare className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
-                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">No transmissions</p>
+                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">No messages yet</p>
                                     </div>
                                 )}
                             </div>
@@ -240,7 +267,7 @@ export default function AdminHeader() {
                     {isNotifOpen && (
                         <div className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-[500]">
                             <div className="px-4 py-3 border-b border-border flex justify-between items-center bg-muted/30">
-                                <h3 className="text-xs font-black uppercase tracking-widest text-foreground">Operational Alerts</h3>
+                                <h3 className="text-xs font-black uppercase tracking-widest text-foreground">Notifications</h3>
                                 <Link href="/admin/bookings?status=SUBMITTED" onClick={() => setIsNotifOpen(false)} className="text-[10px] font-bold text-primary hover:underline">Monitor All</Link>
                             </div>
                             <div className="max-h-[350px] overflow-y-auto">
@@ -262,7 +289,7 @@ export default function AdminHeader() {
                                                 <p className="text-[9px] font-medium text-muted-foreground uppercase">{booking.contact?.companyName || 'Private Client'}</p>
                                                 <div className="flex items-center gap-1.5 mt-1">
                                                     <Check className="h-3 w-3 text-amber-500" />
-                                                    <span className="text-[8px] font-black text-amber-600 uppercase tracking-widest">New Deployment</span>
+                                                    <span className="text-[8px] font-black text-amber-600 uppercase tracking-widest">New Booking</span>
                                                 </div>
                                             </div>
                                         </button>
@@ -270,7 +297,7 @@ export default function AdminHeader() {
                                 ) : (
                                     <div className="py-8 text-center">
                                         <Bell className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
-                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">All Nodes Secured</p>
+                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">All clear</p>
                                     </div>
                                 )}
                             </div>
@@ -286,8 +313,12 @@ export default function AdminHeader() {
                         onClick={() => { setIsProfileOpen(!isProfileOpen); setIsNotifOpen(false); setIsMsgOpen(false); }}
                         className={`flex items-center gap-2 px-2 py-1.5 rounded-lg border transition-all ${isProfileOpen ? 'bg-muted border-border' : 'hover:bg-muted border-transparent hover:border-border'}`}
                     >
-                        <div className="h-7 w-7 rounded-full flex items-center justify-center bg-primary text-primary-foreground text-xs font-bold flex-shrink-0">
-                            {initials}
+                        <div className="h-7 w-7 rounded-full flex items-center justify-center bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 overflow-hidden">
+                            {user?.avatar ? (
+                                <img src={user.avatar} alt="Profile" className="h-full w-full object-cover" />
+                            ) : (
+                                initials
+                            )}
                         </div>
                         <div className="hidden sm:block text-left">
                             <p className="text-xs font-semibold text-foreground leading-none">

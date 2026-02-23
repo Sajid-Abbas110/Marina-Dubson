@@ -28,12 +28,12 @@ import {
 } from 'lucide-react'
 
 export default function AdaptiveContentPortal() {
-    const [activeNode, setActiveNode] = useState('ALL')
+    const [activeSource, setActiveSource] = useState('ALL')
 
     const globalAssets = [
-        { id: 'NODE-X-2026', title: 'Smith vs. Jones Full Render', size: '2.4 GB', node: 'VAULT_01', type: 'VIDEO/4K', status: 'SYNCHRONIZED', date: 'FEB 16' },
-        { id: 'NODE-Y-2026', title: 'Holographic ASCII Index', size: '14 KB', node: 'VAULT_04', type: 'DATA/VND', status: 'ENCRYPTED', date: 'FEB 15' },
-        { id: 'NODE-Z-2026', title: 'Global Settlement Archive', size: '412 MB', node: 'VAULT_09', type: 'DOC/PDF', status: 'VERIFIED', date: 'FEB 14' }
+        { id: 'REC-X-2026', title: 'Smith vs. Jones Full Render', size: '2.4 GB', location: 'VAULT_01', type: 'VIDEO/4K', status: 'SYNCHRONIZED', date: 'FEB 16' },
+        { id: 'REC-Y-2026', title: 'Holographic ASCII Index', size: '14 KB', location: 'VAULT_04', type: 'DATA/VND', status: 'ENCRYPTED', date: 'FEB 15' },
+        { id: 'REC-Z-2026', title: 'Global Settlement Archive', size: '412 MB', location: 'VAULT_09', type: 'DOC/PDF', status: 'VERIFIED', date: 'FEB 14' }
     ]
 
     return (
@@ -42,26 +42,26 @@ export default function AdaptiveContentPortal() {
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
                 <div className="space-y-2">
                     <h1 className="text-3xl font-black text-foreground tracking-tighter uppercase leading-none">
-                        Content <span className="brand-gradient italic">Vault</span>
+                        Content <span className="brand-gradient italic">Library</span>
                     </h1>
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mt-3">Monitoring Decentralized Asset Nodes & P2P Stream</p>
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mt-3">Manage uploaded files, images, and media.</p>
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="relative group">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                        <input className="pl-10 pr-6 py-3 rounded-xl bg-card border border-border outline-none text-[10px] font-black uppercase tracking-widest w-64 focus:ring-4 focus:ring-primary/10 transition-all font-medium" placeholder="DECRYPT ASSET_ID..." />
+                        <input className="pl-10 pr-6 py-3 rounded-xl bg-card border border-border outline-none text-[10px] font-black uppercase tracking-widest w-64 focus:ring-4 focus:ring-primary/10 transition-all font-medium" placeholder="Search files..." />
                     </div>
                     <button className="luxury-button py-4 shadow-xl shadow-primary/20">
-                        <Zap className="h-5 w-5" /> Sync Node Relay
+                        <Zap className="h-5 w-5" /> Refresh
                     </button>
                 </div>
             </div>
 
             {/* Matrix View Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <ContentStat label="Vault Storage" value="1.4 PB" trend="Near Capacity" icon={<HardDrive />} color="text-primary" />
-                <ContentStat label="Active Relay" value="412" trend="Verified Uplink" icon={<Network />} color="text-emerald-500" />
-                <ContentStat label="Node Latency" value="0.2ms" trend="Optimal" icon={<Zap />} color="text-emerald-500" />
+                <ContentStat label="Total Storage" value="1.4 PB" trend="Near Capacity" icon={<HardDrive />} color="text-primary" />
+                <ContentStat label="Active Files" value="412" trend="All Verified" icon={<Network />} color="text-emerald-500" />
+                <ContentStat label="Response Time" value="0.2ms" trend="Optimal" icon={<Zap />} color="text-emerald-500" />
                 <ContentStat label="Encrypted" value="99.9%" trend="RSA-4096 Active" icon={<Lock />} color="text-purple-500" />
             </div>
 
@@ -78,13 +78,13 @@ export default function AdaptiveContentPortal() {
                         {globalAssets.map((asset) => (
                             <AssetCard key={asset.id} asset={asset} />
                         ))}
-                        {/* Prototype Node */}
+                        {/* Prototype Entry */}
                         <button className="h-full min-h-[220px] border-2 border-dashed border-border rounded-[2.5rem] flex flex-col items-center justify-center gap-4 group hover:border-primary/30 transition-all bg-card/30">
                             <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground group-hover:text-primary group-hover:bg-primary/10 transition-all">
                                 <Layers className="h-6 w-6" />
                             </div>
                             <div className="text-center">
-                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Init New Node</p>
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Upload File</p>
                             </div>
                         </button>
                     </div>
@@ -96,8 +96,8 @@ export default function AdaptiveContentPortal() {
                         <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-110 transition-transform">
                             <Shield className="h-24 w-24 text-primary" />
                         </div>
-                        <h4 className="text-lg font-black text-foreground uppercase tracking-tight">Node Security</h4>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">System protocols verified. Vault integrity at 100%. RSA-4096 handshake complete for all VAULT_nodes.</p>
+                        <h4 className="text-lg font-black text-foreground uppercase tracking-tight">Security Status</h4>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">All files are secure and verified.</p>
                         <button className="w-full py-4 bg-muted text-foreground rounded-2xl font-black text-[9px] uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-all">Audit Protocols</button>
                     </div>
 
@@ -105,7 +105,7 @@ export default function AdaptiveContentPortal() {
                         <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:rotate-12 transition-transform duration-700">
                             <Activity className="h-40 w-40" />
                         </div>
-                        <p className="text-[9px] font-black uppercase tracking-widest mb-4 opacity-60">P2P Matrix</p>
+                        <p className="text-[9px] font-black uppercase tracking-widest mb-4 opacity-60">System Matrix</p>
                         <h4 className="text-xl font-black uppercase tracking-tight mb-8">Asset Delivery Optimization</h4>
                         <button className="w-full py-4 bg-background text-foreground rounded-2xl font-black text-[9px] uppercase tracking-[0.3em] hover:bg-muted transition-all flex items-center justify-center gap-3">
                             Launch Sync <Sparkles className="h-4 w-4" />
@@ -133,8 +133,8 @@ function AssetCard({ asset }: { asset: any }) {
 
             <div className="flex items-center justify-between pt-6 border-t border-border mt-auto">
                 <div className="flex flex-col gap-1">
-                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Node Location</span>
-                    <span className="text-[10px] font-black text-foreground uppercase">{asset.node}</span>
+                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Location</span>
+                    <span className="text-[10px] font-black text-foreground uppercase">{asset.location}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <CheckCircle2 className={`h-3 w-3 ${asset.status === 'SYNCHRONIZED' ? 'text-primary' : 'text-emerald-500'}`} />

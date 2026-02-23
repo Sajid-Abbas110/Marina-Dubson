@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
                     firstName: adminUser.firstName,
                     lastName: adminUser.lastName,
                     role: adminUser.role,
+                    avatar: adminUser.avatar,
                 },
             })
         }
@@ -86,6 +87,7 @@ export async function POST(request: NextRequest) {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 role: user.role,
+                avatar: user.avatar,
             },
         })
     } catch (error) {

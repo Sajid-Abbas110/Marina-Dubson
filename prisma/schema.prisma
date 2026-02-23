@@ -22,6 +22,7 @@ model User {
   bio              String?
   portfolio        String?
   availability     String?
+  contactId        String?   @unique
   submittedBids    Bid[]     @relation("ReporterBids")
   bookingsAssigned Booking[] @relation("ReporterBookings")
   bookingsCreated  Booking[] @relation("CreatedBookings")
@@ -29,7 +30,8 @@ model User {
   sentMessages     Message[] @relation("SentMessages")
   createdTasks     Task[]    @relation("CreatedTasks")
   assignedTasks    Task[]    @relation("AssignedTasks")
-  contact          Contact?  @relation(fields: [email], references: [email])
+  contact          Contact?  @relation(fields: [contactId], references: [id])
+  blogPosts        BlogPost[] @relation("BlogPosts")
 }
 
 model Contact {
@@ -328,4 +330,25 @@ model Task {
   @@index([bookingId])
   @@index([status])
   @@index([priority])
+}
+
+model BlogPost {
+  id           String   @id @default(cuid())
+  title        String
+  slug         String   @unique
+  content      String   @db.Text
+  excerpt      String?  @db.Text
+  coverImage   String?
+  metaTitle    String?
+  metaDesc     String?
+  seoScore     Int      @default(0)
+  published    Boolean  @default(false)
+  authorId     String
+  author       User     @relation("BlogPosts", fields: [authorId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([published])
+  @@index([slug])
 }

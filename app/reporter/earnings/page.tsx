@@ -27,7 +27,7 @@ import {
 
 export default function ReporterEarningsPage() {
     const earnings = [
-        { id: 'PAY-882', case: 'Smith v. Jones', date: 'FEB 15, 2026', amount: '$725.00', status: 'PROCESSED', method: 'BANK NODE' },
+        { id: 'PAY-882', case: 'Smith v. Jones', date: 'FEB 15, 2026', amount: '$725.00', status: 'PROCESSED', method: 'BANK TRANSFER' },
         { id: 'PAY-879', case: 'Patent Infringement', date: 'FEB 14, 2026', amount: '$450.00', status: 'SCHEDULED', method: 'ESCROW' },
         { id: 'PAY-872', case: 'Estate Audit', date: 'FEB 10, 2026', amount: '$980.00', status: 'PAID', method: 'INTERNAL' }
     ]
@@ -44,7 +44,7 @@ export default function ReporterEarningsPage() {
                         <h1 className="text-xl font-black text-foreground tracking-tight flex items-center gap-2 uppercase">
                             Financial <span className="text-primary italic">Ledger</span>
                         </h1>
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none mt-1">Network Earnings Node</p>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none mt-1">Network Earnings Record</p>
                     </div>
                 </div>
 
@@ -134,7 +134,7 @@ export default function ReporterEarningsPage() {
 
                 <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
                     <EarningsFeature title="Tax Documentation" desc="Download your annual 1099-NEC and earnings summaries." icon={<FileText />} />
-                    <EarningsFeature title="Bank Synchronization" desc="Manage direct deposit nodes and settlement timing." icon={<Globe />} />
+                    <EarningsFeature title="Bank Synchronization" desc="Manage direct deposit accounts and settlement timing." icon={<Globe />} />
                 </div>
             </main>
         </div>

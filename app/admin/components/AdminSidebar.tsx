@@ -42,7 +42,7 @@ const navigation = [
         ]
     },
     {
-        section: 'People',
+        section: 'Personnel Registry',
         items: [
             { name: 'Team', href: '/admin/team', icon: Users, roles: ['ADMIN', 'MANAGER', 'REPORTER'] },
             { name: 'Clients', href: '/admin/clients', icon: UserCheck, roles: ['ADMIN'] },
@@ -53,7 +53,7 @@ const navigation = [
     {
         section: 'Content',
         items: [
-            { name: 'Content', href: '/admin/content', icon: BookOpen, roles: ['ADMIN', 'MANAGER'] },
+            { name: 'Blogs', href: '/admin/blogs', icon: FileText, roles: ['ADMIN', 'MANAGER'] },
             { name: 'Campaigns', href: '/admin/email-campaigns', icon: Mail, roles: ['ADMIN'] },
             { name: 'Services', href: '/admin/services', icon: BookOpen, roles: ['ADMIN'] },
         ]
@@ -78,8 +78,17 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isOpen, setI
     const [user, setUser] = useState<any>(null)
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user')
-        if (storedUser) setUser(JSON.parse(storedUser))
+        const syncUser = () => {
+            const storedUser = localStorage.getItem('user')
+            if (storedUser) setUser(JSON.parse(storedUser))
+        }
+        syncUser()
+        window.addEventListener('user-profile-updated', syncUser)
+        window.addEventListener('storage', syncUser)
+        return () => {
+            window.removeEventListener('user-profile-updated', syncUser)
+            window.removeEventListener('storage', syncUser)
+        }
     }, [])
 
     const userRole = user?.role?.toUpperCase() || ''

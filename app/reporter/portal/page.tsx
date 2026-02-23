@@ -90,6 +90,7 @@ export default function ReporterPortal() {
                 const data = await res.json()
                 setUser(data.user)
                 localStorage.setItem('user', JSON.stringify(data.user))
+                window.dispatchEvent(new Event('user-profile-updated'))
             }
         } catch (error) {
             console.error('Failed to update avatar:', error)
@@ -166,6 +167,9 @@ export default function ReporterPortal() {
     const [contactMessage, setContactMessage] = useState('')
     const [contactSending, setContactSending] = useState(false)
     const [contactSent, setContactSent] = useState(false)
+    const [bidding, setBidding] = useState(false)
+    const [updatingProfile, setUpdatingProfile] = useState(false)
+    const [updatingAvailability, setUpdatingAvailability] = useState(false)
     const [copied, setCopied] = useState<string | null>(null)
 
     const copyToClipboard = (text: string, key: string) => {
@@ -205,6 +209,7 @@ export default function ReporterPortal() {
         const amount = prompt("Enter your bid amount ($):");
         if (!amount) return;
 
+        setBidding(true);
         try {
             const token = localStorage.getItem('token');
             const res = await fetch('/api/market/bids', {
@@ -232,6 +237,43 @@ export default function ReporterPortal() {
         }
     }
 
+    const handleAcceptAssignment = async (bookingId: string) => {
+        setIsPending(true)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch(`/api/bookings/${bookingId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ bookingStatus: 'ACCEPTED' })
+            })
+            if (res.ok) fetchUserData(true)
+            else alert('Failed to accept assignment')
+        } catch (err) {
+            console.error(err)
+        } finally {
+            setIsPending(false)
+        }
+    }
+
+    const handleDeclineAssignment = async (bookingId: string) => {
+        if (!confirm('Are you sure you want to decline this assignment? It will be sent back to the marketplace.')) return
+        setIsPending(true)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch(`/api/bookings/${bookingId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ reporterId: null, isMarketplace: true, bookingStatus: 'SUBMITTED' })
+            })
+            if (res.ok) fetchUserData(true)
+            else alert('Failed to decline assignment')
+        } catch (err) {
+            console.error(err)
+        } finally {
+            setIsPending(false)
+        }
+    }
+
     const handleSetAvailability = async () => {
         const slots = prompt("Enter your available days (e.g. Mon, Wed, Fri) or 'ALL' for full availability:");
         if (slots) {
@@ -240,6 +282,7 @@ export default function ReporterPortal() {
     }
 
     const handleSetAvailabilityUI = async (slots: string) => {
+        setUpdatingAvailability(true);
         try {
             const token = localStorage.getItem('token');
             const res = await fetch('/api/profile', {
@@ -252,6 +295,8 @@ export default function ReporterPortal() {
             }
         } catch (e) {
             console.error(e);
+        } finally {
+            setUpdatingAvailability(false);
         }
     }
 
@@ -259,7 +304,7 @@ export default function ReporterPortal() {
         <div className="min-h-screen bg-background flex items-center justify-center">
             <div className="flex flex-col items-center gap-6">
                 <div className="h-16 w-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Accessing Professional Node...</p>
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Accessing Professional System...</p>
             </div>
         </div>
     )
@@ -269,16 +314,25 @@ export default function ReporterPortal() {
     return (
         <div className="animate-in fade-in duration-500 px-4 py-6 md:p-8">
             {/* Reporter Profile Hero */}
-            <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8 animate-in fade-in slide-in-from-top-4 duration-700">
-                <div className="flex items-center gap-8">
-                    <div className="h-24 w-24 rounded-[2.5rem] bg-gradient-to-br from-primary to-indigo-800 flex items-center justify-center text-primary-foreground font-black text-3xl shadow-2xl">
-                        {user.firstName[0]}{user.lastName[0]}
+            <div className="mb-12 flex flex-col xl:flex-row xl:items-center justify-between gap-10 animate-in fade-in slide-in-from-top-4 duration-700">
+                <div className="flex flex-col md:flex-row items-center md:items-center gap-8">
+                    <div className="flex-shrink-0 w-full md:w-auto">
+                        <ProfileUpload
+                            currentImage={user.avatar}
+                            onUploadComplete={handleAvatarUpdate}
+                        />
                     </div>
-                    <div className="space-y-1">
-                        <h2 className="text-4xl font-black text-foreground tracking-tighter uppercase leading-none">
-                            {user.firstName} <span className="text-primary">{user.lastName}</span>
+                    <div className="space-y-2 text-center md:text-left">
+                        <h2 className="text-5xl lg:text-6xl font-black text-foreground tracking-tighter uppercase leading-[0.8]">
+                            {user.firstName} <span className="text-primary italic">{user.lastName}</span>
                         </h2>
-                        <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Senior Court Reporter • NY Licensed</p>
+                        <div className="flex flex-col md:flex-row items-center gap-3">
+                            <p className="text-muted-foreground font-black uppercase tracking-[0.2em] text-xs">Senior Court Reporter • NY Licensed</p>
+                            <span className="hidden md:block h-1 w-1 rounded-full bg-border" />
+                            <div className="flex items-center gap-1.5 text-emerald-500 font-bold text-[10px] uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                                <BadgeCheck className="h-3 w-3" /> Fully Vetted
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -373,7 +427,7 @@ export default function ReporterPortal() {
                             </div>
                             <div className="glass-panel bg-card rounded-[2.5rem] p-8 border border-border shadow-lg">
                                 <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                                    <TrendingUp className="h-4 w-4" /> Node Efficiency
+                                    <TrendingUp className="h-4 w-4" /> Operational Efficiency
                                 </h3>
                                 <div className="space-y-6">
                                     <div className="space-y-2">
@@ -421,6 +475,9 @@ export default function ReporterPortal() {
                                         onClick={() => {
                                             alert(`Assignment Details:\n\nBooking: ${job.bookingNumber}\nClient: ${job.contact.companyName || job.contact.firstName + ' ' + job.contact.lastName}\nProceeding: ${job.proceedingType}\nDate: ${format(new Date(job.bookingDate), 'MMM dd, yyyy')}\nTime: ${job.bookingTime}\nLocation: ${job.location || 'Remote'}\nStatus: ${job.bookingStatus}`);
                                         }}
+                                        onAccept={() => handleAcceptAssignment(job.id)}
+                                        onDecline={() => handleDeclineAssignment(job.id)}
+                                        isPending={isPending}
                                     />
                                 )) : (
                                     <div className="py-12 text-center border-2 border-dashed border-border rounded-[2rem]">
@@ -452,7 +509,7 @@ export default function ReporterPortal() {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {marketplaceJobs.length > 0 ? marketplaceJobs.map(job => (
-                                    <MarketplaceCard key={job.id} job={job} onBid={() => handleBid(job.id)} />
+                                    <MarketplaceCard key={job.id} job={job} onBid={() => handleBid(job.id)} isBidding={bidding} />
                                 )) : (
                                     <div className="col-span-2 py-20 text-center border-2 border-dashed border-border rounded-[2rem]">
                                         <Search className="h-16 w-16 text-muted-foreground/20 mx-auto mb-6" />
@@ -583,9 +640,10 @@ export default function ReporterPortal() {
                                                         const updated = current ? `${current} | ${dateStr}: ${status}` : `${dateStr}: ${status}`;
                                                         handleSetAvailabilityUI(updated);
                                                     }}
-                                                    className="w-full py-3 px-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-600 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500/10 transition-all flex items-center justify-between"
+                                                    disabled={updatingAvailability}
+                                                    className="w-full py-3 px-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-600 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500/10 transition-all flex items-center justify-between disabled:opacity-50"
                                                 >
-                                                    Set Available <Plus className="h-3 w-3" />
+                                                    Available {updatingAvailability && <Loader2 className="h-3 w-3 animate-spin" />} <Plus className="h-3 w-3" />
                                                 </button>
                                                 <button
                                                     onClick={() => {
@@ -595,9 +653,10 @@ export default function ReporterPortal() {
                                                         const updated = current ? `${current} | ${dateStr}: ${status}` : `${dateStr}: ${status}`;
                                                         handleSetAvailabilityUI(updated);
                                                     }}
-                                                    className="w-full py-3 px-4 rounded-xl border border-amber-500/20 bg-amber-500/5 text-amber-600 text-[10px] font-black uppercase tracking-widest hover:bg-amber-500/10 transition-all flex items-center justify-between"
+                                                    disabled={updatingAvailability}
+                                                    className="w-full py-3 px-4 rounded-xl border border-amber-500/20 bg-amber-500/5 text-amber-600 text-[10px] font-black uppercase tracking-widest hover:bg-amber-500/10 transition-all flex items-center justify-between disabled:opacity-50"
                                                 >
-                                                    Set Busy <Clock className="h-3 w-3" />
+                                                    Booked {updatingAvailability && <Loader2 className="h-3 w-3 animate-spin" />} <Clock className="h-3 w-3" />
                                                 </button>
                                                 <button
                                                     onClick={() => {
@@ -679,12 +738,12 @@ export default function ReporterPortal() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                             <div className="space-y-8">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Target Deployment Node</label>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Target Assignment</label>
                                     <select
                                         id="assignment-target"
                                         className="w-full bg-muted border border-border rounded-2xl p-5 text-xs font-black uppercase outline-none focus:ring-2 focus:ring-primary/20 text-foreground transition-all"
                                     >
-                                        <option className="bg-card">Select Assigned Node...</option>
+                                        <option className="bg-card">Select Assigned Case...</option>
                                         {assignedJobs.filter(j => j.bookingStatus !== 'COMPLETED').map(job => (
                                             <option key={job.id} value={job.id} className="bg-card font-black">
                                                 {job.bookingNumber} — {job.proceedingType.toUpperCase()}
@@ -713,7 +772,7 @@ export default function ReporterPortal() {
                                             const file = e.target.files?.[0];
                                             const bookingId = (document.getElementById('assignment-target') as HTMLSelectElement).value;
                                             if (!file || !bookingId || bookingId.startsWith('Select')) {
-                                                alert('Target Node or File data missing for transmission');
+                                                alert('Target Assignment or File data missing for transmission');
                                                 return;
                                             }
 
@@ -729,7 +788,7 @@ export default function ReporterPortal() {
                                                 body: formData
                                             });
 
-                                            if (res.ok) alert('Asset Transmitted Successfully to Client Node');
+                                            if (res.ok) alert('Asset Transmitted Successfully to Client Vault');
                                             else alert('Transmission Refused by Server');
                                         }}
                                     />
@@ -765,7 +824,7 @@ export default function ReporterPortal() {
                                     <p className="text-sm font-black text-foreground uppercase">Reporter Command Center</p>
                                     <div className="flex items-center gap-2">
                                         <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></div>
-                                        <p className="text-[9px] font-black text-primary uppercase tracking-widest">Connected to Admin Node</p>
+                                        <p className="text-[9px] font-black text-primary uppercase tracking-widest">Connected to Support Center</p>
                                     </div>
                                 </div>
                             </div>
@@ -843,25 +902,30 @@ export default function ReporterPortal() {
                             <h3 className="text-xl font-black text-foreground uppercase tracking-tight mb-8">Network Profile Configuration</h3>
                             <form className="grid grid-cols-1 md:grid-cols-2 gap-8" onSubmit={async (e) => {
                                 e.preventDefault();
-                                const formData = new FormData(e.currentTarget);
-                                const update = {
-                                    firstName: formData.get('firstName'),
-                                    lastName: formData.get('lastName'),
-                                    certification: formData.get('certification'),
-                                    company: formData.get('company'),
-                                    bio: formData.get('bio'),
-                                    portfolio: formData.get('portfolio'),
-                                    availability: formData.get('availability'),
-                                };
-                                const token = localStorage.getItem('token');
-                                const res = await fetch('/api/profile', {
-                                    method: 'PATCH',
-                                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                                    body: JSON.stringify(update)
-                                });
-                                if (res.ok) {
-                                    alert('Profile Protocol Updated Successfully');
-                                    fetchUserData(true);
+                                setUpdatingProfile(true);
+                                try {
+                                    const formData = new FormData(e.currentTarget);
+                                    const update = {
+                                        firstName: formData.get('firstName'),
+                                        lastName: formData.get('lastName'),
+                                        certification: formData.get('certification'),
+                                        company: formData.get('company'),
+                                        bio: formData.get('bio'),
+                                        portfolio: formData.get('portfolio'),
+                                        availability: formData.get('availability'),
+                                    };
+                                    const token = localStorage.getItem('token');
+                                    const res = await fetch('/api/profile', {
+                                        method: 'PATCH',
+                                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                        body: JSON.stringify(update)
+                                    });
+                                    if (res.ok) {
+                                        alert('Profile Protocol Updated Successfully');
+                                        fetchUserData(true);
+                                    }
+                                } finally {
+                                    setUpdatingProfile(false);
                                 }
                             }}>
                                 <div className="space-y-5">
@@ -896,12 +960,13 @@ export default function ReporterPortal() {
                                         <input name="company" defaultValue={user.company} className="w-full bg-muted border border-border rounded-2xl p-5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-foreground" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Authorized Email Node</label>
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2">Authorized Official Email</label>
                                         <input disabled value={user.email} className="w-full bg-muted/50 border border-border rounded-2xl p-5 text-xs font-bold outline-none opacity-50 cursor-not-allowed text-foreground" />
                                     </div>
                                     <div className="pt-2">
-                                        <button type="submit" className="luxury-button w-full py-5">
-                                            Commit Configuration
+                                        <button type="submit" disabled={updatingProfile} className="luxury-button w-full py-5 flex items-center justify-center gap-3 disabled:opacity-50">
+                                            {updatingProfile ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
+                                            {updatingProfile ? 'Updating Protocol...' : 'Commit Configuration'}
                                         </button>
                                     </div>
                                 </div>
@@ -1073,36 +1138,58 @@ function ComplianceItem({ label }: { label: string }) {
     )
 }
 
-function AssignmentRow({ job, onClick }: { job: any, onClick?: () => void }) {
+function AssignmentRow({ job, onClick, onAccept, onDecline, isPending }: { job: any, onClick?: () => void, onAccept?: () => void, onDecline?: () => void, isPending?: boolean }) {
+    const requiresConfirmation = job.bookingStatus === 'SUBMITTED' || job.bookingStatus === 'PENDING' || job.bookingStatus === 'ASSIGNED';
+
     return (
-        <button
-            onClick={onClick}
-            className="w-full p-6 bg-card border border-border rounded-[2rem] flex items-center justify-between hover:shadow-xl transition-all group outline-none focus:ring-2 focus:ring-primary/20"
-        >
-            <div className="flex items-center gap-6">
-                <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center text-primary font-black text-sm">
-                    {format(new Date(job.bookingDate), 'dd')}
+        <div className="w-full p-6 bg-card border border-border rounded-[2rem] flex flex-col hover:shadow-xl transition-all group">
+            <button
+                onClick={onClick}
+                className="flex items-center justify-between outline-none focus:ring-2 focus:ring-primary/20 bg-transparent text-left w-full"
+            >
+                <div className="flex items-center gap-6">
+                    <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center text-primary font-black text-sm">
+                        {format(new Date(job.bookingDate), 'dd')}
+                    </div>
+                    <div className="text-left">
+                        <h4 className="text-sm font-black text-foreground uppercase tracking-tight">{job.proceedingType}</h4>
+                        <p className="text-[9px] font-black text-muted-foreground uppercase mt-1">{job.bookingNumber} • {job.contact?.companyName || 'Private Client'}</p>
+                    </div>
                 </div>
-                <div className="text-left">
-                    <h4 className="text-sm font-black text-foreground uppercase tracking-tight">{job.proceedingType}</h4>
-                    <p className="text-[9px] font-black text-muted-foreground uppercase mt-1">{job.bookingNumber} • {job.contact?.companyName || 'Private Client'}</p>
+                <div className="flex items-center gap-8">
+                    <div className="text-right">
+                        <p className="text-xs font-black text-foreground uppercase">{job.bookingTime}</p>
+                        <p className="text-[9px] font-black text-muted-foreground uppercase mt-1">{job.location || 'Remote Session'}</p>
+                    </div>
+                    <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${job.bookingStatus === 'COMPLETED' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/5 text-primary border-primary/20'
+                        }`}>
+                        {job.bookingStatus}
+                    </div>
                 </div>
-            </div>
-            <div className="flex items-center gap-8">
-                <div className="text-right">
-                    <p className="text-xs font-black text-foreground uppercase">{job.bookingTime}</p>
-                    <p className="text-[9px] font-black text-muted-foreground uppercase mt-1">{job.location || 'Remote Node'}</p>
+            </button>
+            {requiresConfirmation && onAccept && onDecline && (
+                <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-border">
+                    <button
+                        onClick={onDecline}
+                        disabled={isPending}
+                        className="px-4 py-2 border border-rose-200 text-rose-500 hover:bg-rose-50 rounded-xl text-[9px] font-black tracking-widest uppercase disabled:opacity-50 transition-all"
+                    >
+                        Decline
+                    </button>
+                    <button
+                        onClick={onAccept}
+                        disabled={isPending}
+                        className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-[9px] font-black tracking-widest uppercase hover:bg-emerald-600 disabled:opacity-50 transition-all shadow-lg shadow-emerald-500/20"
+                    >
+                        Confirm Assignment
+                    </button>
                 </div>
-                <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${job.bookingStatus === 'COMPLETED' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/5 text-primary border-primary/20'
-                    }`}>
-                    {job.bookingStatus}
-                </div>
-            </div>
-        </button>
+            )}
+        </div>
     )
 }
 
-function MarketplaceCard({ job, onBid }: { job: any, onBid: () => void }) {
+function MarketplaceCard({ job, onBid, isBidding }: { job: any, onBid: () => void, isBidding?: boolean }) {
     return (
         <div className="bg-card p-8 rounded-[2.5rem] border border-border shadow-sm hover:shadow-2xl transition-all relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-4">
@@ -1125,9 +1212,11 @@ function MarketplaceCard({ job, onBid }: { job: any, onBid: () => void }) {
                 </div>
                 <button
                     onClick={onBid}
-                    className="luxury-button w-full py-4 text-[10px]"
+                    disabled={isBidding}
+                    className="luxury-button w-full py-4 text-[10px] flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                    Submit Deployment Bid
+                    {isBidding ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                    {isBidding ? 'Establishing Bid...' : 'Submit Deployment Bid'}
                 </button>
             </div>
         </div>

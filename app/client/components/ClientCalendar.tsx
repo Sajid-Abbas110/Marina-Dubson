@@ -255,7 +255,7 @@ export default function ClientCalendar({ bookings, onBookingCreated, services }:
                                         <div className="h-5 w-5 rounded-full bg-card flex items-center justify-center border border-border">
                                             <MapPin className="h-2.5 w-2.5 text-muted-foreground" />
                                         </div>
-                                        <span className="text-[9px] font-bold text-muted-foreground uppercase truncate">{b.location || 'Remote Node'}</span>
+                                        <span className="text-[9px] font-bold text-muted-foreground uppercase truncate">{b.location || 'Remote Session'}</span>
                                     </div>
 
                                     <button className="w-full py-2.5 rounded-xl bg-card border border-border text-[8px] font-black uppercase tracking-widest flex items-center justify-center gap-2 group-hover:bg-primary group-hover:text-white transition-all">
@@ -277,7 +277,7 @@ export default function ClientCalendar({ bookings, onBookingCreated, services }:
                             <Activity className="h-5 w-5 text-primary" />
                             <h4 className="text-[10px] font-black text-foreground uppercase tracking-widest">Resource Allocation</h4>
                         </div>
-                        <p className="text-[9px] text-muted-foreground font-medium uppercase leading-relaxed">MD Network protocols are operating at peak efficiency across all selected temporal nodes.</p>
+                        <p className="text-[9px] text-muted-foreground font-medium uppercase leading-relaxed">MD Network protocols are operating at peak efficiency across all selected temporal points.</p>
                     </div>
                 </div>
             </div>
@@ -326,7 +326,7 @@ export default function ClientCalendar({ bookings, onBookingCreated, services }:
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Start Time Node</label>
+                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Start Time</label>
                                     <input
                                         required
                                         className="w-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl px-5 py-3.5 text-xs font-black uppercase text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/20"

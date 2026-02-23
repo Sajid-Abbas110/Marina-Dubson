@@ -338,7 +338,11 @@ export class IntegrationOrchestrator {
 
             try {
                 if (zohoInvoiceId) {
-                    await zohoBooks.sendInvoiceEmail(zohoInvoiceId)
+                    try {
+                        await zohoBooks.sendInvoiceEmail(zohoInvoiceId)
+                    } catch (zErr) {
+                        console.warn('Failed to dispatch Zoho email, continuing local sync...', zErr)
+                    }
                 }
 
                 const clientEmailData = emailTemplates.invoiceGenerated(

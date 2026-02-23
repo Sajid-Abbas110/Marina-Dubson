@@ -102,7 +102,7 @@ export function SolutionsSection() {
                     Court Reporting Solutions
                 </h3>
                 <p className="text-sm md:text-lg font-medium max-w-2xl mx-auto text-white/80 italic">
-                    Certified stenographic nodes deployed for mission-critical legal contexts. We handle everything from standard depositions to complex arbitrations.
+                    Certified stenographic professionals deployed for mission-critical legal contexts. We handle everything from standard depositions to complex arbitrations.
                 </p>
                 <div className="pt-4">
                     <button className="bg-[#0071c5] hover:bg-[#0051a8] text-white px-10 py-4 rounded-lg font-black uppercase tracking-widest text-xs transition-all">
@@ -169,7 +169,7 @@ export function BlogTeaser() {
                         />
                     </div>
                     <h3 className="text-3xl font-black text-[#1a1a1a] uppercase italic leading-tight">
-                        The Shift to Virtual Litigative Support Nodes: Best Practices for 2026.
+                        The Shift to Virtual Litigative Support Systems: Best Practices for 2026.
                     </h3>
                     <p className="text-gray-500 font-medium italic leading-relaxed">
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.

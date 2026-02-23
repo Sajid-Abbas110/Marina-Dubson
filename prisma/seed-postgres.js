@@ -55,7 +55,7 @@ async function main() {
             active: true,
         },
         {
-            serviceName: 'Technical Deposition Node',
+            serviceName: 'Technical Deposition Service',
             category: 'COURT_REPORTING',
             subService: 'EXPERT_TESTIMONY',
             defaultMinimumFee: 600,
@@ -67,6 +67,51 @@ async function main() {
             expedite1Day: 2.0,
             expedite2Day: 1.75,
             expedite3Day: 1.5,
+            active: true,
+        },
+        {
+            serviceName: 'Virtual Hearing Stream',
+            category: 'LEGAL_PROCEEDINGS',
+            subService: 'HEARINGS',
+            defaultMinimumFee: 550,
+            pageRate: 5.0,
+            appearanceFeeRemote: 300,
+            appearanceFeeInPerson: 350,
+            realtimeFee: 2.0,
+            expediteImmediate: 2.25,
+            expedite1Day: 1.85,
+            expedite2Day: 1.65,
+            expedite3Day: 1.45,
+            active: true,
+        },
+        {
+            serviceName: 'Arbitration Management',
+            category: 'LEGAL_PROCEEDINGS',
+            subService: 'ARBITRATIONS',
+            defaultMinimumFee: 700,
+            pageRate: 6.5,
+            appearanceFeeRemote: 450,
+            appearanceFeeInPerson: 500,
+            realtimeFee: 3.0,
+            expediteImmediate: 3.0,
+            expedite1Day: 2.5,
+            expedite2Day: 2.25,
+            expedite3Day: 2.0,
+            active: true,
+        },
+        {
+            serviceName: 'EUO Specialist Protocol',
+            category: 'COURT_REPORTING',
+            subService: 'EUO',
+            defaultMinimumFee: 450,
+            pageRate: 5.0,
+            appearanceFeeRemote: 250,
+            appearanceFeeInPerson: 300,
+            realtimeFee: 1.5,
+            expediteImmediate: 2.0,
+            expedite1Day: 1.75,
+            expedite2Day: 1.5,
+            expedite3Day: 1.25,
             active: true,
         }
     ];
@@ -84,20 +129,62 @@ async function main() {
     }
 
     // 4. Seed some initial contacts/clients
-    const contact = await prisma.contact.upsert({
-        where: { email: 'client@example.com' },
+    const markContact = await prisma.contact.upsert({
+        where: { email: 'mark.lewis@example.com' },
         update: {},
         create: {
-            firstName: 'John',
-            lastName: 'Doe',
-            email: 'client@example.com',
-            companyName: 'Elite Law Firm',
-            phone: '555-0199',
-            notes: 'High priority client',
+            firstName: 'Mark',
+            lastName: 'Lewis',
+            email: 'mark.lewis@example.com',
+            companyName: 'Lewis & Associates',
+            phone: '555-0200',
+            notes: 'Test Client',
             clientType: 'LAW_FIRM'
         }
     });
-    console.log('Example contact created:', contact.email);
+    console.log('Mark Lewis contact created:', markContact.email);
+
+    const markUser = await prisma.user.upsert({
+        where: { email: 'mark.lewis@example.com' },
+        update: {},
+        create: {
+            email: 'mark.lewis@example.com',
+            password: hashedPassword,
+            firstName: 'Mark',
+            lastName: 'Lewis',
+            role: 'CLIENT',
+            contactId: markContact.id
+        }
+    });
+    console.log('Mark Lewis user created:', markUser.email);
+
+    const sannContact = await prisma.contact.upsert({
+        where: { email: 'sann.lewis@example.com' },
+        update: {},
+        create: {
+            firstName: 'Sann',
+            lastName: 'Lewis',
+            email: 'sann.lewis@example.com',
+            phone: '555-0300',
+            notes: 'Test Reporter',
+            clientType: 'REPORTER'
+        }
+    });
+    console.log('Sann Lewis contact created:', sannContact.email);
+
+    const sannUser = await prisma.user.upsert({
+        where: { email: 'sann.lewis@example.com' },
+        update: {},
+        create: {
+            email: 'sann.lewis@example.com',
+            password: hashedPassword,
+            firstName: 'Sann',
+            lastName: 'Lewis',
+            role: 'REPORTER',
+            contactId: sannContact.id
+        }
+    });
+    console.log('Sann Lewis user created:', sannUser.email);
 
     console.log('Seed complete!');
 }

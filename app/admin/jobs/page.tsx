@@ -63,6 +63,65 @@ export default function AdministrativeJobNexus() {
     const [editFormData, setEditFormData] = useState<any>(null)
     const [saving, setSaving] = useState(false)
 
+    // Bids states
+    const [showBidsModal, setShowBidsModal] = useState(false)
+    const [selectedBookingBids, setSelectedBookingBids] = useState<any[]>([])
+    const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null)
+
+    const viewBids = async (bookingId: string) => {
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch(`/api/market/bids?bookingId=${bookingId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            const data = await res.json()
+            setSelectedBookingBids(data.bids || [])
+            setSelectedBookingId(bookingId)
+            setShowBidsModal(true)
+        } catch (error) {
+            console.error('Failed to fetch bids:', error)
+        }
+    }
+
+    const acceptBid = async (bidId: string) => {
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/market/bids', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ bidId, status: 'ACCEPTED' })
+            })
+            if (res.ok) {
+                viewBids(selectedBookingId!)
+                fetchInitialData()
+            }
+        } catch (error) {
+            console.error('Failed to accept bid:', error)
+        }
+    }
+
+    const declineBid = async (bidId: string) => {
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/market/bids', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ bidId, status: 'DECLINED' })
+            })
+            if (res.ok) {
+                viewBids(selectedBookingId!)
+            }
+        } catch (error) {
+            console.error('Failed to decline bid:', error)
+        }
+    }
+
     useEffect(() => {
         if (showAddModal || showEditModal) {
             document.body.style.overflow = 'hidden'
@@ -143,7 +202,7 @@ export default function AdministrativeJobNexus() {
             }
         } catch (error) {
             console.error('Failed to create job:', error)
-            alert('A critical system error occurred during deployment initiation.')
+            alert('Something went wrong. Please try again.')
         } finally {
             setSaving(false)
         }
@@ -186,7 +245,7 @@ export default function AdministrativeJobNexus() {
     }
 
     const handleDeleteJob = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this job node?')) return
+        if (!confirm('Are you sure you want to delete this job?')) return
         try {
             const token = localStorage.getItem('token')
             const res = await fetch(`/api/bookings/${id}`, {
@@ -224,72 +283,102 @@ export default function AdministrativeJobNexus() {
         )
     })
 
+
+    const [publishingJobId, setPublishingJobId] = useState<string | null>(null)
+
+    const toggleMarketplace = async (job: any) => {
+        if (publishingJobId === job.id) return
+        setPublishingJobId(job.id)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch(`/api/bookings/${job.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ isMarketplace: !job.isMarketplace })
+            })
+            if (res.ok) {
+                fetchInitialData()
+            } else {
+                alert('Failed to update marketplace status')
+            }
+        } catch (error) {
+            console.error('Marketplace toggle error:', error)
+        } finally {
+            setPublishingJobId(null)
+        }
+    }
+
     const sectors = [
-        { title: 'Intake / Pending', status: ['SUBMITTED', 'PENDING'], colorClass: 'text-amber-500 bg-amber-500/10 border-amber-500/20' },
-        { title: 'Confirmed / Active', status: ['ACCEPTED', 'CONFIRMED'], colorClass: 'text-primary bg-primary/10 border-primary/20' },
-        { title: 'Completion / QA', status: ['COMPLETED'], colorClass: 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20' }
+        { title: 'Pending Intake', status: ['SUBMITTED', 'PENDING'], colorClass: 'text-amber-600 bg-amber-50 border-amber-200' },
+        { title: 'Confirmed / Active', status: ['ACCEPTED', 'CONFIRMED'], colorClass: 'text-blue-600 bg-blue-50 border-blue-200' },
+        { title: 'Completed', status: ['COMPLETED'], colorClass: 'text-emerald-600 bg-emerald-50 border-emerald-200' }
     ]
 
     return (
-        <div className="max-w-[1600px] w-[95%] mx-auto p-6 lg:p-12 space-y-12 pb-24 animate-in fade-in duration-700 font-poppins selection:bg-primary/10 selection:text-primary">
-            {/* Elite Header */}
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-                <div className="space-y-2">
-                    <h1 className="text-2xl font-black text-foreground tracking-tighter uppercase leading-none">
-                        Protocol <span className="brand-gradient italic">Inventory</span>
+        <div className="max-w-7xl mx-auto px-6 py-10 space-y-10 pb-24 animate-in fade-in duration-500 font-poppins bg-slate-50 min-h-screen">
+            {/* Header */}
+            <div className="flex flex-col sm:row sm:items-center justify-between gap-6">
+                <div>
+                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+                        Job Inventory
                     </h1>
-                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em] mt-1">Monitoring Job Lifecycle & Resource Matrix</p>
+                    <p className="text-sm font-semibold text-slate-500 uppercase tracking-widest mt-1">Assignment Lifecycle & Resource Management</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="relative group w-full sm:w-auto">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                <div className="flex flex-wrap items-center gap-4">
+                    <div className="relative group w-full sm:w-64">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                         <input
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full sm:w-64 pl-10 pr-4 py-2.5 rounded-xl bg-muted/50 border border-border outline-none text-[9px] font-black uppercase tracking-widest focus:ring-2 focus:ring-primary/10 transition-all text-foreground"
-                            placeholder="IDENTIFY JOB_ID..."
+                            className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border border-slate-200 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-100 transition-all text-slate-800 shadow-sm"
+                            placeholder="Search by ID or type..."
                         />
                     </div>
                     <button
                         onClick={() => setShowAddModal(true)}
-                        className="luxury-btn flex items-center gap-2 px-6 py-2.5 text-[9px] w-full sm:w-auto justify-center h-10"
+                        className="bg-blue-600 text-white rounded-xl px-6 py-3 font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-blue-700 transition-all flex items-center gap-2 active:scale-95"
                     >
-                        <Plus className="h-4 w-4" /> Initiate Job Node
+                        <Plus className="h-4 w-4" /> New Job Entry
                     </button>
                 </div>
             </div>
 
-            {/* Matrix View Stats */}
+            {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <JobStat label="Total Nodes" value={bookings.length.toString()} trend="Global Registry" icon={<Zap />} color="text-primary" />
-                <JobStat label="Unassigned" value={bookings.filter(b => !b.reporterId).length.toString()} trend="Priority alert" icon={<Users />} color="text-primary/60" />
-                <JobStat label="Active Pool" value={bookings.filter(b => b.bookingStatus === 'ACCEPTED' || b.bookingStatus === 'CONFIRMED').length.toString()} trend="Logistics Live" icon={<Shield />} color="text-primary" />
-                <JobStat label="Market Live" value={bookings.filter(b => b.isMarketplace).length.toString()} trend="Open Channels" icon={<TrendingUp />} color="text-primary" />
+                <JobStat label="Total Jobs" value={bookings.length.toString()} trend="Global Pool" icon={<Briefcase />} color="text-blue-600" />
+                <JobStat label="Unassigned" value={bookings.filter(b => !b.reporterId).length.toString()} trend="Pending Reporter" icon={<Users />} color="text-slate-400" />
+                <JobStat label="Active Jobs" value={bookings.filter(b => b.bookingStatus === 'ACCEPTED' || b.bookingStatus === 'CONFIRMED').length.toString()} trend="Daily Ops" icon={<Clock />} color="text-blue-600" />
+                <JobStat label="Market Live" value={bookings.filter(b => b.isMarketplace).length.toString()} trend="Public Bidding" icon={<TrendingUp />} color="text-emerald-600" />
             </div>
 
-            {/* Job Board Architecture */}
+            {/* Board */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {sectors.map((sector, idx) => {
                     const sectorBookings = filteredBookings.filter(b => sector.status.includes(b.bookingStatus))
                     return (
                         <div key={idx} className="space-y-6">
-                            <div className={`flex items-center justify-between p-4 rounded-2xl border ${sector.colorClass}`}>
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em]">{sector.title}</span>
-                                <span className="text-[10px] font-black">{sectorBookings.length} NODES</span>
+                            <div className={`flex items-center justify-between p-4 rounded-xl border-l-4 ${sector.colorClass} shadow-sm bg-white`}>
+                                <span className="text-xs font-bold uppercase tracking-widest">{sector.title}</span>
+                                <span className="text-xs font-extrabold">{sectorBookings.length}</span>
                             </div>
-                            <div className="space-y-6 min-h-[200px]">
+                            <div className="space-y-4">
                                 {sectorBookings.length === 0 ? (
-                                    <div className="py-12 text-center glass-panel rounded-3xl border-dashed border-2 border-border">
-                                        <AlertCircle className="h-8 w-8 text-muted/30 mx-auto mb-3" />
-                                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Sector Empty</p>
+                                    <div className="py-12 text-center bg-white rounded-2xl border-2 border-dashed border-slate-200">
+                                        <p className="text-xs font-bold text-slate-400 uppercase">No jobs here</p>
                                     </div>
                                 ) : (
                                     sectorBookings.map(job => (
                                         <JobOperationalCard
                                             key={job.id}
                                             job={job}
+                                            isPublishing={publishingJobId === job.id}
+                                            onToggleMarket={() => toggleMarketplace(job)}
                                             onDelete={() => handleDeleteJob(job.id)}
                                             onEdit={() => openEditModal(job)}
+                                            onViewBids={() => viewBids(job.id)}
                                         />
                                     ))
                                 )}
@@ -299,291 +388,105 @@ export default function AdministrativeJobNexus() {
                 })}
             </div>
 
-            {/* Add Job Modal */}
-            {showAddModal && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-12 sm:lg:pl-80 overflow-hidden">
-                    <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setShowAddModal(false)}></div>
-                    <div className="relative w-full max-w-2xl bg-card rounded-[2.5rem] sm:rounded-[3.5rem] p-6 sm:p-12 shadow-2xl border border-border animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar">
-                        <div className="flex items-center gap-6 mb-10">
-                            <div className="h-14 w-14 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground">
-                                <Plus className="h-8 w-8" />
-                            </div>
-                            <div>
-                                <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Initiate Job Node</h2>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1">Manual Deployment Protocol</p>
-                            </div>
-                            <button onClick={() => setShowAddModal(false)} className="ml-auto h-12 w-12 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground">
-                                <X className="h-6 w-6" />
-                            </button>
+            {/* Bids Modal */}
+            {showBidsModal && (
+                <div className="fixed inset-0 z-[250] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowBidsModal(false)} />
+                    <div className="relative w-full max-w-2xl bg-white rounded-3xl p-8 shadow-2xl flex flex-col max-h-[80vh]">
+                        <div className="flex items-center justify-between mb-8">
+                            <h2 className="text-2xl font-bold text-slate-900 uppercase">Marketplace Bids</h2>
+                            <button onClick={() => setShowBidsModal(false)} className="p-2 rounded-xl bg-slate-100 text-slate-500"><X /></button>
                         </div>
-
-                        <form onSubmit={handleCreateJob} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Target Contact</label>
-                                    <select
-                                        required
-                                        className="luxury-input"
-                                        value={formData.contactId}
-                                        onChange={(e) => setFormData({ ...formData, contactId: e.target.value })}
-                                    >
-                                        <option value="">Select Contact...</option>
-                                        {contacts.map(c => (
-                                            <option key={c.id} value={c.id}>{c.firstName} {c.lastName} ({c.companyName || 'Individual'})</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Service Node</label>
-                                    <select
-                                        required
-                                        className="luxury-input"
-                                        value={formData.serviceId}
-                                        onChange={(e) => setFormData({ ...formData, serviceId: e.target.value })}
-                                    >
-                                        <option value="">Select Service...</option>
-                                        {services.map(s => (
-                                            <option key={s.id} value={s.id}>{s.serviceName}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Proceeding Type</label>
-                                    <input
-                                        required
-                                        className="luxury-input"
-                                        placeholder="e.g. Deposition, Hearing"
-                                        value={formData.proceedingType}
-                                        onChange={(e) => setFormData({ ...formData, proceedingType: e.target.value })}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Appearance Logistics</label>
-                                    <select
-                                        className="luxury-input"
-                                        value={formData.appearanceType}
-                                        onChange={(e) => setFormData({ ...formData, appearanceType: e.target.value as any })}
-                                    >
-                                        <option value="REMOTE">REMOTE / VIRTUAL</option>
-                                        <option value="IN_PERSON">IN_PERSON / PHYSICAL</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Deployment Date</label>
-                                    <input
-                                        type="date"
-                                        required
-                                        className="luxury-input"
-                                        value={formData.bookingDate}
-                                        onChange={(e) => setFormData({ ...formData, bookingDate: e.target.value })}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Operational Time</label>
-                                    <input
-                                        type="time"
-                                        required
-                                        className="luxury-input"
-                                        value={formData.bookingTime}
-                                        onChange={(e) => setFormData({ ...formData, bookingTime: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Location / Venue Intelligence</label>
-                                <input
-                                    className="luxury-input"
-                                    placeholder="e.g. Zoom Link or Physical Address"
-                                    value={formData.location}
-                                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                />
-                            </div>
-
-                            <div className="flex gap-4 pt-6">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowAddModal(false)}
-                                    className="flex-1 py-5 rounded-2xl bg-muted text-[10px] font-black uppercase text-muted-foreground hover:text-foreground transition-all"
-                                >
-                                    Abort
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={saving}
-                                    className="flex-[2] luxury-btn py-5 shadow-xl shadow-primary/20 flex items-center justify-center gap-3"
-                                >
-                                    {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Authorize Deployment <ArrowRight className="h-4 w-4" /></>}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Edit Job Modal */}
-            {showEditModal && selectedJob && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-12 sm:lg:pl-80 overflow-hidden">
-                    <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setShowEditModal(false)}></div>
-                    <div className="relative w-full max-w-xl bg-card rounded-[2.5rem] sm:rounded-[3.5rem] p-6 sm:p-12 shadow-2xl border border-border animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar">
-                        <div className="flex items-center gap-6 mb-10">
-                            <div className={`h-14 w-14 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground`}>
-                                <Edit3 className="h-8 w-8" />
-                            </div>
-                            <div>
-                                <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Reconfigure Node</h2>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1">{selectedJob.bookingNumber}</p>
-                            </div>
-                            <button onClick={() => setShowEditModal(false)} className="ml-auto h-12 w-12 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground">
-                                <X className="h-6 w-6" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleUpdateJob} className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Job Status</label>
-                                <select
-                                    className="luxury-input"
-                                    value={editFormData.bookingStatus}
-                                    onChange={(e) => setEditFormData({ ...editFormData, bookingStatus: e.target.value })}
-                                >
-                                    <option value="SUBMITTED">SUBMITTED</option>
-                                    <option value="PENDING">PENDING</option>
-                                    <option value="ACCEPTED">ACCEPTED</option>
-                                    <option value="CONFIRMED">CONFIRMED</option>
-                                    <option value="COMPLETED">COMPLETED</option>
-                                    <option value="DECLINED">DECLINED</option>
-                                    <option value="CANCELLED">CANCELLED</option>
-                                </select>
-                            </div>
-
-                            <div className="space-y-4 py-4 px-6 rounded-2xl bg-primary/5 border border-primary/20">
-                                <label className="flex items-center gap-4 cursor-pointer group">
-                                    <div className={`h-6 w-6 rounded-lg border-2 flex items-center justify-center transition-all ${editFormData.isMarketplace ? 'bg-primary border-primary text-primary-foreground' : 'border-border bg-card'}`}>
-                                        {editFormData.isMarketplace && <Check className="h-4 w-4" />}
+                        <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+                            {selectedBookingBids.length === 0 ? (
+                                <div className="py-12 text-center text-slate-400 font-bold uppercase text-xs tracking-widest">No bids received yet</div>
+                            ) : (
+                                selectedBookingBids.map((bid) => (
+                                    <div key={bid.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
+                                                {bid.reporter.firstName[0]}{bid.reporter.lastName[0]}
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-slate-900">{bid.reporter.firstName} {bid.reporter.lastName}</p>
+                                                <p className="text-xs font-bold text-blue-600 uppercase tracking-widest">${bid.amount}</p>
+                                            </div>
+                                        </div>
+                                        {bid.status === 'PENDING' ? (
+                                            <div className="flex gap-2">
+                                                <button onClick={() => declineBid(bid.id)} className="px-4 py-2 rounded-lg bg-white border border-slate-200 text-red-600 text-[10px] font-bold uppercase tracking-widest hover:bg-red-50">Decline</button>
+                                                <button onClick={() => acceptBid(bid.id)} className="px-4 py-2 rounded-lg bg-blue-600 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-blue-700">Accept</button>
+                                            </div>
+                                        ) : (
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${bid.status === 'ACCEPTED' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
+                                                {bid.status}
+                                            </span>
+                                        )}
                                     </div>
-                                    <input
-                                        type="checkbox"
-                                        className="hidden"
-                                        checked={editFormData.isMarketplace}
-                                        onChange={(e) => setEditFormData({ ...editFormData, isMarketplace: e.target.checked })}
-                                    />
-                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Push to Logistics Marketplace</span>
-                                </label>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Assigned Operative</label>
-                                <select
-                                    className="luxury-input"
-                                    value={editFormData.reporterId}
-                                    onChange={(e) => setEditFormData({ ...editFormData, reporterId: e.target.value })}
-                                >
-                                    <option value="">Pool / Unassigned</option>
-                                    {reporters.map(r => (
-                                        <option key={r.id} value={r.id}>{r.firstName} {r.lastName} ({r.certification || 'Reporter'})</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">Operational Notes</label>
-                                <textarea
-                                    className="luxury-input min-h-[100px] py-4"
-                                    value={editFormData.notes}
-                                    onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
-                                />
-                            </div>
-
-                            <div className="flex gap-4 pt-6">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowEditModal(false)}
-                                    className="flex-1 py-5 rounded-2xl bg-muted text-[10px] font-black uppercase text-muted-foreground hover:text-foreground transition-all"
-                                >
-                                    Abort
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={saving}
-                                    className="flex-[2] luxury-btn py-5 shadow-xl transition-all"
-                                >
-                                    {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Update Job Node'}
-                                </button>
-                            </div>
-                        </form>
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
+
+            {/* Modals... (Add/Edit modals simplified below) */}
+            {showAddModal && <JobModal title="New Job" onClose={() => setShowAddModal(false)} onSubmit={handleCreateJob} saving={saving} data={formData} setData={setFormData} contacts={contacts} services={services} />}
+            {showEditModal && <EditModal title="Edit Job" onClose={() => setShowEditModal(false)} onSubmit={handleUpdateJob} saving={saving} data={editFormData} setData={setEditFormData} job={selectedJob} reporters={reporters} />}
         </div>
     )
 }
 
-function JobOperationalCard({ job, onDelete, onEdit }: { job: any, onDelete: () => void, onEdit: () => void }) {
+function JobOperationalCard({ job, onDelete, onEdit, onToggleMarket, isPublishing, onViewBids }: any) {
     return (
-        <div className="glass-panel p-5 rounded-[2rem] group hover:-translate-y-1 transition-all duration-500 relative border border-border bg-card">
-            <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-10 transition-all">
-                <Briefcase className="h-10 w-10 text-primary" />
-            </div>
-
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
             <div className="flex justify-between items-start mb-4">
-                <span className="text-[9px] font-black text-primary uppercase tracking-widest">{job.bookingNumber}</span>
-                <div className="flex gap-1.5">
-                    <button
-                        onClick={onEdit}
-                        className="h-6 w-6 rounded bg-muted flex items-center justify-center text-muted-foreground hover:text-primary transition-all opacity-0 group-hover:opacity-100 shadow-sm"
-                    >
-                        <Edit3 className="h-3 w-3" />
+                <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{job.bookingNumber}</span>
+                <div className="flex gap-2">
+                    {job.isMarketplace && (
+                        <button onClick={onViewBids} className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="View Bids">
+                            <TrendingUp className="h-4 w-4" />
+                        </button>
+                    )}
+                    <button onClick={onEdit} className="p-1.5 rounded-lg bg-slate-100 text-slate-500 hover:text-blue-600 transition-colors">
+                        <Edit3 className="h-4 w-4" />
                     </button>
-                    <button
-                        onClick={onDelete}
-                        className="h-6 w-6 rounded bg-muted flex items-center justify-center text-muted-foreground hover:text-rose-500 transition-all opacity-0 group-hover:opacity-100 shadow-sm"
-                    >
-                        <Trash2 className="h-3 w-3" />
+                    <button onClick={onDelete} className="p-1.5 rounded-lg bg-slate-100 text-slate-500 hover:text-red-600 transition-colors">
+                        <Trash2 className="h-4 w-4" />
                     </button>
-                    <div className={`px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter ${job.priority === 'URGENT' ? 'bg-rose-500 text-white animate-pulse' :
-                        job.priority === 'HIGH' ? 'bg-amber-500 text-white' :
-                            job.bookingStatus === 'COMPLETED' ? 'bg-primary/20 text-primary border border-primary/30' :
-                                'bg-muted text-muted-foreground border border-border'
-                        }`}>
-                        {job.bookingStatus}
-                    </div>
                 </div>
             </div>
 
-            <h3 className="text-sm font-black text-foreground uppercase tracking-tight mb-1 group-hover:text-primary transition-colors">{job.proceedingType}</h3>
-            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-1.5">
-                <Building2 className="h-2.5 w-2.5" />
+            <h3 className="text-lg font-bold text-slate-900 uppercase tracking-tight mb-2">{job.proceedingType}</h3>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-2 mb-6">
+                <Building2 className="h-3.5 w-3.5" />
                 {job.contact?.companyName || `${job.contact?.firstName} ${job.contact?.lastName}`}
             </p>
 
-            <div className="flex items-center justify-between pt-4 border-t border-border">
-                <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between pt-5 border-t border-slate-100">
+                <div>
                     {job.reporter ? (
-                        <div className="flex items-center gap-1.5">
-                            <div className="h-6 w-6 rounded bg-primary/10 flex items-center justify-center">
-                                <UserCheck className="h-3 w-3 text-primary" />
+                        <div className="flex items-center gap-2">
+                            <div className="h-6 w-6 rounded-md bg-blue-100 flex items-center justify-center text-blue-600">
+                                <UserCheck className="h-3.5 w-3.5" />
                             </div>
-                            <span className="text-[8px] font-black text-muted-foreground uppercase">{job.reporter.firstName} {job.reporter.lastName}</span>
+                            <span className="text-[11px] font-bold text-slate-700 uppercase">{job.reporter.firstName}</span>
                         </div>
                     ) : (
-                        <div className="flex items-center gap-1.5">
-                            <div className="h-6 w-6 rounded bg-primary-foreground text-primary flex items-center justify-center border border-primary">
-                                <Users className="h-3 w-3" />
-                            </div>
-                            <span className="text-[8px] font-black text-primary uppercase italic">Unassigned</span>
-                        </div>
+                        <span className="text-[11px] font-bold text-red-600 italic uppercase">Unassigned</span>
                     )}
                 </div>
-                <div className="flex items-center gap-1.5 text-muted-foreground/30">
-                    <Calendar className="h-2.5 w-2.5" />
-                    <span className="text-[8px] font-black uppercase tracking-tighter">{format(new Date(job.bookingDate), 'MMM dd')}</span>
+
+                <div className="flex items-center gap-2">
+                    {/* Marketplace Toggle - Publish/Unpublish only */}
+                    <button
+                        onClick={onToggleMarket}
+                        disabled={isPublishing}
+                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${job.isMarketplace ? 'bg-red-50 text-red-600 border border-red-100 hover:bg-red-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100'
+                            }`}
+                    >
+                        {isPublishing ? '...' : job.isMarketplace ? 'Unpublish' : 'Publish'}
+                    </button>
                 </div>
             </div>
         </div>
@@ -592,13 +495,91 @@ function JobOperationalCard({ job, onDelete, onEdit }: { job: any, onDelete: () 
 
 function JobStat({ label, value, trend, icon, color }: any) {
     return (
-        <div className="glass-panel p-6 rounded-[2rem] relative overflow-hidden group border border-border bg-card">
-            <div className={`absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-10 transition-opacity ${color}`}>
-                {icon}
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm group">
+            <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{label}</p>
+                <div className={`${color} opacity-20 group-hover:opacity-100 transition-opacity`}>{icon}</div>
             </div>
-            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-2">{label}</p>
-            <div className="text-2xl font-black text-foreground tracking-tighter uppercase mb-1">{value}</div>
-            <p className={`text-[8px] font-black uppercase tracking-widest ${trend.includes('Priority') || trend.includes('+') ? 'text-primary' : 'text-muted-foreground/40'}`}>{trend}</p>
+            <div className="text-3xl font-black text-slate-900">{value}</div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">{trend}</p>
         </div>
     )
 }
+
+// Simplified Modals to follow
+function JobModal({ title, onClose, onSubmit, saving, data, setData, contacts, services }: any) {
+    return (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
+            <div className="relative w-full max-w-2xl bg-white rounded-3xl p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+                <div className="flex items-center justify-between mb-8">
+                    <h2 className="text-2xl font-bold text-slate-900 uppercase">{title}</h2>
+                    <button onClick={onClose} className="p-2 rounded-xl bg-slate-100 text-slate-500"><X /></button>
+                </div>
+                <form onSubmit={onSubmit} className="space-y-6">
+                    <div className="grid grid-cols-2 gap-6">
+                        <select className="luxury-input h-14" value={data.contactId} onChange={e => setData({ ...data, contactId: e.target.value })} required>
+                            <option value="">Select Contact</option>
+                            {contacts.map((c: any) => <option key={c.id} value={c.id}>{c.firstName} {c.lastName}</option>)}
+                        </select>
+                        <select className="luxury-input h-14" value={data.serviceId} onChange={e => setData({ ...data, serviceId: e.target.value })} required>
+                            <option value="">Select Service</option>
+                            {services.map((s: any) => <option key={s.id} value={s.id}>{s.serviceName}</option>)}
+                        </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                        <input className="luxury-input h-14" placeholder="Proceeding (e.g. Deposition)" value={data.proceedingType} onChange={e => setData({ ...data, proceedingType: e.target.value })} required />
+                        <select className="luxury-input h-14" value={data.appearanceType} onChange={e => setData({ ...data, appearanceType: e.target.value })}>
+                            <option value="REMOTE">REMOTE</option>
+                            <option value="IN_PERSON">IN_PERSON</option>
+                        </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                        <input type="date" className="luxury-input h-14" value={data.bookingDate} onChange={e => setData({ ...data, bookingDate: e.target.value })} required />
+                        <input type="time" className="luxury-input h-14" value={data.bookingTime} onChange={e => setData({ ...data, bookingTime: e.target.value })} required />
+                    </div>
+                    <input className="luxury-input h-14" placeholder="Venue / Address" value={data.location} onChange={e => setData({ ...data, location: e.target.value })} />
+                    <div className="flex gap-4 pt-4">
+                        <button type="button" onClick={onClose} className="flex-1 py-4 bg-slate-100 text-slate-500 font-bold uppercase rounded-xl">Cancel</button>
+                        <button type="submit" disabled={saving} className="flex-1 py-4 bg-blue-600 text-white font-bold uppercase rounded-xl hover:bg-blue-700 disabled:opacity-50">
+                            {saving ? 'Processing...' : 'Deploy Job'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    )
+}
+
+function EditModal({ title, onClose, onSubmit, saving, data, setData, reporters }: any) {
+    return (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
+            <div className="relative w-full max-w-lg bg-white rounded-3xl p-8 shadow-2xl">
+                <h2 className="text-2xl font-bold text-slate-900 uppercase mb-8">{title}</h2>
+                <form onSubmit={onSubmit} className="space-y-6">
+                    <select className="luxury-input h-14" value={data.bookingStatus} onChange={e => setData({ ...data, bookingStatus: e.target.value })}>
+                        <option value="SUBMITTED">SUBMITTED</option>
+                        <option value="PENDING">PENDING</option>
+                        <option value="ACCEPTED">ACCEPTED</option>
+                        <option value="CONFIRMED">CONFIRMED</option>
+                        <option value="COMPLETED">COMPLETED</option>
+                        <option value="DECLINED">DECLINED</option>
+                    </select>
+                    <select className="luxury-input h-14" value={data.reporterId} onChange={e => setData({ ...data, reporterId: e.target.value })}>
+                        <option value="">Unassigned</option>
+                        {reporters.map((r: any) => <option key={r.id} value={r.id}>{r.firstName} {r.lastName}</option>)}
+                    </select>
+                    <textarea className="luxury-input min-h-[100px]" placeholder="Staff Notes" value={data.notes} onChange={e => setData({ ...data, notes: e.target.value })} />
+                    <div className="flex gap-4 pt-4">
+                        <button type="button" onClick={onClose} className="flex-1 py-4 bg-slate-100 text-slate-500 font-bold uppercase rounded-xl">Cancel</button>
+                        <button type="submit" disabled={saving} className="flex-1 py-4 bg-blue-600 text-white font-bold uppercase rounded-xl hover:bg-blue-700">
+                            {saving ? 'Saving...' : 'Save Changes'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    )
+}
+

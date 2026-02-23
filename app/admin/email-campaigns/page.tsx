@@ -36,9 +36,9 @@ export default function DeepCampaignNexus() {
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
                 <div className="space-y-2">
                     <h1 className="text-3xl font-black text-foreground tracking-tight uppercase">
-                        Strategic <span className="brand-gradient italic">Nexus</span>
+                        Email <span className="brand-gradient italic">Campaigns</span>
                     </h1>
-                    <p className="text-muted-foreground font-black uppercase tracking-[0.4em] text-[10px] mt-2">Managing Global Outreach & Audience Engagement Nodes.</p>
+                    <p className="text-muted-foreground font-black uppercase tracking-[0.4em] text-[10px] mt-2">Manage email campaigns and audience outreach.</p>
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="flex -space-x-3">
@@ -79,7 +79,7 @@ export default function DeepCampaignNexus() {
                         <div className="flex items-center gap-3">
                             <div className="relative group">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <input className="pl-10 pr-4 py-2 rounded-xl bg-muted border-none outline-none text-[10px] font-black uppercase tracking-widest w-48 focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search Node..." />
+                                <input className="pl-10 pr-4 py-2 rounded-xl bg-muted border-none outline-none text-[10px] font-black uppercase tracking-widest w-48 focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search campaign..." />
                             </div>
                             <button className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:text-primary transition-colors">
                                 <Filter className="h-4 w-4" />
@@ -91,7 +91,7 @@ export default function DeepCampaignNexus() {
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="bg-muted/30 border-b border-border">
-                                    <th className="px-10 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Campaign Node</th>
+                                    <th className="px-10 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Campaign Name</th>
                                     <th className="px-10 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Performance</th>
                                     <th className="px-10 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Status</th>
                                     <th className="px-10 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right">Actions</th>
@@ -166,7 +166,7 @@ export default function DeepCampaignNexus() {
                             ))}
                         </div>
                         <div className="pt-4 border-t border-border">
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">Engagement flux is up by <span className="text-emerald-500 underline decoration-emerald-500/50">2.4%</span> across North American Discovery nodes.</p>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">Engagement flux is up by <span className="text-emerald-500 underline decoration-emerald-500/50">2.4%</span> across North American Discovery systems.</p>
                         </div>
                     </div>
 

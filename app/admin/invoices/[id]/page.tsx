@@ -125,7 +125,7 @@ export default function InvoiceDetailPage() {
             amount: invoice.interpreterFee,
         },
         invoice.expertFee > 0 && {
-            label: 'Expert Witness Logistics',
+            label: 'Expert Witness Coordination',
             detail: `${pages} pgs × $0.50/pg`,
             amount: invoice.expertFee,
         },
@@ -218,7 +218,7 @@ export default function InvoiceDetailPage() {
                             </div>
                         </div>
 
-                        {/* Node Intelligence */}
+                        {/* Invoice Details */}
                         <div className="flex flex-col lg:flex-row justify-between gap-6 sm:gap-10">
                             <div className="space-y-6 flex-1">
                                 <div>
@@ -246,11 +246,11 @@ export default function InvoiceDetailPage() {
                                             <span className="text-foreground truncate">{invoice.invoiceNumber}</span>
                                         </div>
                                         <div className="flex justify-between items-center text-[9px] sm:text-[10px] font-black uppercase tracking-widest gap-4">
-                                            <span className="text-muted-foreground whitespace-nowrap">Node Ref</span>
+                                            <span className="text-muted-foreground whitespace-nowrap">Booking Ref</span>
                                             <span className="text-foreground truncate">#BK{invoice.jobNumber || '—'}</span>
                                         </div>
                                         <div className="flex justify-between items-center text-[9px] sm:text-[10px] font-black uppercase tracking-widest gap-4">
-                                            <span className="text-muted-foreground whitespace-nowrap">Node Sync</span>
+                                            <span className="text-muted-foreground whitespace-nowrap">Invoice Date</span>
                                             <span className="text-foreground whitespace-nowrap">{format(new Date(invoice.invoiceDate), 'MM/dd/yyyy')}</span>
                                         </div>
                                         {invoice.dueDate && (
@@ -271,7 +271,7 @@ export default function InvoiceDetailPage() {
                             {/* Header for web */}
                             <div className="hidden sm:grid grid-cols-12 px-6 py-4 bg-primary text-primary-foreground rounded-2xl text-[9px] font-black uppercase tracking-widest shadow-xl">
                                 <div className="col-span-6">Service Protocol</div>
-                                <div className="col-span-2 text-center">Nodes (Pgs)</div>
+                                <div className="col-span-2 text-center">Pages</div>
                                 <div className="col-span-2 text-center">Units</div>
                                 <div className="col-span-2 text-right">Yield</div>
                             </div>
@@ -284,7 +284,7 @@ export default function InvoiceDetailPage() {
                                             <p className="text-[8px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-widest">{item.detail}</p>
                                         </div>
                                         <div className="flex sm:block justify-between items-center col-span-1 sm:col-span-2">
-                                            <span className="sm:hidden text-[8px] font-black text-muted-foreground uppercase tracking-widest">Nodes:</span>
+                                            <span className="sm:hidden text-[8px] font-black text-muted-foreground uppercase tracking-widest">Pages:</span>
                                             <p className="text-[10px] font-black text-foreground text-center uppercase">{pages > 0 ? pages : '—'}</p>
                                         </div>
                                         <div className="flex sm:block justify-between items-center col-span-1 sm:col-span-2 mt-2 sm:mt-0">
@@ -306,7 +306,7 @@ export default function InvoiceDetailPage() {
                                 <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em]">Operational Notes</p>
                                 <div className="p-6 bg-muted/20 rounded-[2rem] border border-border border-dashed">
                                     <p className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase leading-relaxed tracking-widest whitespace-pre-wrap">
-                                        {invoice.notes || 'Settlement required within 14 cycles. Network maintenance interest of 1.5% may apply to overdue nodes.'}
+                                        {invoice.notes || 'Payment due within 14 days. A late fee of 1.5% may apply to overdue balances.'}
                                     </p>
                                 </div>
                             </div>
@@ -340,9 +340,9 @@ export default function InvoiceDetailPage() {
 
                         {/* Network Footer */}
                         <div className="text-center pt-12 mt-12 border-t border-border/50">
-                            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.4em] mb-4">Transmission Terminated</p>
+                            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.4em] mb-4">Thank you for your business</p>
                             <p className="text-[10px] font-black text-foreground uppercase tracking-widest">Secure Payment to: <span className="text-primary italic">Marina Dubson Stenographic Services, LLC</span></p>
-                            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-2 opacity-50">Authorized via MD Network CRM Protcol 2026.1</p>
+                            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-2 opacity-50">Marina Dubson Stenographic Services, LLC — 2026</p>
                         </div>
                     </div>
                 </div>

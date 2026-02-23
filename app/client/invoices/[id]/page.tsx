@@ -127,7 +127,7 @@ export default function InvoiceDetailPage() {
                             {/* Appearance & Congestion */}
                             <tr>
                                 <td className="py-6">
-                                    <p className="font-black text-gray-900 uppercase">Appearance Fee & Logistics</p>
+                                    <p className="font-black text-gray-900 uppercase">Appearance Fee & Operational Processing</p>
                                     <p className="text-[10px] text-gray-500 font-medium italic">$300 Base + $9 Congestion Pricing</p>
                                 </td>
                                 <td className="text-center font-bold">${(invoice.appearanceFee + invoice.congestionFee).toFixed(2)}</td>
@@ -191,7 +191,7 @@ export default function InvoiceDetailPage() {
                             {invoice.expertFee > 0 && (
                                 <tr>
                                     <td className="py-6">
-                                        <p className="font-black text-gray-900 uppercase">Expert Witness Logistics</p>
+                                        <p className="font-black text-gray-900 uppercase">Expert Witness Coordination</p>
                                         <p className="text-[10px] text-gray-500 font-medium italic">(+$2.00 per page)</p>
                                     </td>
                                     <td className="text-center font-bold">$2.00pp</td>
@@ -252,7 +252,7 @@ export default function InvoiceDetailPage() {
                 </div>
 
                 <div className="absolute bottom-16 left-16 right-16 flex justify-between items-end opacity-20 print:bottom-10">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Electronic Verification Node: MD-{invoice.id.slice(-8).toUpperCase()}</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Electronic Verification Point: MD-{invoice.id.slice(-8).toUpperCase()}</p>
                     <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Page 01 of 01</p>
                 </div>
             </div>

@@ -22,8 +22,10 @@ import {
     Power,
     CheckCircle2,
     MessageSquare,
-    Loader2
+    Loader2,
+    BadgeCheck
 } from 'lucide-react'
+import ProfileUpload from '@/app/components/ui/ProfileUpload'
 
 export default function AdministrativeSettingsPage() {
     const [activeTab, setActiveTab] = useState('PROFILE')
@@ -73,6 +75,28 @@ export default function AdministrativeSettingsPage() {
         fetchProfile()
     }, [])
 
+    const handleAvatarUpdate = async (url: string) => {
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/profile/update', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ avatar: url })
+            })
+            if (res.ok) {
+                const data = await res.json()
+                setUser(data.user)
+                localStorage.setItem('user', JSON.stringify(data.user))
+                window.dispatchEvent(new Event('user-profile-updated'))
+            }
+        } catch (error) {
+            console.error('Failed to update avatar:', error)
+        }
+    }
+
     const handleSave = async () => {
         setSaving(true)
         try {
@@ -89,9 +113,11 @@ export default function AdministrativeSettingsPage() {
                 const data = await res.json()
                 setUser(data.user)
                 localStorage.setItem('user', JSON.stringify(data.user))
-                alert('Profile updated successfully')
+                window.dispatchEvent(new Event('user-profile-updated'))
+                alert('Settings updated successfully!')
             } else {
-                alert('Failed to update profile')
+                const errorData = await res.json()
+                alert(`Failed: ${errorData.error || 'Update Error'}`)
             }
         } catch (err) {
             console.error('Save error:', err)
@@ -103,23 +129,25 @@ export default function AdministrativeSettingsPage() {
 
     return (
         <div className="max-w-[1600px] mx-auto px-4 py-8 lg:p-12 space-y-12 animate-in fade-in duration-700">
-            {/* Settings Header */}
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-                <div className="space-y-2">
-                    <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
-                        Configuration <span className="text-primary italic">Core</span>
-                    </h1>
-                    <p className="text-[10px] text-gray-500 font-medium tracking-wide">Fine-tuning the Global Node architecture & networking protocols.</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <button
-                        disabled={saving}
-                        onClick={handleSave}
-                        className="h-10 px-6 rounded-xl bg-gray-900 text-white font-black text-[9px] uppercase tracking-[0.2em] flex items-center gap-2 hover:bg-primary transition-all shadow-xl disabled:opacity-50"
-                    >
-                        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
-                        Save System State
-                    </button>
+            {/* Sticky Settings Header */}
+            <div className="sticky top-0 z-[400] -mx-4 lg:-mx-12 px-4 lg:px-12 py-4 bg-background/80 backdrop-blur-md border-b border-border mb-8">
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                    <div className="space-y-1">
+                        <h1 className="text-2xl font-black text-foreground tracking-tight uppercase">
+                            Configuration <span className="text-primary italic">Core</span>
+                        </h1>
+                        <p className="text-[10px] text-muted-foreground font-medium tracking-wide uppercase">System Instance & Authority Settings</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button
+                            disabled={saving}
+                            onClick={handleSave}
+                            className="h-10 px-8 rounded-xl bg-primary text-white font-black text-[9px] uppercase tracking-[0.2em] flex items-center gap-2 hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 disabled:opacity-50"
+                        >
+                            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                            Commit System Changes
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -130,17 +158,17 @@ export default function AdministrativeSettingsPage() {
                         <h3 className="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4">Hierarchy Controls</h3>
                         <nav className="flex flex-col gap-1.5">
                             <SettingsTab active={activeTab === 'PROFILE'} onClick={() => setActiveTab('PROFILE')} icon={<User />} label="Root Identity" />
-                            <SettingsTab active={activeTab === 'SECURITY'} onClick={() => setActiveTab('SECURITY')} icon={<Shield />} label="Security Vault" />
+                            <SettingsTab active={activeTab === 'SECURITY'} onClick={() => setActiveTab('SECURITY')} icon={<Shield />} label="Security" />
                             <SettingsTab active={activeTab === 'NETWORK'} onClick={() => setActiveTab('NETWORK')} icon={<Globe />} label="Network Grid" />
                             <SettingsTab active={activeTab === 'SYSTEM'} onClick={() => setActiveTab('SYSTEM')} icon={<Terminal />} label="Core Engine" />
-                            <SettingsTab active={activeTab === 'NOTIFICATIONS'} onClick={() => setActiveTab('NOTIFICATIONS')} icon={<Bell />} label="Comms Routing" />
+                            <SettingsTab active={activeTab === 'NOTIFICATIONS'} onClick={() => setActiveTab('NOTIFICATIONS')} icon={<Bell />} label="Notifications" />
                         </nav>
                     </div>
 
                     <div className="p-6 rounded-[2rem] bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 shadow-inner group">
                         <Power className="h-6 w-6 text-gray-300 dark:text-gray-600 mb-3 group-hover:text-rose-500 transition-colors" />
                         <h4 className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-widest mb-0.5">Emergency Off-Grid</h4>
-                        <p className="text-[9px] text-gray-400 font-bold uppercase leading-relaxed tracking-tighter">Temporarily disable all external API endpoints and secure the node.</p>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase leading-relaxed tracking-tighter">Temporarily disable all external API endpoints and secure the system.</p>
                         <button className="w-full py-3 mt-4 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[9px] font-black uppercase text-rose-500 hover:bg-rose-500 hover:text-white rounded-lg transition-all">Enable Lockdown</button>
                     </div>
                 </aside>
@@ -149,22 +177,20 @@ export default function AdministrativeSettingsPage() {
                 <div className="lg:col-span-3 space-y-8">
                     {activeTab === 'PROFILE' && (
                         <div className="glass-panel rounded-[2rem] p-8 space-y-8 animate-in slide-in-from-right-8 duration-500">
-                            <div className="flex items-center gap-6 pb-8 border-b border-gray-100 dark:border-white/5">
-                                <div className="relative group">
-                                    <div className="h-20 w-20 rounded-[2rem] bg-gradient-to-br from-primary to-emerald-800 flex items-center justify-center text-white text-2xl font-black shadow-xl relative z-10">
-                                        {formData.firstName?.[0] || 'M'}{formData.lastName?.[0] || 'D'}
-                                    </div>
-                                    <div className="absolute inset-0 bg-primary rounded-[2rem] blur-xl opacity-20 animate-pulse"></div>
-                                    <button className="absolute -bottom-2 -right-2 h-8 w-8 rounded-lg bg-white dark:bg-[#00120d] border border-gray-100 dark:border-white/10 shadow-lg flex items-center justify-center text-gray-400 hover:text-primary transition-all z-20">
-                                        <Smartphone className="h-3.5 w-3.5" />
-                                    </button>
+                            <div className="flex flex-col md:flex-row md:items-center gap-8 pb-8 border-b border-gray-100 dark:border-white/5">
+                                <div className="flex-shrink-0">
+                                    <ProfileUpload
+                                        label="Command Identity"
+                                        currentImage={user?.avatar}
+                                        onUploadComplete={handleAvatarUpdate}
+                                    />
                                 </div>
                                 <div className="space-y-0.5">
                                     <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
                                         {formData.firstName} {formData.lastName}
                                     </h3>
                                     <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.3em]">
-                                        {user?.role || 'ADMINISTRATOR'} • Node 01
+                                        {user?.role || 'ADMINISTRATOR'} • Access Point
                                     </p>
                                 </div>
                             </div>
@@ -176,13 +202,16 @@ export default function AdministrativeSettingsPage() {
                                 <SettingsField label="Secure Mobile Link" value="+1 (917) 494-1859" />
                             </div>
 
-                            <div className="space-y-3 pt-4">
-                                <h4 className="text-[9px] font-black text-gray-400 uppercase tracking-[0.4em]">Biography Asset</h4>
-                                <textarea
-                                    className="luxury-input dark:bg-white/5 dark:text-white min-h-[120px] py-6 leading-relaxed resize-none text-xs"
-                                    value={formData.bio}
-                                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                                />
+                            <SettingsField label="Biography Asset" value={formData.bio} onChange={(v: string) => setFormData({ ...formData, bio: v })} isTextArea />
+
+                            <div className="pt-8 border-t border-border flex justify-end">
+                                <button
+                                    disabled={saving}
+                                    onClick={handleSave}
+                                    className="px-8 py-3 rounded-xl bg-foreground text-background font-black text-[10px] uppercase tracking-[0.2em] hover:bg-primary hover:text-white transition-all disabled:opacity-50"
+                                >
+                                    {saving ? 'Synchronizing...' : 'Update Root Profile'}
+                                </button>
                             </div>
                         </div>
                     )}
@@ -297,16 +326,27 @@ function SettingsTab({ icon, label, active, onClick }: any) {
     )
 }
 
-function SettingsField({ label, value, onChange, disabled }: any) {
+function SettingsField({ label, value, onChange, disabled, isTextArea }: any) {
+    const inputClasses = "w-full bg-muted/40 border border-border rounded-xl px-4 py-3 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all disabled:opacity-50";
+
     return (
         <div className="space-y-3">
-            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">{label}</label>
-            <input
-                className="luxury-input dark:bg-white/5 dark:text-white dark:border-white/10 dark:focus:ring-primary/20 disabled:opacity-50"
-                value={value}
-                onChange={(e) => onChange?.(e.target.value)}
-                disabled={disabled}
-            />
+            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">{label}</label>
+            {isTextArea ? (
+                <textarea
+                    className={inputClasses + " min-h-[120px] resize-none leading-relaxed"}
+                    value={value}
+                    onChange={(e) => onChange?.(e.target.value)}
+                    disabled={disabled}
+                />
+            ) : (
+                <input
+                    className={inputClasses}
+                    value={value}
+                    onChange={(e) => onChange?.(e.target.value)}
+                    disabled={disabled}
+                />
+            )}
         </div>
     )
 }

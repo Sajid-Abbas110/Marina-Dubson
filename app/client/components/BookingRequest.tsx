@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Globe, ArrowRight, Calendar, MapPin, Clock } from 'lucide-react'
+import { Globe, ArrowRight, Calendar, MapPin, Clock, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface BookingRequestProps {
@@ -80,7 +80,7 @@ export default function BookingRequest({ services, onBookingCreated }: BookingRe
                     <Globe className="h-10 w-10" />
                 </div>
                 <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-2">Transmission Received</h2>
-                <p className="text-muted-foreground max-w-md mx-auto mb-8">Your booking request has been successfully transmitted to our secure node. A confirmation will be sent shortly.</p>
+                <p className="text-muted-foreground max-w-md mx-auto mb-8">Your booking request has been successfully transmitted to our secure system. A confirmation will be sent shortly.</p>
                 <button
                     onClick={() => setSuccess(false)}
                     className="px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-primary/90 transition-all"
@@ -150,7 +150,7 @@ export default function BookingRequest({ services, onBookingCreated }: BookingRe
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Date Node</label>
+                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Date</label>
                             <input
                                 type="date"
                                 required
@@ -229,6 +229,7 @@ export default function BookingRequest({ services, onBookingCreated }: BookingRe
                         disabled={saving}
                         className="w-full py-4 bg-gray-900 dark:bg-white dark:text-black text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-primary dark:hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50 group active:scale-[0.98]"
                     >
+                        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                         {saving ? 'Transmitting...' : (
                             <><span className="hidden sm:inline">Authorize Deployment</span><span className="sm:hidden">Confirm Booking</span> <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" /></>
                         )}

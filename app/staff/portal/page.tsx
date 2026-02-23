@@ -101,6 +101,7 @@ export default function StaffPortalPage() {
                 const data = await res.json()
                 setUser(data.user)
                 localStorage.setItem('user', JSON.stringify(data.user))
+                window.dispatchEvent(new Event('user-profile-updated'))
             }
         } catch (error) {
             console.error('Failed to update avatar:', error)
@@ -176,10 +177,28 @@ export default function StaffPortalPage() {
             <div className="flex flex-col lg:flex-row gap-8">
                 <div className="flex-1 min-w-0">
 
-                    {/* Header */}
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-black text-foreground uppercase tracking-tight">Staff Operations Center</h1>
-                        <p className="text-muted-foreground font-medium">Welcome back, {user?.firstName}. You have {pendingTasks.length} objectives currently active.</p>
+                    {/* Staff Profile Hero */}
+                    <div className="mb-12 flex flex-col xl:flex-row xl:items-center justify-between gap-10 animate-in fade-in slide-in-from-top-4 duration-700">
+                        <div className="flex flex-col md:flex-row items-center gap-8">
+                            <div className="flex-shrink-0 w-full md:w-auto">
+                                <ProfileUpload
+                                    currentImage={user?.avatar}
+                                    onUploadComplete={handleAvatarUpdate}
+                                />
+                            </div>
+                            <div className="space-y-2 text-center md:text-left">
+                                <h1 className="text-4xl lg:text-5xl font-black text-foreground tracking-tighter uppercase leading-[0.8]">
+                                    Staff <span className="text-primary italic">Operations Center</span>
+                                </h1>
+                                <div className="flex flex-col md:flex-row items-center gap-3">
+                                    <p className="text-muted-foreground font-black uppercase tracking-[0.2em] text-[10px]">Active Personnel • Network Management</p>
+                                    <span className="hidden md:block h-1 w-1 rounded-full bg-border" />
+                                    <div className="flex items-center gap-1.5 text-amber-500 font-bold text-[9px] uppercase tracking-widest bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                                        <Clock className="h-3 w-3" /> {pendingTasks.length} Active Objectives
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Stats */}
@@ -362,14 +381,6 @@ export default function StaffPortalPage() {
                                         </div>
                                     </div>
 
-                                    {/* Profile Pic Upload */}
-                                    <div className="mb-8">
-                                        <ProfileUpload
-                                            label="Personnel Avatar"
-                                            currentImage={user?.avatar}
-                                            onUploadComplete={handleAvatarUpdate}
-                                        />
-                                    </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1.5">

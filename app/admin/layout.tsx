@@ -34,25 +34,28 @@ const adminMobileNav = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const [isCollapsed, setIsCollapsed] = useState(false)
+    const [showSidebar, setShowSidebar] = useState(true)
 
     return (
         <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'SUPER_ADMIN', 'STAFF', 'REPORTER']}>
             <div className="flex h-screen overflow-hidden bg-background transition-colors duration-300">
                 {/* Sidebar */}
-                <AdminSidebar
-                    isCollapsed={isCollapsed}
-                    toggleCollapse={() => setIsCollapsed(!isCollapsed)}
-                    isOpen={false}
-                    setIsOpen={() => { }}
-                />
+                {showSidebar && (
+                    <AdminSidebar
+                        isCollapsed={isCollapsed}
+                        toggleCollapse={() => setIsCollapsed(!isCollapsed)}
+                        isOpen={false}
+                        setIsOpen={() => { }}
+                    />
+                )}
 
                 {/* Main area */}
                 <div className={`
                     flex flex-1 flex-col overflow-hidden h-screen
                     transition-all duration-300 ease-in-out
-                    ${isCollapsed ? 'lg:pl-[68px]' : 'lg:pl-60'}
+                    ${!showSidebar ? 'pl-0' : (isCollapsed ? 'lg:pl-[68px]' : 'lg:pl-60')}
                 `}>
-                    <AdminHeader />
+                    <AdminHeader onToggleSidebar={() => setShowSidebar(!showSidebar)} />
                     <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
                         {children}
                     </main>

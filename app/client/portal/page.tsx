@@ -184,6 +184,7 @@ export default function ClientPortal() {
                 const data = await res.json()
                 setUser(data.user)
                 localStorage.setItem('user', JSON.stringify(data.user))
+                window.dispatchEvent(new Event('user-profile-updated'))
             }
         } catch (error) {
             console.error('Failed to update avatar:', error)
@@ -192,6 +193,7 @@ export default function ClientPortal() {
 
     const handleDeleteBooking = async (id: string) => {
         if (!confirm('Are you sure you want to cancel this assignment protocol? This action is irreversible.')) return
+        setIsPending(true)
         try {
             const token = localStorage.getItem('token')
             const res = await fetch(`/api/bookings?id=${id}`, {
@@ -206,6 +208,8 @@ export default function ClientPortal() {
             }
         } catch (error) {
             console.error('Delete booking failed:', error)
+        } finally {
+            setIsPending(false)
         }
     }
 
@@ -262,17 +266,33 @@ export default function ClientPortal() {
     return (
         <div className="px-2 sm:px-4 py-6 lg:p-8 max-w-[1400px] mx-auto animate-fade-in relative">
             {isPending && <LoadingOverlay />}
-            {/* Welcome header */}
-            <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-2xl font-bold text-foreground">
-                        Welcome back, {user.firstName}
-                    </h2>
-                    <p className="text-sm text-muted-foreground mt-1">Manage your bookings, transcripts, and reporting services.</p>
+            {/* Client Profile Hero */}
+            <div className="mb-12 flex flex-col xl:flex-row xl:items-center justify-between gap-10 animate-in fade-in slide-in-from-top-4 duration-700">
+                <div className="flex flex-col md:flex-row items-center gap-8">
+                    <div className="flex-shrink-0 w-full md:w-auto">
+                        <ProfileUpload
+                            currentImage={user.avatar}
+                            onUploadComplete={handleAvatarUpdate}
+                        />
+                    </div>
+                    <div className="space-y-2 text-center md:text-left">
+                        <h2 className="text-5xl lg:text-5xl font-black text-foreground tracking-tighter uppercase leading-[0.8]">
+                            Welcome back, <span className="text-primary italic">{user.firstName}</span>
+                        </h2>
+                        <div className="flex flex-col md:flex-row items-center gap-3">
+                            <p className="text-muted-foreground font-black uppercase tracking-[0.2em] text-[10px]">Direct Client • Law Firm Professional</p>
+                            <span className="hidden md:block h-1 w-1 rounded-full bg-border" />
+                            <div className="flex items-center gap-1.5 text-blue-500 font-bold text-[9px] uppercase tracking-widest bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
+                                <ShieldCheck className="h-3 w-3" /> Priority Status
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <Link href="/client/bookings/new" className="btn-primary text-sm">
-                    <Plus className="h-4 w-4" /> New Booking
-                </Link>
+                <div className="flex items-center gap-4">
+                    <Link href="/client/bookings/new" className="luxury-button flex items-center gap-3 px-8 py-4 rounded-2xl bg-foreground text-background font-black text-[10px] uppercase tracking-[0.3em]">
+                        <Plus className="h-4 w-4" /> <span>New Assignment</span>
+                    </Link>
+                </div>
             </div>
 
             {/* Content Area */}
@@ -376,6 +396,16 @@ export default function ClientPortal() {
                                                     {booking.proceedingType}
                                                 </h4>
                                                 <p className="text-xs font-medium text-muted-foreground">{format(new Date(booking.bookingDate), 'EEEE, MMMM dd, yyyy')}</p>
+                                                {booking.reporter && (
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        <div className="h-4 w-4 rounded-full bg-primary/10 flex items-center justify-center">
+                                                            <User className="h-2.5 w-2.5 text-primary" />
+                                                        </div>
+                                                        <p className="text-[10px] font-bold text-primary uppercase tracking-widest">
+                                                            Reporter: {booking.reporter.firstName} {booking.reporter.lastName}
+                                                        </p>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-end gap-3 shrink-0">
@@ -637,7 +667,7 @@ export default function ClientPortal() {
                                         disabled={sendingMessage || !messageContent.trim()}
                                         className="h-12 w-12 bg-primary text-primary-foreground rounded-xl flex items-center justify-center hover:scale-105 transition-all disabled:opacity-50 disabled:scale-100"
                                     >
-                                        <Send className="h-5 w-5" />
+                                        {sendingMessage ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
                                     </button>
                                 </div>
                             </div>
@@ -646,7 +676,7 @@ export default function ClientPortal() {
                 }
 
                 {
-                    activeTab === 'nodes' && (
+                    activeTab === 'services' && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-700">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 {services.filter(s => s.active).map(service => (
@@ -658,7 +688,7 @@ export default function ClientPortal() {
                                             <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-widest rounded-full border border-indigo-100">Operational</span>
                                         </div>
                                         <h3 className="text-xl font-black text-foreground uppercase tracking-tight mb-2 group-hover:text-primary transition-colors">{service.serviceName}</h3>
-                                        <p className="text-xs text-muted-foreground font-medium mb-8 leading-relaxed line-clamp-2">{service.description || 'Enterprise-grade stenographic data processing node.'}</p>
+                                        <p className="text-xs text-muted-foreground font-medium mb-8 leading-relaxed line-clamp-2">{service.description || 'Enterprise-grade stenographic data processing service.'}</p>
 
                                         <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border">
                                             <div>
@@ -901,11 +931,11 @@ function ActivityRow({ id, title, date, status, reporter, onClick }: any) {
                 <div className="min-w-0 flex-1">
                     <h4 className="text-sm font-black text-foreground uppercase tracking-tight group-hover:text-primary transition-colors truncate">{title}</h4>
                     <div className="flex flex-wrap items-center gap-2 mt-1">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase shrink-0">{id} • Global Node</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase shrink-0">{id} • Global Record</p>
                         {reporter && (
                             <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary/10 rounded-md border border-primary/20">
                                 <User className="h-3 w-3 text-primary" />
-                                <span className="text-[8px] font-black text-primary uppercase tracking-widest">Node Assigned: {reporter.firstName} {reporter.lastName}</span>
+                                <span className="text-[8px] font-black text-primary uppercase tracking-widest">Professional Assigned: {reporter.firstName} {reporter.lastName}</span>
                             </div>
                         )}
                     </div>

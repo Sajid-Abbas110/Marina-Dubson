@@ -15,7 +15,11 @@ export async function GET(request: NextRequest) {
         const invoices = await prisma.invoice.findMany({
             include: {
                 contact: true,
-                booking: true
+                booking: {
+                    include: {
+                        service: true
+                    }
+                }
             },
             orderBy: {
                 invoiceDate: 'desc'

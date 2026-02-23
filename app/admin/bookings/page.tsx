@@ -91,6 +91,7 @@ export default function BookingManagementPage() {
     }
 
     const toggleMarketplace = async (id: string, currentStatus: boolean) => {
+        setIsPending(true)
         try {
             const token = localStorage.getItem('token')
             await fetch(`/api/bookings/${id}`, {
@@ -104,6 +105,8 @@ export default function BookingManagementPage() {
             fetchBookings()
         } catch (error) {
             console.error('Failed to toggle marketplace:', error)
+        } finally {
+            setIsPending(false)
         }
     }
 
@@ -111,6 +114,7 @@ export default function BookingManagementPage() {
         try {
             const booking = bookings.find(b => b.id === id)
             if (booking?.isOpened) return
+            setIsPending(true)
             const token = localStorage.getItem('token')
             await fetch(`/api/bookings/${id}`, {
                 method: 'PATCH',
@@ -123,6 +127,8 @@ export default function BookingManagementPage() {
             fetchBookings()
         } catch (error) {
             console.error('Failed to mark as opened:', error)
+        } finally {
+            setIsPending(false)
         }
     }
 
@@ -142,6 +148,7 @@ export default function BookingManagementPage() {
     }
 
     const acceptBid = async (bidId: string) => {
+        setIsPending(true)
         try {
             const token = localStorage.getItem('token')
             const res = await fetch('/api/market/bids', {
@@ -158,6 +165,8 @@ export default function BookingManagementPage() {
             }
         } catch (error) {
             console.error('Failed to accept bid:', error)
+        } finally {
+            setIsPending(false)
         }
     }
 
@@ -195,6 +204,7 @@ export default function BookingManagementPage() {
     })
 
     const handleComplete = async (id: string) => {
+        setIsPending(true)
         try {
             setError(null)
             const token = localStorage.getItem('token')
@@ -215,7 +225,9 @@ export default function BookingManagementPage() {
             }
         } catch (error: any) {
             console.error('Job completion error:', error)
-            setError(error.message || 'An unexpected error occurred during transmission.')
+            setError(error.message || 'Something went wrong. Please try again.')
+        } finally {
+            setIsPending(false)
         }
     }
 
@@ -254,8 +266,8 @@ export default function BookingManagementPage() {
             currentBase += copyCharge
         }
 
-        // Logistics (Base + Congestion)
-        breakdown.push({ label: 'Logistics & Appearance', value: rates.appearance + rates.congestion, detail: 'Base + Congestion Fee' })
+        // Operations (Base + Congestion)
+        breakdown.push({ label: 'Deployment & Appearance', value: rates.appearance + rates.congestion, detail: 'Base + Congestion Fee' })
         currentBase += (rates.appearance + rates.congestion)
 
         // Apply Minimum Fee floor to BASE
@@ -283,7 +295,7 @@ export default function BookingManagementPage() {
         }
         if (billingData.hasExpert) {
             const expert = billingData.pages * rates.expertRate
-            breakdown.push({ label: 'Expert Witness Logistics', value: expert, detail: `+$${rates.expertRate}/pg (Additive)` })
+            breakdown.push({ label: 'Expert Witness Coordination', value: expert, detail: `+$${rates.expertRate}/pg (Additive)` })
             currentExtras += expert
         }
 
@@ -319,6 +331,7 @@ export default function BookingManagementPage() {
 
     const handleAssignReporter = async (reporterId: string) => {
         if (!assigningBookingId) return
+        setIsPending(true)
         try {
             const token = localStorage.getItem('token')
             const res = await fetch(`/api/bookings/${assigningBookingId}`, {
@@ -335,6 +348,8 @@ export default function BookingManagementPage() {
             }
         } catch (error) {
             console.error('Failed to assign reporter:', error)
+        } finally {
+            setIsPending(false)
         }
     }
 
@@ -352,7 +367,7 @@ export default function BookingManagementPage() {
                     <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight uppercase leading-none">
                         Tactical <span className="brand-gradient italic">Registry</span>
                     </h1>
-                    <p className="text-muted-foreground font-black uppercase text-[8px] sm:text-[9px] tracking-[0.2em] sm:tracking-[0.3em]">Bridging Clients & Reporters across the MD Global Node.</p>
+                    <p className="text-muted-foreground font-black uppercase text-[8px] sm:text-[9px] tracking-[0.2em] sm:tracking-[0.3em]">Managing client bookings and reporter assignments.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="relative group w-full xl:w-auto">
@@ -372,7 +387,7 @@ export default function BookingManagementPage() {
                 <div className="flex items-center gap-2 flex-nowrap pr-16 sm:pr-0 w-max sm:w-auto">
                     <FilterTab active={filter === 'ALL'} onClick={() => handleFilterChange('ALL')} label="Full Matrix" count={(bookings || []).length.toString()} />
                     <FilterTab active={filter === 'SUBMITTED'} onClick={() => handleFilterChange('SUBMITTED')} label="Requires Review" count={(bookings || []).filter(b => b.bookingStatus === 'SUBMITTED').length.toString()} />
-                    <FilterTab active={filter === 'ACCEPTED'} onClick={() => handleFilterChange('ACCEPTED')} label="Active Logistics" count={(bookings || []).filter(b => b.bookingStatus === 'ACCEPTED').length.toString()} />
+                    <FilterTab active={filter === 'ACCEPTED'} onClick={() => handleFilterChange('ACCEPTED')} label="Active Operations" count={(bookings || []).filter(b => b.bookingStatus === 'ACCEPTED').length.toString()} />
                     <FilterTab active={filter === 'REPORTERS'} onClick={() => handleFilterChange('REPORTERS')} label="Reporter Availability" count={reporters.length.toString()} />
                 </div>
                 <div className="ml-auto flex-shrink-0 h-10 w-10 rounded-xl bg-card border border-border flex items-center justify-center shadow-sm cursor-pointer hover:bg-muted hover:border-primary/20 transition-all text-muted-foreground sticky right-0 bg-background/80 backdrop-blur-sm sm:static sm:bg-transparent sm:backdrop-none">
@@ -386,7 +401,7 @@ export default function BookingManagementPage() {
                     <div className="flex items-center gap-3">
                         <div className="h-2.5 w-2.5 sm:h-3 w-3 rounded-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)] animate-pulse"></div>
                         <h3 className="text-[11px] sm:text-sm font-black text-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em] truncate">
-                            {filter === 'REPORTERS' ? 'Reporter Availability Matrix' : 'Active Logistics Matrix'}
+                            {filter === 'REPORTERS' ? 'Reporter Availability Matrix' : 'Active Operations Matrix'}
                         </h3>
                     </div>
                     <div className="flex items-center justify-start sm:justify-end gap-5 sm:gap-8 text-[8px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em]">
@@ -451,7 +466,7 @@ export default function BookingManagementPage() {
                                     <span className="text-base sm:text-xl font-black text-foreground">{new Date(b.bookingDate).getDate()}</span>
                                 </div>
 
-                                {/* Logistics Identity */}
+                                {/* Operational Identity */}
                                 <div className="space-y-1.5">
                                     <div className="flex flex-col gap-1 sm:gap-3">
                                         <div className="flex items-center gap-2">
@@ -484,10 +499,17 @@ export default function BookingManagementPage() {
                                 <div className="flex flex-wrap items-center gap-3 p-2 rounded-2xl bg-muted/50 border border-border/50">
                                     {/* Assignment Badge */}
                                     {b.reporter ? (
-                                        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+                                        <button
+                                            onClick={() => {
+                                                setAssigningBookingId(b.id)
+                                                setShowAssignModal(true)
+                                            }}
+                                            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary hover:bg-primary/90 cursor-pointer transition-all text-primary-foreground shadow-lg shadow-primary/20"
+                                            title="Click to re-assign reporter"
+                                        >
                                             <User className="h-3 w-3" />
                                             <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.05em]">{b.reporter.firstName} {b.reporter.lastName}</span>
-                                        </div>
+                                        </button>
                                     ) : (
                                         <div className="flex items-center gap-2">
                                             <button
@@ -501,18 +523,10 @@ export default function BookingManagementPage() {
                                             </button>
                                             <button
                                                 onClick={() => toggleMarketplace(b.id, b.isMarketplace)}
-                                                className={`px-3 py-2 rounded-xl text-[8px] sm:text-[9px] font-black uppercase tracking-widest border transition-all ${b.isMarketplace ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground border-border hover:border-primary/20 hover:text-primary'}`}
+                                                className={`px-3 py-2 rounded-xl text-[8px] sm:text-[9px] font-black uppercase tracking-widest border transition-all ${b.isMarketplace ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100'}`}
                                             >
-                                                {b.isMarketplace ? 'Market' : 'Push'}
+                                                {b.isMarketplace ? 'Unpublish' : 'Publish'}
                                             </button>
-                                            {b.isMarketplace && (
-                                                <button
-                                                    onClick={() => viewBids(b.id)}
-                                                    className="luxury-button px-3 py-2 h-auto text-[8px] sm:text-[9px]"
-                                                >
-                                                    Bids
-                                                </button>
-                                            )}
                                         </div>
                                     )}
 
@@ -595,7 +609,7 @@ export default function BookingManagementPage() {
                                 </div>
                                 <div className="space-y-0.5 sm:space-y-1">
                                     <h2 className="text-xl sm:text-3xl font-black text-foreground uppercase tracking-tight">Marketplace Bids</h2>
-                                    <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em]">Qualified nodes for deployment</p>
+                                    <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em]">Available reporters</p>
                                 </div>
                             </div>
                             <button onClick={() => setShowBidsModal(false)} className="h-10 w-10 sm:h-14 sm:w-14 rounded-xl bg-muted border border-border text-muted-foreground hover:text-foreground transition-all flex items-center justify-center">
@@ -668,7 +682,7 @@ export default function BookingManagementPage() {
                             </div>
                             <div className="space-y-0.5 sm:space-y-1">
                                 <h2 className="text-xl sm:text-3xl font-black text-foreground uppercase tracking-tight">Finalize & Bill</h2>
-                                <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em]">Logistical data for invoicing</p>
+                                <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em]">Operational data for invoicing</p>
                             </div>
                             <button onClick={() => setShowCompleteModal(false)} className="ml-auto h-10 w-10 sm:h-14 sm:w-14 rounded-xl bg-muted border border-border text-muted-foreground hover:text-foreground transition-all flex items-center justify-center">
                                 <X className="h-5 w-5 sm:h-7 sm:w-7" />
@@ -701,7 +715,7 @@ export default function BookingManagementPage() {
                             <div className="bg-muted/30 rounded-[2rem] p-8 border border-border space-y-8">
                                 <div className="flex items-center gap-3 mb-2">
                                     <div className="h-2 w-2 rounded-full bg-primary"></div>
-                                    <label className="text-[10px] font-black text-foreground uppercase tracking-[0.4em]">Extended Logistics Matrix</label>
+                                    <label className="text-[10px] font-black text-foreground uppercase tracking-[0.4em]">Extended Operations Matrix</label>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <CheckboxItem label="Rough Draft" checked={billingData.hasRough} onChange={(v) => setBillingData({ ...billingData, hasRough: v })} />
@@ -756,7 +770,7 @@ export default function BookingManagementPage() {
 
                                 <div className="pt-4 sm:pt-6 border-t border-foreground/10 flex justify-between items-end">
                                     <div>
-                                        <p className="text-[7px] sm:text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5 opacity-50">Logistics Sum</p>
+                                        <p className="text-[7px] sm:text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5 opacity-50">Operational Sum</p>
                                         <p className="text-2xl sm:text-4xl font-black text-foreground tracking-tighter leading-none">${calculation.total.toFixed(2)}</p>
                                     </div>
                                     <div className="text-right">
@@ -803,7 +817,7 @@ export default function BookingManagementPage() {
                         <div className="flex items-center justify-between mb-10">
                             <div>
                                 <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Direct Assignment</h2>
-                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">Select operative for node deployment</p>
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">Choose a reporter to assign to this booking</p>
                             </div>
                             <button onClick={() => setShowAssignModal(false)} className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
                                 <X className="h-5 w-5" />

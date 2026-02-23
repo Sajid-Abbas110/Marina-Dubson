@@ -125,14 +125,23 @@ export async function POST(req: NextRequest) {
             throw tmErr;
         }
 
-    } catch (error) {
-        console.error('Major Error creating team member:', error);
-        if ((error as any).code === 'P2002') {
-            return NextResponse.json({ error: 'Email already exists in system' }, { status: 400 });
+    } catch (error: any) {
+        console.error('[TEAM_API] Major Error creating team member:', error);
+
+        // Detailed error reporting
+        if (error.code === 'P2002') {
+            const target = error.meta?.target || 'unknown';
+            return NextResponse.json({
+                error: `Unique constraint failed on ${target}`,
+                details: 'This email or identifier is already in use.'
+            }, { status: 400 });
         }
+
         return NextResponse.json({
             error: 'Internal Server Error',
-            details: process.env.NODE_ENV === 'development' ? (error as any).message : undefined
+            message: error.message,
+            code: error.code,
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
         }, { status: 500 });
     }
 }

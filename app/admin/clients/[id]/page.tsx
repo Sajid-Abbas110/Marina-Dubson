@@ -163,7 +163,7 @@ export default function UserProfilePage() {
 
     if (!user) return (
         <div className="p-12 text-center mt-20">
-            <h2 className="text-2xl font-black uppercase text-gray-400">Node Not Found</h2>
+            <h2 className="text-2xl font-black uppercase text-gray-400">Client Not Found</h2>
             <button onClick={() => router.back()} className="mt-4 text-primary font-bold uppercase tracking-widest flex items-center gap-2 mx-auto justify-center">
                 <ArrowLeft className="h-4 w-4" /> Return to Directory
             </button>
@@ -262,7 +262,7 @@ export default function UserProfilePage() {
                     <div className="glass-panel rounded-[3.5rem] overflow-hidden border border-gray-100 dark:border-white/5">
                         <div className="px-10 py-8 border-b border-gray-100 dark:border-white/5 bg-white/50 dark:bg-white/5 flex items-center justify-between">
                             <div>
-                                <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-[0.3em] mb-1">Mission Logistics</h3>
+                                <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-[0.3em] mb-1">Mission Operations</h3>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active tasking and operational requirements</p>
                             </div>
                             <button
@@ -277,7 +277,7 @@ export default function UserProfilePage() {
                                 <div className="py-20 text-center">
                                     <Briefcase className="h-16 w-16 text-gray-100 dark:text-white/5 mx-auto mb-6" />
                                     <p className="text-xs font-black text-gray-400 uppercase tracking-widest">No Missions Assigned</p>
-                                    <p className="text-[9px] text-gray-400 mt-2 uppercase tracking-widest font-bold">Awaiting operational deployment</p>
+                                    <p className="text-[9px] text-gray-400 mt-2 uppercase tracking-widest font-bold">No tasks have been assigned yet</p>
                                 </div>
                             ) : (
                                 user.assignedTasks?.map((task: any) => (
@@ -325,7 +325,7 @@ export default function UserProfilePage() {
                     {/* Operational History */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <StatsCard title="Completed Missions" value={user.assignedTasks?.filter((t: any) => t.status === 'COMPLETED')?.length || 0} icon={<CheckCircle className="text-primary" />} />
-                        <StatsCard title="Total Deployments" value={user.assignedTasks?.length || 0} icon={<Zap className="text-amber-500" />} />
+                        <StatsCard title="Total Tasks" value={user.assignedTasks?.length || 0} icon={<Zap className="text-amber-500" />} />
                     </div>
                 </div>
             </div>
@@ -340,8 +340,8 @@ export default function UserProfilePage() {
                                 <Briefcase className="h-8 w-8" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Assign Mission</h2>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">Operative Direct Command</p>
+                                <h2 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Add Task</h2>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">Set details for the new task</p>
                             </div>
                             <button onClick={() => setShowTaskModal(false)} className="ml-auto h-12 w-12 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white">
                                 <X className="h-6 w-6" />
@@ -350,11 +350,11 @@ export default function UserProfilePage() {
 
                         <form onSubmit={handleCreateTask} className="space-y-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Mission Title</label>
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Task Title</label>
                                 <input
                                     required
                                     className="luxury-input"
-                                    placeholder="Brief Mission Objective"
+                                    placeholder="e.g. Prepare deposition documents"
                                     value={newTask.title}
                                     onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
                                 />
@@ -375,7 +375,7 @@ export default function UserProfilePage() {
                                     </select>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Operational Deadline</label>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Due Date</label>
                                     <input
                                         type="date"
                                         className="luxury-input"
@@ -386,10 +386,10 @@ export default function UserProfilePage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Mission Intelligence</label>
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Notes / Details</label>
                                 <textarea
                                     className="luxury-input min-h-[120px] py-6 resize-none"
-                                    placeholder="Strategic details and requirements..."
+                                    placeholder="Add any notes or extra details..."
                                     value={newTask.description}
                                     onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
                                 />
@@ -401,7 +401,7 @@ export default function UserProfilePage() {
                                     onClick={() => setShowTaskModal(false)}
                                     className="flex-1 py-4 px-6 rounded-2xl bg-muted text-muted-foreground font-black text-[10px] uppercase tracking-widest hover:bg-muted/80 transition-all border border-border"
                                 >
-                                    Abort
+                                    Cancel
                                 </button>
                                 <button
                                     type="submit"
@@ -410,7 +410,7 @@ export default function UserProfilePage() {
                                 >
                                     <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                                     {savingTask ? <Loader2 className="h-4 w-4 animate-spin text-white" /> : <Check className="h-4 w-4" />}
-                                    <span>Authorize Deployment</span>
+                                    <span>Save Task</span>
                                     <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                 </button>
                             </div>

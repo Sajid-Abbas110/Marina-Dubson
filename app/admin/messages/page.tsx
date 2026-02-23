@@ -562,7 +562,7 @@ export default function TacticalCommMatrix() {
                         <input
                             ref={searchBoxRef}
                             className="w-full bg-muted/50 border border-border rounded-xl pl-12 py-3 placeholder:text-muted-foreground/50 text-[10px] uppercase font-black focus:ring-4 focus:ring-primary/10 outline-none transition-all"
-                            placeholder="IDENTIFY NODE..."
+                            placeholder="Search contacts..."
                             value={searchQuery}
                             onChange={e => handleSearch(e.target.value)}
                             onBlur={() => setTimeout(() => { setSearchResults([]); setSearchDropdownPos(null) }, 150)}
@@ -582,7 +582,7 @@ export default function TacticalCommMatrix() {
                                     <div className="p-4 space-y-3">
                                         <button onClick={handleScanNodes} disabled={isScanning} className="w-full p-4 rounded-2xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all flex items-start gap-4 group">
                                             <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-md">{isScanning ? <Loader2 className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />}</div>
-                                            <div className="pt-0.5"><h4 className="text-[10px] font-black uppercase text-foreground">{isScanning ? 'Scanning...' : 'Scan Available Nodes'}</h4><p className="text-[9px] text-muted-foreground uppercase">Find Clients & Reporters</p></div>
+                                            <div className="pt-0.5"><h4 className="text-[10px] font-black uppercase text-foreground">{isScanning ? 'Loading...' : 'Load Contacts'}</h4><p className="text-[9px] text-muted-foreground uppercase">Find Clients & Reporters</p></div>
                                         </button>
                                     </div>
                                 )}

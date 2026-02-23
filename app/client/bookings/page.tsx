@@ -63,7 +63,7 @@ export default function ClientBookingsPage() {
                         <h1 className="text-xl font-black text-foreground tracking-tight flex items-center gap-2 uppercase">
                             Case <span className="text-primary italic">Registry</span>
                         </h1>
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none mt-1">Operational Logistics Desk</p>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none mt-1">Operational Status Desk</p>
                     </div>
                 </div>
 
@@ -80,7 +80,7 @@ export default function ClientBookingsPage() {
                         <h2 className="text-5xl font-black text-foreground tracking-tighter uppercase leading-none">
                             Assignment <span className="text-primary">Matrix</span>
                         </h2>
-                        <p className="text-muted-foreground font-medium max-w-lg leading-relaxed uppercase tracking-widest text-[10px]">Monitoring verified stenographic deployments across the global node network.</p>
+                        <p className="text-muted-foreground font-medium max-w-lg leading-relaxed uppercase tracking-widest text-[10px]">Monitoring verified stenographic deployments across the global infrastructure.</p>
                     </div>
                     <div className="flex items-center gap-6">
                         <div className="p-8 rounded-[2.5rem] bg-card border border-border shadow-xl shadow-primary/5 min-w-[240px]">
@@ -88,7 +88,7 @@ export default function ClientBookingsPage() {
                             <p className="text-4xl font-black text-foreground tracking-tighter">{bookings.length}</p>
                         </div>
                         <div className="p-8 rounded-[2.5rem] bg-card border border-border shadow-xl shadow-primary/5 min-w-[240px]">
-                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">Sync Nodes</p>
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">Sync Hubs</p>
                             <p className="text-4xl font-black text-primary tracking-tighter flex items-center gap-3">
                                 <Globe className="h-8 w-8" /> Active
                             </p>
@@ -138,7 +138,7 @@ export default function ClientBookingsPage() {
                                             <div className="h-3 w-px bg-border"></div>
                                             <div className="flex items-center gap-2">
                                                 <MapPin className="h-4 w-4 text-muted-foreground/60" />
-                                                <span className="text-[11px] font-black text-muted-foreground uppercase tracking-widest">{b.appearanceType} NODE</span>
+                                                <span className="text-[11px] font-black text-muted-foreground uppercase tracking-widest">{b.appearanceType} SESSION</span>
                                             </div>
                                         </div>
                                     </div>

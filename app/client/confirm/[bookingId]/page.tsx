@@ -216,7 +216,7 @@ export default function BookingConfirmationPage() {
 
                                 <div className="space-y-6">
                                     <SummaryItem icon={<DollarSign />} label="Estimated Total" value={`$${data.booking.service.defaultMinimumFee.toFixed(2)}`} />
-                                    <SummaryItem icon={<MapPin />} label="Venue" value={data.booking.location || 'Remote Node'} />
+                                    <SummaryItem icon={<MapPin />} label="Venue" value={data.booking.location || 'Remote Session'} />
                                     <SummaryItem icon={<Clock />} label="Start Time" value={data.booking.bookingTime} />
                                 </div>
 

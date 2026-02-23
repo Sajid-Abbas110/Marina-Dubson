@@ -12,7 +12,7 @@ export default function TermsPage() {
                         <h2 className="text-2xl font-black text-white uppercase tracking-tight">1. Assignment Protocol</h2>
                         <p>
                             By initializing a booking on the MD portal, you agree to our assignment protocols.
-                            Mininum fees apply to all nodes ($400 baseline). Cancellation within 24 hours of
+                            Mininum fees apply to all court appearances ($400 baseline). Cancellation within 24 hours of
                             deployment may trigger a severance fee.
                         </p>
                     </section>
@@ -26,11 +26,11 @@ export default function TermsPage() {
                     </section>
 
                     <section className="space-y-6">
-                        <h2 className="text-2xl font-black text-white uppercase tracking-tight">3. Payment Nodes</h2>
+                        <h2 className="text-2xl font-black text-white uppercase tracking-tight">3. Payment Systems</h2>
                         <p>
                             Invoices are generated automatically upon task completion. Net 30 is the standard
-                            protocol unless an expedited settlement node is established. Overdue signals
-                            may lead to node suspension.
+                            protocol unless an expedited settlement arrangement is established. Overdue signals
+                            may lead to account suspension.
                         </p>
                     </section>
 
