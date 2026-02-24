@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Share, PlusSquare, X, Download, Smartphone, Monitor } from 'lucide-react'
 
 export default function PWAInstallPrompt() {
+    return null; // Force hide all app download/install prompts as per user request
     const [show, setShow] = useState(false)
     const [platform, setPlatform] = useState<'ios' | 'android' | 'desktop' | null>(null)
 
