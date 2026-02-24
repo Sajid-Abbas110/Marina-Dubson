@@ -151,13 +151,16 @@ export default function BookingRequest({ services, onBookingCreated }: BookingRe
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Date</label>
-                            <input
-                                type="date"
-                                required
-                                className="w-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl px-5 py-3.5 text-xs font-black uppercase text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                                value={formData.bookingDate}
-                                onChange={(e) => setFormData({ ...formData, bookingDate: e.target.value })}
-                            />
+                            <div className="relative group">
+                                <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors pointer-events-none" />
+                                <input
+                                    type="date"
+                                    required
+                                    className="w-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl pl-14 pr-5 py-3.5 text-xs font-black uppercase text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                    value={formData.bookingDate}
+                                    onChange={(e) => setFormData({ ...formData, bookingDate: e.target.value })}
+                                />
+                            </div>
                         </div>
                         <div className="space-y-2">
                             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Time Vector</label>

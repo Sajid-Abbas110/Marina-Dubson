@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -22,9 +22,20 @@ import {
     Briefcase
 } from 'lucide-react'
 
+interface Reporter {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    createdAt: string;
+    avatar?: string | null;
+    certification?: string | null;
+}
+
 export default function ReportersPage() {
     const router = useRouter()
-    const [users, setUsers] = useState<any[]>([])
+    const [users, setUsers] = useState<Reporter[]>([])
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
 
@@ -56,15 +67,16 @@ export default function ReportersPage() {
         fetchUsers()
     }, [fetchUsers])
 
-    const filteredUsers = users.filter(u => {
-        if (!searchQuery) return true
+    const filteredUsers = useMemo(() => {
+        const reporters = users || []
+        if (!searchQuery) return reporters
         const query = searchQuery.toLowerCase()
-        return (
+        return reporters.filter(u =>
             u.firstName?.toLowerCase().includes(query) ||
             u.lastName?.toLowerCase().includes(query) ||
             u.email?.toLowerCase().includes(query)
         )
-    })
+    }, [users, searchQuery])
 
     return (
         <div className="max-w-[1600px] w-[95%] mx-auto p-6 lg:p-12 space-y-12 pb-24 animate-in fade-in duration-700">
@@ -117,7 +129,7 @@ export default function ReportersPage() {
     )
 }
 
-function ReporterCard({ user }: { user: any }) {
+function ReporterCard({ user }: { user: Reporter }) {
     const router = useRouter()
     const name = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email
     const initials = (user.firstName?.[0] || user.email[0]).toUpperCase() + (user.lastName?.[0] || '').toUpperCase()

@@ -112,24 +112,31 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isOpen, setI
                 `}
                 style={{ background: 'hsl(210 45% 17%)', borderColor: 'hsl(210 35% 23%)' }}
             >
-                {/* Logo area */}
+                {/* Logo / Profile area at top */}
                 <div className={`
                     flex items-center h-[64px] border-b px-5 gap-3 flex-shrink-0
                     ${isCollapsed ? 'lg:justify-center lg:px-0' : ''}
                 `}
                     style={{ borderColor: 'hsl(210 35% 23%)' }}>
-                    <div className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 text-white"
-                        style={{ background: 'hsl(38 80% 55%)' }}>
-                        <Scale className="h-4 w-4" />
+                    {/* Admin Avatar or Brand Icon */}
+                    <div
+                        className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
+                        style={{ background: 'hsl(210 35% 23%)', border: '1px solid hsl(210 35% 33%)' }}
+                    >
+                        <img
+                            src={user?.avatar || "/uploads/profiles/0cfae443-a9f1-41da-b5c5-32f97a379a59-admin-avatar.png.png"}
+                            alt="Profile"
+                            className="h-full w-full object-cover rounded-lg"
+                        />
                     </div>
                     {!isCollapsed && (
                         <div className="animate-fade-in overflow-hidden">
                             <p className="text-white font-bold text-sm leading-none truncate"
                                 style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}>
-                                Marina Dubson
+                                {user ? `${user.firstName} ${user.lastName}` : 'Marina Dubson'}
                             </p>
                             <p className="text-xs mt-0.5 truncate" style={{ color: 'hsl(210 15% 60%)' }}>
-                                Admin Portal
+                                {user?.role ?? 'Admin Portal'}
                             </p>
                         </div>
                     )}
@@ -207,22 +214,40 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isOpen, setI
                 <div className="flex-shrink-0 border-t p-3"
                     style={{ borderColor: 'hsl(210 35% 23%)' }}>
                     {user && !isCollapsed && (
-                        <div className="flex items-center gap-3 px-2 py-2 mb-2">
-                            <div className="h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                                style={{ background: 'hsl(210 65% 45%)' }}>
-                                {user.firstName?.[0]}{user.lastName?.[0]}
+                        <div className="flex items-center gap-3 px-2 py-2 mb-2 rounded-xl" style={{ background: 'hsl(210 40% 20%)' }}>
+                            {/* Avatar with real photo support */}
+                            <div className="h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-2"
+                                style={{ borderColor: 'hsl(38 80% 55%)' }}>
+                                <img
+                                    src={user.avatar || "/uploads/profiles/0cfae443-a9f1-41da-b5c5-32f97a379a59-admin-avatar.png.png"}
+                                    alt={`${user.firstName} ${user.lastName}`}
+                                    className="h-full w-full object-cover"
+                                />
                             </div>
-                            <div className="overflow-hidden">
-                                <p className="text-sm font-medium text-white truncate">
+                            <div className="overflow-hidden flex-1 min-w-0">
+                                <p className="text-sm font-bold text-white truncate">
                                     {user.firstName} {user.lastName}
                                 </p>
                                 <p className="text-xs truncate" style={{ color: 'hsl(210 15% 55%)' }}>
-                                    {user.role}
+                                    {user.email || user.role}
                                 </p>
                             </div>
                         </div>
                     )}
 
+                    {/* Collapsed avatar */}
+                    {user && isCollapsed && (
+                        <div className="flex justify-center mb-2">
+                            <div className="h-9 w-9 rounded-full flex items-center justify-center overflow-hidden border-2"
+                                style={{ borderColor: 'hsl(38 80% 55%)' }}>
+                                <img
+                                    src={user.avatar || "/uploads/profiles/0cfae443-a9f1-41da-b5c5-32f97a379a59-admin-avatar.png.png"}
+                                    alt="Profile"
+                                    className="h-full w-full object-cover"
+                                />
+                            </div>
+                        </div>
+                    )}
                     <button
                         onClick={handleLogout}
                         className={`

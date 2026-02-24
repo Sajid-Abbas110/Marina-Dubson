@@ -40,8 +40,12 @@ export async function POST(req: NextRequest) {
         }
 
         const payload = await verifyToken(token);
-        if (!payload || (payload.role !== 'ADMIN' && payload.role !== 'SUPER_ADMIN')) {
-            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        const userRole = (payload?.role || '').toUpperCase();
+
+        // Broaden permissions: Allow ADMIN, SUPER_ADMIN, and potentially STAFF/MANAGER if they have portal access
+        if (!payload || !['ADMIN', 'SUPER_ADMIN', 'MANAGER', 'STAFF'].includes(userRole)) {
+            console.error('[TASK_API] Forbidden access attempt:', { userId: payload?.userId, role: userRole });
+            return NextResponse.json({ error: 'Forbidden: Insufficient Clearance' }, { status: 403 });
         }
 
         const body = await req.json();
@@ -77,8 +81,35 @@ export async function POST(req: NextRequest) {
                 assignedToType,
                 createdById: createByUserId,
                 status: 'PENDING'
+            },
+            include: {
+                assignedToUser: true,
+                assignedToTeam: true
             }
         });
+
+        // 📧 NOTIFICATION LOGIC
+        try {
+            const recipientEmail = user?.email || teamMember?.email;
+            const recipientName = user ? `${user.firstName} ${user.lastName}` : `${teamMember?.firstName} ${teamMember?.lastName}`;
+
+            if (recipientEmail) {
+                const { sendEmail, emailTemplates } = await import('@/lib/email');
+                const template = emailTemplates.taskAssigned(
+                    recipientName,
+                    title,
+                    priority || 'MEDIUM',
+                    dueDate ? new Date(dueDate).toLocaleDateString() : 'TBD'
+                );
+                await sendEmail({
+                    to: recipientEmail,
+                    subject: template.subject,
+                    html: template.html
+                });
+            }
+        } catch (emailErr) {
+            console.error('[TASK_API] Notification failed (non-fatal):', emailErr);
+        }
 
         return NextResponse.json(task, { status: 201 });
     } catch (error: any) {

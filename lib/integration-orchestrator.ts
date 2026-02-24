@@ -362,7 +362,7 @@ export class IntegrationOrchestrator {
                     `${booking.contact.firstName} ${booking.contact.lastName}`,
                     localInvoice.invoiceNumber,
                     localInvoice.total,
-                    `${process.env.NEXT_PUBLIC_APP_URL}/admin/invoices`
+                    `${process.env.NEXT_PUBLIC_APP_URL}/admin/invoices/${localInvoice.id}`
                 )
                 await sendEmail({
                     to: process.env.SMTP_USER || 'MarinaDubson@gmail.com',

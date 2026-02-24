@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -34,11 +34,7 @@ export default function BookingManagementPage() {
     const searchParams = useSearchParams()
 
     const handleFilterChange = (newFilter: string) => {
-        setIsPending(true)
-        setTimeout(() => {
-            setFilter(newFilter)
-            setIsPending(false)
-        }, 400)
+        setFilter(newFilter)
     }
 
     useEffect(() => {
@@ -57,6 +53,7 @@ export default function BookingManagementPage() {
     const [selectedBookingBids, setSelectedBookingBids] = useState<any[]>([])
     const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
+    const [completedInvoiceId, setCompletedInvoiceId] = useState<string | null>(null)
 
     const fetchBookings = async () => {
         try {
@@ -72,6 +69,31 @@ export default function BookingManagementPage() {
             setLoading(false)
         }
     }
+
+    const filteredBookings = useMemo(() => {
+        if (filter === 'REPORTERS') return []
+        return (bookings || []).filter(b => {
+            const q = searchQuery.toLowerCase()
+            const matchesStatus = filter === 'ALL' || b.bookingStatus === filter
+            const matchesSearch = !searchQuery ||
+                b.bookingNumber?.toLowerCase().includes(q) ||
+                b.contact?.companyName?.toLowerCase().includes(q) ||
+                b.contact?.firstName?.toLowerCase().includes(q) ||
+                b.contact?.lastName?.toLowerCase().includes(q) ||
+                b.proceedingType?.toLowerCase().includes(q) ||
+                b.location?.toLowerCase().includes(q)
+            return matchesStatus && matchesSearch
+        })
+    }, [bookings, filter, searchQuery])
+
+    const counts = useMemo(() => {
+        const b = bookings || []
+        return {
+            all: b.length,
+            submitted: b.filter(x => x.bookingStatus === 'SUBMITTED').length,
+            accepted: b.filter(x => x.bookingStatus === 'ACCEPTED').length
+        }
+    }, [bookings])
 
     const updateStatus = async (id: string, status: string) => {
         try {
@@ -217,8 +239,13 @@ export default function BookingManagementPage() {
                 body: JSON.stringify(billingData),
             })
             if (res.ok) {
-                setShowCompleteModal(false)
+                const data = await res.json()
+                setCompletedInvoiceId(data.invoiceId)
                 fetchBookings()
+                // Don't close immediately if we want to show the "View Invoice" button in the modal
+                // Or we can just close and the card will have the button.
+                // Let's keep it open or show a success state.
+                // setShowCompleteModal(false) 
             } else {
                 const data = await res.json()
                 setError(data.error || 'Automation sync failed. Please check connectivity.')
@@ -385,9 +412,9 @@ export default function BookingManagementPage() {
             {/* Matrix Filters */}
             <div className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar px-1 sm:px-0 relative">
                 <div className="flex items-center gap-2 flex-nowrap pr-16 sm:pr-0 w-max sm:w-auto">
-                    <FilterTab active={filter === 'ALL'} onClick={() => handleFilterChange('ALL')} label="Full Matrix" count={(bookings || []).length.toString()} />
-                    <FilterTab active={filter === 'SUBMITTED'} onClick={() => handleFilterChange('SUBMITTED')} label="Requires Review" count={(bookings || []).filter(b => b.bookingStatus === 'SUBMITTED').length.toString()} />
-                    <FilterTab active={filter === 'ACCEPTED'} onClick={() => handleFilterChange('ACCEPTED')} label="Active Operations" count={(bookings || []).filter(b => b.bookingStatus === 'ACCEPTED').length.toString()} />
+                    <FilterTab active={filter === 'ALL'} onClick={() => handleFilterChange('ALL')} label="Full Matrix" count={counts.all.toString()} />
+                    <FilterTab active={filter === 'SUBMITTED'} onClick={() => handleFilterChange('SUBMITTED')} label="Requires Review" count={counts.submitted.toString()} />
+                    <FilterTab active={filter === 'ACCEPTED'} onClick={() => handleFilterChange('ACCEPTED')} label="Active Operations" count={counts.accepted.toString()} />
                     <FilterTab active={filter === 'REPORTERS'} onClick={() => handleFilterChange('REPORTERS')} label="Reporter Availability" count={reporters.length.toString()} />
                 </div>
                 <div className="ml-auto flex-shrink-0 h-10 w-10 rounded-xl bg-card border border-border flex items-center justify-center shadow-sm cursor-pointer hover:bg-muted hover:border-primary/20 transition-all text-muted-foreground sticky right-0 bg-background/80 backdrop-blur-sm sm:static sm:bg-transparent sm:backdrop-none">
@@ -441,16 +468,7 @@ export default function BookingManagementPage() {
                                 </div>
                             </div>
                         ))
-                    ) : (bookings || []).filter(b => {
-                        const matchesFilter = filter === 'ALL' || b.bookingStatus === filter
-                        const q = searchQuery.toLowerCase()
-                        const matchesSearch = !searchQuery ||
-                            b.bookingNumber?.toLowerCase().includes(q) ||
-                            b.proceedingType?.toLowerCase().includes(q) ||
-                            b.contact?.companyName?.toLowerCase().includes(q) ||
-                            `${b.contact?.firstName} ${b.contact?.lastName}`.toLowerCase().includes(q)
-                        return matchesFilter && matchesSearch
-                    }).sort((a, b) => {
+                    ) : filteredBookings.sort((a, b) => {
                         // Un-opened first, then SUBMITTED, then most recent date
                         if (!a.isOpened && b.isOpened) return -1
                         if (a.isOpened && !b.isOpened) return 1
@@ -496,7 +514,7 @@ export default function BookingManagementPage() {
 
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6 w-full sm:w-auto px-1 sm:px-0">
                                 {/* Assignment & Controls Unified */}
-                                <div className="flex flex-wrap items-center gap-3 p-2 rounded-2xl bg-muted/50 border border-border/50">
+                                <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-3 p-2 rounded-2xl bg-muted/50 border border-border/50">
                                     {/* Assignment Badge */}
                                     {b.reporter ? (
                                         <button
@@ -504,26 +522,26 @@ export default function BookingManagementPage() {
                                                 setAssigningBookingId(b.id)
                                                 setShowAssignModal(true)
                                             }}
-                                            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary hover:bg-primary/90 cursor-pointer transition-all text-primary-foreground shadow-lg shadow-primary/20"
+                                            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary hover:bg-primary/90 cursor-pointer transition-all text-primary-foreground shadow-lg shadow-primary/20 shrink-0"
                                             title="Click to re-assign reporter"
                                         >
                                             <User className="h-3 w-3" />
-                                            <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.05em]">{b.reporter.firstName} {b.reporter.lastName}</span>
+                                            <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.05em] whitespace-nowrap">{b.reporter.firstName} {b.reporter.lastName}</span>
                                         </button>
                                     ) : (
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 shrink-0">
                                             <button
                                                 onClick={() => {
                                                     setAssigningBookingId(b.id)
                                                     setShowAssignModal(true)
                                                 }}
-                                                className="px-3 py-2 rounded-xl bg-indigo-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/10"
+                                                className="px-3 py-2 rounded-xl bg-indigo-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/10 whitespace-nowrap"
                                             >
                                                 Assign
                                             </button>
                                             <button
                                                 onClick={() => toggleMarketplace(b.id, b.isMarketplace)}
-                                                className={`px-3 py-2 rounded-xl text-[8px] sm:text-[9px] font-black uppercase tracking-widest border transition-all ${b.isMarketplace ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100'}`}
+                                                className={`px-3 py-2 rounded-xl text-[8px] sm:text-[9px] font-black uppercase tracking-widest border transition-all whitespace-nowrap ${b.isMarketplace ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100'}`}
                                             >
                                                 {b.isMarketplace ? 'Unpublish' : 'Publish'}
                                             </button>
@@ -534,7 +552,7 @@ export default function BookingManagementPage() {
                                     <div className="h-4 w-px bg-white/10 hidden sm:block"></div>
 
                                     {/* Action Buttons */}
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 shrink-0">
                                         {b.bookingStatus === 'SUBMITTED' && (
                                             <>
                                                 <button
@@ -577,12 +595,21 @@ export default function BookingManagementPage() {
                                             <button
                                                 onClick={() => {
                                                     setSelectedBookingId(b.id)
+                                                    setCompletedInvoiceId(null)
                                                     setShowCompleteModal(true)
                                                 }}
                                                 className="px-4 py-2 rounded-xl bg-foreground text-background text-[8px] sm:text-[9px] font-black uppercase tracking-widest shadow-xl active:scale-95"
                                             >
                                                 Complete & Bill
                                             </button>
+                                        )}
+                                        {b.bookingStatus === 'COMPLETED' && b.invoice?.id && (
+                                            <Link
+                                                href={`/admin/invoices/${b.invoice.id}`}
+                                                className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center gap-2"
+                                            >
+                                                <DollarSign className="h-3 w-3" /> View Invoice
+                                            </Link>
                                         )}
                                         <div className="px-3 py-2 text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-muted-foreground border border-border rounded-xl">{b.bookingStatus}</div>
                                     </div>
@@ -792,17 +819,27 @@ export default function BookingManagementPage() {
                                     onClick={() => {
                                         setShowCompleteModal(false)
                                         setError(null)
+                                        setCompletedInvoiceId(null)
                                     }}
                                     className="flex-1 py-3 sm:py-5 px-4 sm:px-8 rounded-xl sm:rounded-2xl bg-muted border border-border text-muted-foreground font-black uppercase text-[8px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.3em] hover:text-foreground transition-all"
                                 >
-                                    Abort
+                                    {completedInvoiceId ? 'Close' : 'Abort'}
                                 </button>
-                                <button
-                                    onClick={() => handleComplete(selectedBookingId!)}
-                                    className="luxury-button flex-[2] py-3 sm:py-5 px-6 sm:px-10 shadow-3xl h-auto"
-                                >
-                                    <span className="uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[8px] sm:text-[10px] font-black">Generate Invoice</span>
-                                </button>
+                                {completedInvoiceId ? (
+                                    <Link
+                                        href={`/admin/invoices/${completedInvoiceId}`}
+                                        className="luxury-button flex-[2] py-3 sm:py-5 px-6 sm:px-10 shadow-3xl h-auto bg-emerald-600 text-center"
+                                    >
+                                        <span className="uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[8px] sm:text-[10px] font-black text-white">View Final Invoice</span>
+                                    </Link>
+                                ) : (
+                                    <button
+                                        onClick={() => handleComplete(selectedBookingId!)}
+                                        className="luxury-button flex-[2] py-3 sm:py-5 px-6 sm:px-10 shadow-3xl h-auto"
+                                    >
+                                        <span className="uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[8px] sm:text-[10px] font-black">Generate Invoice</span>
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

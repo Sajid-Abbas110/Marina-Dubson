@@ -199,21 +199,27 @@ export default function NewBookingPage() {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Calendar Date</label>
-                                    <input
-                                        type="date"
-                                        className="luxury-input"
-                                        value={formData.bookingDate}
-                                        onChange={(e) => setFormData({ ...formData, bookingDate: e.target.value })}
-                                    />
+                                    <div className="relative group">
+                                        <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-blue-600 transition-colors pointer-events-none" />
+                                        <input
+                                            type="date"
+                                            className="luxury-input pl-14"
+                                            value={formData.bookingDate}
+                                            onChange={(e) => setFormData({ ...formData, bookingDate: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Start Sequence</label>
-                                    <input
-                                        type="time"
-                                        className="luxury-input"
-                                        value={formData.bookingTime}
-                                        onChange={(e) => setFormData({ ...formData, bookingTime: e.target.value })}
-                                    />
+                                    <div className="relative group">
+                                        <Clock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-blue-600 transition-colors pointer-events-none" />
+                                        <input
+                                            type="time"
+                                            className="luxury-input pl-14"
+                                            value={formData.bookingTime}
+                                            onChange={(e) => setFormData({ ...formData, bookingTime: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">State Jurisdiction</label>

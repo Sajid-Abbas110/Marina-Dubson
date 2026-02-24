@@ -349,4 +349,50 @@ export const emailTemplates = {
       </div>
     `,
   }),
+  taskAssigned: (name: string, taskTitle: string, priority: string, dueDate: string) => ({
+    subject: `New Mission Assignment: ${taskTitle}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); padding: 30px; text-align: center;">
+          <h1 style="color: white; margin: 0;">Marina Dubson Ops</h1>
+          <p style="color: #9ca3af; margin: 5px 0;">Strategic Personnel Update</p>
+        </div>
+        
+        <div style="padding: 30px; background: #f9fafb;">
+          <h2 style="color: #1f2937;">✓ New Tasking Assigned</h2>
+          
+          <p>Hello ${name},</p>
+          
+          <p>A new operational requirement has been assigned to your portal profile.</p>
+          
+          <div style="background: white; padding: 25px; border-radius: 12px; margin: 20px 0; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <p style="margin: 0 0 15px 0; font-size: 18px; font-weight: bold; color: #111827;">${taskTitle}</p>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 8px 0; color: #6b7280; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em;">Priority:</td>
+                <td style="padding: 8px 0; font-weight: bold; color: ${priority === 'URGENT' ? '#dc2626' : priority === 'HIGH' ? '#d97706' : '#1f2937'};">${priority}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #6b7280; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em;">Target Date:</td>
+                <td style="padding: 8px 0; font-weight: bold;">${dueDate || 'No specified deadline'}</td>
+              </tr>
+            </table>
+          </div>
+          
+          <p>Please log in to your portal to review the full details and update the task status upon completion.</p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/login" style="display: inline-block; background: #1f2937; color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px;">
+              View Task Matrix
+            </a>
+          </div>
+          
+          <p style="margin-top: 30px; border-top: 1px solid #e5e7eb; pt-20px; font-size: 12px; color: #6b7280;">
+            Best regards,<br>
+            <strong>Operational Intelligence | MD Services</strong>
+          </p>
+        </div>
+      </div>
+    `,
+  }),
 }

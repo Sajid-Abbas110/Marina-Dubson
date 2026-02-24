@@ -155,21 +155,38 @@ export default function InvoiceDetailPage() {
                         <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" />
                         Back to Matrix
                     </button>
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <div className="flex flex-nowrap items-center gap-2 w-full sm:w-auto">
                         {invoice.status !== 'PAID' && (
                             <button
                                 onClick={handleGeneratePaymentLink}
                                 disabled={generating}
-                                className="flex-1 sm:flex-none luxury-button flex items-center justify-center gap-2 px-4 py-2 sm:px-6 sm:py-3 h-auto text-[8px] sm:text-[9px] font-black uppercase tracking-widest whitespace-nowrap bg-primary text-primary-foreground shadow-xl active:scale-95 transition-all"
+                                className="flex-1 sm:flex-none luxury-button flex items-center justify-center gap-2 px-4 py-2 sm:px-6 sm:py-3 h-auto text-[8px] sm:text-[9px] font-black uppercase tracking-widest whitespace-nowrap bg-primary text-primary-foreground shadow-xl active:scale-95 transition-all shrink-0"
                             >
                                 <Zap className="h-3.5 w-3.5" />
                                 {generating ? '...' : 'Payment Link'}
                             </button>
                         )}
-                        <button onClick={handlePrint} className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-6 sm:py-3 rounded-xl border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/40 text-[8px] sm:text-[9px] font-black uppercase tracking-widest active:scale-95 transition-all">
+                        <button onClick={handlePrint} className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-6 sm:py-3 rounded-xl border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/40 text-[8px] sm:text-[9px] font-black uppercase tracking-widest active:scale-95 transition-all shrink-0">
                             <Printer className="h-3.5 w-3.5" />
                             Print
                         </button>
+                        {invoice.status !== 'PAID' && (
+                            <button
+                                onClick={async () => {
+                                    const token = localStorage.getItem('token')
+                                    const res = await fetch(`/api/invoices/${id}`, {
+                                        method: 'PATCH',
+                                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                        body: JSON.stringify({ status: 'PAID', paidAt: new Date().toISOString() })
+                                    })
+                                    if (res.ok) window.location.reload()
+                                }}
+                                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-6 sm:py-3 rounded-xl bg-emerald-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all shrink-0"
+                            >
+                                <CheckCircle className="h-3.5 w-3.5" />
+                                Settle Invoice
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

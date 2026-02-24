@@ -31,7 +31,10 @@ import {
     Phone,
     Hash,
     KeyRound,
-    Loader2
+    Loader2,
+    X,
+    AlertTriangle,
+    DollarSign
 } from 'lucide-react'
 import ClientCalendar from '../components/ClientCalendar'
 import BookingRequest from '../components/BookingRequest'
@@ -67,6 +70,12 @@ export default function ClientPortal() {
     const [messageContent, setMessageContent] = useState('')
     const [sendingMessage, setSendingMessage] = useState(false)
     const [docSearchQuery, setDocSearchQuery] = useState('')
+
+    // Cancel booking modal state
+    const [showCancelModal, setShowCancelModal] = useState(false)
+    const [cancelBookingId, setCancelBookingId] = useState<string | null>(null)
+    const [cancelInfo, setCancelInfo] = useState<{ canCancel: boolean; deadline: string; hoursRemaining?: number; message: string } | null>(null)
+    const [cancelLoading, setCancelLoading] = useState(false)
 
     const [scrolled, setScrolled] = useState(false)
 
@@ -209,6 +218,56 @@ export default function ClientPortal() {
             }
         } catch (error) {
             console.error('Delete booking failed:', error)
+        } finally {
+            setIsPending(false)
+        }
+    }
+
+    // Smart cancel: checks 3PM deadline, shows fee modal
+    const openCancelModal = async (bookingId: string) => {
+        setCancelBookingId(bookingId)
+        setCancelLoading(true)
+        setShowCancelModal(true)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch(`/api/bookings/${bookingId}/cancel`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            const data = await res.json()
+            setCancelInfo(data)
+        } catch (err) {
+            console.error('Failed to check cancellation policy:', err)
+            setCancelInfo(null)
+        } finally {
+            setCancelLoading(false)
+        }
+    }
+
+    const confirmCancelBooking = async () => {
+        if (!cancelBookingId) return
+        setIsPending(true)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch(`/api/bookings/${cancelBookingId}/cancel`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            const data = await res.json()
+            if (res.ok) {
+                setBookings(bookings.map(b =>
+                    b.id === cancelBookingId ? { ...b, bookingStatus: 'CANCELLED' } : b
+                ))
+                setShowCancelModal(false)
+                setCancelBookingId(null)
+                setCancelInfo(null)
+                if (data.feeApplied) {
+                    alert(`Booking cancelled. A $${data.feeAmount?.toFixed(2)} late cancellation fee has been invoiced to your account.`)
+                }
+            } else {
+                alert(`Failed to cancel: ${data.error}`)
+            }
+        } catch (error) {
+            console.error('Cancel booking failed:', error)
         } finally {
             setIsPending(false)
         }
@@ -416,16 +475,26 @@ export default function ClientPortal() {
                                                         booking.bookingStatus === 'ACCEPTED' ? 'bg-rose-50 text-rose-600 border-rose-100 animate-pulse' :
                                                             booking.bookingStatus === 'CONFIRMED' ? 'bg-primary/5 text-primary border-primary/10' :
                                                                 booking.bookingStatus === 'SUBMITTED' ? 'bg-amber-500 text-white border-amber-600' :
-                                                                    'bg-muted text-muted-foreground border-border'}`}>
+                                                                    booking.bookingStatus === 'CANCELLED' ? 'bg-gray-100 text-gray-500 border-gray-200' :
+                                                                        'bg-muted text-muted-foreground border-border'}`}>
                                                     {booking.bookingStatus}
                                                 </span>
-                                                {booking.bookingStatus === 'SUBMITTED' && (
-                                                    <button
-                                                        onClick={() => handleDeleteBooking(booking.id)}
-                                                        className="h-8 w-8 rounded-lg bg-rose-500/10 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all"
-                                                        title="Cancel Assignment"
+                                                {booking.bookingStatus === 'COMPLETED' && booking.invoice?.id && (
+                                                    <Link
+                                                        href={`/client/invoices/${booking.invoice.id}`}
+                                                        className="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-500 text-[9px] font-black uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/20 hover:border-emerald-500 flex items-center gap-1.5"
                                                     >
-                                                        <Clock className="h-4 w-4" />
+                                                        <DollarSign className="h-3 w-3" /> View Invoice
+                                                    </Link>
+                                                )}
+                                                {/* Cancel button — available on all active statuses */}
+                                                {['SUBMITTED', 'ACCEPTED', 'CONFIRMED', 'PENDING', 'MAYBE'].includes(booking.bookingStatus) && (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); openCancelModal(booking.id) }}
+                                                        className="px-3 py-1.5 rounded-xl bg-rose-500/10 text-rose-500 text-[9px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all border border-rose-500/20 hover:border-rose-500 flex items-center gap-1.5"
+                                                        title="Cancel booking"
+                                                    >
+                                                        <X className="h-3 w-3" /> Cancel
                                                     </button>
                                                 )}
                                             </div>
@@ -829,6 +898,111 @@ export default function ClientPortal() {
                 }
 
             </div>
+
+            {/* ── Cancel Booking Modal ── */}
+            {showCancelModal && (
+                <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setShowCancelModal(false)} />
+                    <div className="relative w-full max-w-md bg-card rounded-[2rem] p-7 shadow-3xl border border-border overflow-hidden">
+                        {/* Header */}
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-xl bg-rose-500/10 flex items-center justify-center">
+                                    <AlertTriangle className="h-5 w-5 text-rose-500" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-black text-foreground uppercase tracking-tight">Cancel Booking</h3>
+                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Review policy before confirming</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowCancelModal(false)}
+                                className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-all"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        {/* Policy Info */}
+                        {cancelLoading ? (
+                            <div className="py-10 flex flex-col items-center gap-3">
+                                <Loader2 className="h-6 w-6 text-primary animate-spin" />
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Checking cancellation policy...</p>
+                            </div>
+                        ) : cancelInfo ? (
+                            <>
+                                {cancelInfo.canCancel ? (
+                                    // FREE CANCELLATION
+                                    <div className="mb-6 space-y-4">
+                                        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                                                <p className="text-[11px] font-black text-emerald-600 uppercase tracking-widest">Free Cancellation</p>
+                                            </div>
+                                            <p className="text-xs text-emerald-700 leading-relaxed">{cancelInfo.message}</p>
+                                        </div>
+                                        <div className="flex items-start gap-2 p-3 rounded-xl bg-muted/50 border border-border">
+                                            <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                                            <div>
+                                                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Cancellation Deadline</p>
+                                                <p className="text-xs font-bold text-foreground">{new Date(cancelInfo.deadline).toLocaleString()}</p>
+                                            </div>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">You can cancel this booking at no charge. No invoice will be generated.</p>
+                                    </div>
+                                ) : (
+                                    // LATE CANCELLATION — $400 FEE
+                                    <div className="mb-6 space-y-4">
+                                        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <AlertTriangle className="h-4 w-4 text-rose-500" />
+                                                <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest">Late Cancellation — $400 Fee</p>
+                                            </div>
+                                            <p className="text-xs text-rose-700 leading-relaxed">{cancelInfo.message}</p>
+                                        </div>
+                                        <div className="flex items-start gap-2 p-3 rounded-xl bg-muted/50 border border-border">
+                                            <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                                            <div>
+                                                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Deadline Was</p>
+                                                <p className="text-xs font-bold text-foreground">{new Date(cancelInfo.deadline).toLocaleString()}</p>
+                                            </div>
+                                        </div>
+                                        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+                                            <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest mb-1">Important Notice</p>
+                                            <p className="text-xs text-amber-800 leading-relaxed">
+                                                By proceeding, a <strong>$400.00 cancellation invoice</strong> will be automatically generated and sent to your email. Payment is due within 14 days.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                                {/* Actions */}
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setShowCancelModal(false)}
+                                        className="flex-1 py-3 rounded-2xl bg-muted border border-border text-muted-foreground font-black text-[10px] uppercase tracking-widest hover:text-foreground transition-all"
+                                    >
+                                        Keep Booking
+                                    </button>
+                                    <button
+                                        onClick={confirmCancelBooking}
+                                        className={`flex-1 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-lg ${cancelInfo.canCancel
+                                            ? 'bg-rose-500 text-white hover:bg-rose-600 shadow-rose-500/20'
+                                            : 'bg-rose-600 text-white hover:bg-rose-700 shadow-rose-600/20'
+                                            }`}
+                                    >
+                                        {cancelInfo.canCancel ? 'Cancel — Free' : 'Cancel — $400 Fee'}
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-sm text-muted-foreground mb-6">Unable to load cancellation policy. Please try again.</p>
+                                <button onClick={() => setShowCancelModal(false)} className="w-full py-3 rounded-2xl bg-muted border border-border text-muted-foreground font-black text-[10px] uppercase tracking-widest">Close</button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

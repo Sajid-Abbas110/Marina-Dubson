@@ -32,6 +32,8 @@ export async function GET(request: NextRequest) {
 
         const { searchParams } = new URL(request.url)
         const recipientId = searchParams.get('recipientId')
+        const limit = parseInt(searchParams.get('limit') || '50')
+        const offset = parseInt(searchParams.get('offset') || '0')
 
         // Build the where clause: get the conversation thread between two users
         const where: any = recipientId
@@ -58,7 +60,9 @@ export async function GET(request: NextRequest) {
                     select: { id: true, firstName: true, lastName: true, role: true }
                 }
             },
-            orderBy: { createdAt: 'asc' }
+            orderBy: { createdAt: 'desc' },
+            take: limit,
+            skip: offset
         })
 
         return NextResponse.json({ messages })

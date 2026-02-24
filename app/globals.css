@@ -165,15 +165,15 @@
 
   /* Glassmorphism — subtle, comfortable */
   .glass {
-    background: hsl(0 0% 100% / 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: hsl(0 0% 100% / 0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     @apply border border-white/60;
   }
 
   .dark .glass {
-    background: hsl(220 18% 13% / 0.85);
-    @apply border border-white/10;
+    background: hsl(220 18% 13% / 0.88);
+    @apply border border-white/5;
   }
 
   /* Buttons */

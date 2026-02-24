@@ -370,7 +370,7 @@ export default function ReporterPortal() {
                                 value={String(marketplaceJobs.length).padStart(2, '0')}
                                 sub="Open for Bidding"
                                 color="text-blue-500"
-                                onClick={() => { navigateTab('jobs'); setShouldScroll(true); }}
+                                onClick={() => navigateTab('market')}
                             />
                         </div>
                         <div className="glass-panel bg-card rounded-[3rem] p-6 md:p-10 shadow-xl border border-border">

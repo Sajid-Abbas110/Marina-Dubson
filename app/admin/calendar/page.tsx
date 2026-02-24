@@ -106,9 +106,22 @@ export default function CalendarPage() {
         fetchSupporting()
     }, [])
 
-    // Detect conflicts for a given date
-    const getDateBookings = (d: Date) =>
-        bookings.filter(b => b.bookingDate && isSameDay(new Date(b.bookingDate), d))
+    // Optimized Lookup Map: O(1) access inside grid loops
+    const bookingsByDate = useMemo(() => {
+        const map: Record<string, any[]> = {}
+        bookings.forEach(b => {
+            if (!b.bookingDate) return
+            const dStr = format(new Date(b.bookingDate), 'yyyy-MM-dd')
+            if (!map[dStr]) map[dStr] = []
+            map[dStr].push(b)
+        })
+        return map
+    }, [bookings])
+
+    const getDateBookings = (d: Date) => {
+        const dStr = format(d, 'yyyy-MM-dd')
+        return bookingsByDate[dStr] || []
+    }
 
     const isDateBlocked = (d: Date) =>
         getDateBookings(d).some(b => BLOCKED_STATUSES.includes(b.bookingStatus))
@@ -460,14 +473,21 @@ export default function CalendarPage() {
 
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-semibold text-muted-foreground">Date</label>
-                                        <input required type="date" className="w-full border border-border bg-background rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                            value={formData.bookingDate} onChange={e => handleDateChange(e.target.value)} />
+                                        <div className="relative">
+                                            <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                            <input required type="date" className="w-full border border-border bg-background rounded-lg pl-10 pr-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                                value={formData.bookingDate} onChange={e => handleDateChange(e.target.value)} />
+                                        </div>
                                     </div>
 
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-semibold text-muted-foreground">Time</label>
-                                        <input required className="w-full border border-border bg-background rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                            placeholder="e.g. 10:00 AM EST" value={formData.bookingTime} onChange={e => setFormData(f => ({ ...f, bookingTime: e.target.value }))} />
+                                        <div className="relative">
+                                            <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                            <input required className="w-full border border-border bg-background rounded-lg pl-10 pr-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                                type="time"
+                                                placeholder="e.g. 10:00 AM" value={formData.bookingTime} onChange={e => setFormData(f => ({ ...f, bookingTime: e.target.value }))} />
+                                        </div>
                                     </div>
 
                                     <div className="sm:col-span-2 space-y-1.5">

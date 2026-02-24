@@ -535,8 +535,14 @@ function JobModal({ title, onClose, onSubmit, saving, data, setData, contacts, s
                         </select>
                     </div>
                     <div className="grid grid-cols-2 gap-6">
-                        <input type="date" className="luxury-input h-14" value={data.bookingDate} onChange={e => setData({ ...data, bookingDate: e.target.value })} required />
-                        <input type="time" className="luxury-input h-14" value={data.bookingTime} onChange={e => setData({ ...data, bookingTime: e.target.value })} required />
+                        <div className="relative group">
+                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors pointer-events-none" />
+                            <input type="date" className="luxury-input h-14 pl-12" value={data.bookingDate} onChange={e => setData({ ...data, bookingDate: e.target.value })} required />
+                        </div>
+                        <div className="relative group">
+                            <Clock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors pointer-events-none" />
+                            <input type="time" className="luxury-input h-14 pl-12" value={data.bookingTime} onChange={e => setData({ ...data, bookingTime: e.target.value })} required />
+                        </div>
                     </div>
                     <input className="luxury-input h-14" placeholder="Venue / Address" value={data.location} onChange={e => setData({ ...data, location: e.target.value })} />
                     <div className="flex gap-4 pt-4">

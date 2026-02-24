@@ -10,6 +10,7 @@ import {
     Phone,
     Building2,
     Calendar,
+    AlertCircle,
     Briefcase,
     ShieldCheck,
     Edit3,
@@ -93,9 +94,12 @@ export default function UserProfilePage() {
         }
     }
 
+    const [taskError, setTaskError] = useState('')
+
     const handleCreateTask = async (e: React.FormEvent) => {
         e.preventDefault()
         setSavingTask(true)
+        setTaskError('')
         try {
             const token = localStorage.getItem('token')
             const res = await fetch('/api/admin/tasks', {
@@ -109,13 +113,19 @@ export default function UserProfilePage() {
                     assignedToId: id
                 })
             })
+
+            const data = await res.json()
+
             if (res.ok) {
                 setShowTaskModal(false)
                 setNewTask({ title: '', description: '', priority: 'MEDIUM', dueDate: '' })
                 fetchUser()
+            } else {
+                setTaskError(data.error || 'Failed to initialize mission parameters. Check clearance.')
             }
         } catch (error) {
             console.error('Create task error:', error)
+            setTaskError('Network protocol failure. Mission aborted.')
         } finally {
             setSavingTask(false)
         }
@@ -348,6 +358,13 @@ export default function UserProfilePage() {
                             </button>
                         </div>
 
+                        {taskError && (
+                            <div className="mb-8 p-4 rounded-xl bg-rose-50 border border-rose-100 flex items-center gap-3 text-rose-600 animate-in fade-in slide-in-from-top-2">
+                                <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">{taskError}</span>
+                            </div>
+                        )}
+
                         <form onSubmit={handleCreateTask} className="space-y-6">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Task Title</label>
@@ -376,12 +393,15 @@ export default function UserProfilePage() {
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Due Date</label>
-                                    <input
-                                        type="date"
-                                        className="luxury-input"
-                                        value={newTask.dueDate}
-                                        onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                                    />
+                                    <div className="relative group">
+                                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors pointer-events-none" />
+                                        <input
+                                            type="date"
+                                            className="luxury-input pl-12"
+                                            value={newTask.dueDate}
+                                            onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
                             </div>
 

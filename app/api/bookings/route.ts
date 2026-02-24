@@ -107,6 +107,14 @@ export async function GET(request: NextRequest) {
                             certification: true,
                         },
                     },
+                    invoice: {
+                        select: {
+                            id: true,
+                            invoiceNumber: true,
+                            status: true,
+                            total: true,
+                        }
+                    }
                 },
                 orderBy: { bookingDate: 'desc' },
                 take: limit,

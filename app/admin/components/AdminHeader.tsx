@@ -81,7 +81,7 @@ export default function AdminHeader({ onToggleSidebar }: { onToggleSidebar: () =
             if (!token) return
 
             // Fetch Pending Bookings (Notifications)
-            const bookingRes = await fetch('/api/bookings?status=SUBMITTED', {
+            const bookingRes = await fetch('/api/bookings?status=SUBMITTED&limit=10', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             if (bookingRes.ok) {
@@ -90,13 +90,13 @@ export default function AdminHeader({ onToggleSidebar }: { onToggleSidebar: () =
             }
 
             // Fetch Messages
-            const msgRes = await fetch('/api/messages', {
+            const msgRes = await fetch('/api/messages?limit=5', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             if (msgRes.ok) {
                 const data = await msgRes.json()
                 const msgs = data.messages || []
-                setRecentMessages(msgs.slice(-5).reverse())
+                setRecentMessages(msgs)
                 setUnreadMsgCount(msgs.filter((m: any) => !m.isRead && m.recipientId === (user?.id || user?.userId)).length)
             }
         } catch { /* silent */ }
@@ -311,15 +311,8 @@ export default function AdminHeader({ onToggleSidebar }: { onToggleSidebar: () =
                 <div className="relative" ref={profileRef}>
                     <button
                         onClick={() => { setIsProfileOpen(!isProfileOpen); setIsNotifOpen(false); setIsMsgOpen(false); }}
-                        className={`flex items-center gap-2 px-2 py-1.5 rounded-lg border transition-all ${isProfileOpen ? 'bg-muted border-border' : 'hover:bg-muted border-transparent hover:border-border'}`}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${isProfileOpen ? 'bg-muted border-border' : 'hover:bg-muted border-transparent hover:border-border'}`}
                     >
-                        <div className="h-7 w-7 rounded-full flex items-center justify-center bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 overflow-hidden">
-                            {user?.avatar ? (
-                                <img src={user.avatar} alt="Profile" className="h-full w-full object-cover" />
-                            ) : (
-                                initials
-                            )}
-                        </div>
                         <div className="hidden sm:block text-left">
                             <p className="text-xs font-semibold text-foreground leading-none">
                                 {user?.firstName ?? 'Admin'}
