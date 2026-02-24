@@ -52,6 +52,7 @@ import {
 } from 'lucide-react'
 import ProfileUpload from '@/app/components/ui/ProfileUpload'
 import LoadingOverlay from '@/app/components/ui/LoadingOverlay'
+import CommMatrix from '@/app/components/messages/CommMatrix'
 
 export default function ReporterPortal() {
     const router = useRouter()
@@ -816,81 +817,8 @@ export default function ReporterPortal() {
                 )}
 
                 {activeTab === 'messages' && (
-                    <div className="glass-panel rounded-[2.5rem] h-[600px] flex flex-col overflow-hidden bg-card border border-border">
-                        <div className="p-8 border-b border-border flex items-center justify-between bg-card/50 backdrop-blur-sm">
-                            <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground font-black text-sm shadow-lg shadow-primary/20">RC</div>
-                                <div>
-                                    <p className="text-sm font-black text-foreground uppercase">Reporter Command Center</p>
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></div>
-                                        <p className="text-[9px] font-black text-primary uppercase tracking-widest">Connected to Support Center</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex-1 p-8 overflow-y-auto space-y-6 bg-muted/10">
-                            {messages.length > 0 ? (
-                                messages.map(msg => {
-                                    const isMe = msg.senderId === user?.id || msg.senderId === user?.userId;
-                                    return (
-                                        <div key={msg.id} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-in fade-in duration-300`}>
-                                            <div className={`flex flex-col max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
-                                                <div className={`px-6 py-4 rounded-[1.8rem] shadow-sm border ${isMe
-                                                    ? 'bg-gradient-to-br from-primary to-indigo-600 border-primary/20 text-white rounded-tr-none'
-                                                    : 'bg-slate-800 border-slate-700 text-slate-100 rounded-tl-none'
-                                                    }`}>
-                                                    <p className="text-xs font-medium leading-relaxed">{msg.content}</p>
-                                                    <div className={`flex items-center gap-2 mt-3 opacity-40 ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                                        <p className="text-[7px] font-black uppercase tracking-[0.2em] text-white">
-                                                            {format(new Date(msg.createdAt), 'HH:mm • MMM dd')}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <span className="text-[7px] font-black text-muted-foreground uppercase tracking-widest mt-1.5 px-2">
-                                                    {isMe ? 'SENT DATA' : (msg.sender ? `${msg.sender.firstName} ${msg.sender.lastName}` : 'REPORTER ADMIN')}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    );
-                                })
-                            ) : (
-                                <div className="h-full flex flex-col justify-center items-center text-muted-foreground/20">
-                                    <MessageSquare className="h-16 w-16 mb-6 opacity-20" />
-                                    <p className="text-[10px] font-black uppercase tracking-[0.4em]">No communications active...</p>
-                                </div>
-                            )}
-                            <div ref={msgScrollRef} />
-                        </div>
-                        <div className="p-8 border-t border-border bg-card">
-                            <div className="flex gap-4 p-2 pl-6 pr-2 rounded-2xl bg-muted border border-border">
-                                <input
-                                    className="flex-1 bg-transparent border-none outline-none text-xs font-bold py-3 text-foreground"
-                                    placeholder="Secure transmission entry..."
-                                    onKeyPress={async (e) => {
-                                        if (e.key === 'Enter') {
-                                            const content = e.currentTarget.value;
-                                            if (!content) return;
-                                            e.currentTarget.value = '';
-                                            const token = localStorage.getItem('token');
-                                            const res = await fetch('/api/messages', {
-                                                method: 'POST',
-                                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                                                body: JSON.stringify({ content })
-                                            });
-                                            if (res.ok) fetchUserData(true);
-                                            else {
-                                                const err = await res.json();
-                                                alert(`Transmission Failed: ${err.error || 'Unknown Signal Error'}`);
-                                            }
-                                        }
-                                    }}
-                                />
-                                <button className="h-10 w-10 bg-primary text-primary-foreground rounded-xl flex items-center justify-center">
-                                    <ChevronRight className="h-5 w-5" />
-                                </button>
-                            </div>
-                        </div>
+                    <div className="glass-panel rounded-[2.5rem] h-[700px] flex flex-col overflow-hidden bg-card border border-border">
+                        <CommMatrix />
                     </div>
                 )}
 

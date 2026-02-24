@@ -29,6 +29,7 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import ProfileUpload from '@/app/components/ui/ProfileUpload'
+import CommMatrix from '@/app/components/messages/CommMatrix'
 
 export default function StaffPortalPage() {
     const router = useRouter()
@@ -363,6 +364,12 @@ export default function StaffPortalPage() {
                                         </tbody>
                                     </table>
                                 </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'messages' && (
+                            <div className="glass-panel rounded-[2.5rem] h-[700px] flex flex-col overflow-hidden bg-card border border-border animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <CommMatrix />
                             </div>
                         )}
 

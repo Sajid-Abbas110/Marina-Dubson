@@ -37,6 +37,7 @@ import ClientCalendar from '../components/ClientCalendar'
 import BookingRequest from '../components/BookingRequest'
 import ProfileUpload from '@/app/components/ui/ProfileUpload'
 import LoadingOverlay from '@/app/components/ui/LoadingOverlay'
+import CommMatrix from '@/app/components/messages/CommMatrix'
 
 export default function ClientPortal() {
     const router = useRouter()
@@ -602,75 +603,8 @@ export default function ClientPortal() {
 
                 {
                     activeTab === 'messages' && (
-                        <div className="glass-panel rounded-[2.5rem] h-[700px] flex flex-col overflow-hidden">
-                            <div className="p-8 border-b border-border flex items-center justify-between bg-card/60 backdrop-blur-md">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center text-white font-black text-sm shadow-lg shadow-primary/20">M</div>
-                                    <div>
-                                        <p className="text-sm font-black text-foreground uppercase">Marina Dubson Support</p>
-                                        <div className="flex items-center gap-2">
-                                            <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
-                                            <p className="text-[9px] font-black text-indigo-500 uppercase tracking-widest">Active Channels Open</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button className="text-[10px] font-black text-muted-foreground uppercase hover:text-foreground transition-colors">Search History</button>
-                                    <div className="h-4 w-px bg-muted mx-2"></div>
-                                    <button className="text-[10px] font-black text-muted-foreground uppercase hover:text-foreground transition-colors">Settings</button>
-                                </div>
-                            </div>
-                            <div className="flex-1 p-8 overflow-y-auto space-y-6 bg-muted/10">
-                                {messages.length > 0 ? (
-                                    messages.map(msg => {
-                                        const isMe = msg.senderId === user?.id || msg.senderId === user?.userId;
-                                        return (
-                                            <div key={msg.id} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-in fade-in duration-300`}>
-                                                <div className={`flex flex-col max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
-                                                    <div className={`px-6 py-4 rounded-[1.8rem] shadow-sm border ${isMe
-                                                        ? 'bg-primary text-primary-foreground border-primary/20 rounded-tr-none'
-                                                        : 'bg-muted border-border text-foreground rounded-tl-none'
-                                                        }`}>
-                                                        <p className="text-xs font-medium leading-relaxed">{msg.content}</p>
-                                                        <div className={`flex items-center gap-2 mt-3 opacity-40 ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                                            <p className="text-[7px] font-black uppercase tracking-[0.2em] text-white">
-                                                                {format(new Date(msg.createdAt), 'HH:mm • MMM dd')}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <span className="text-[7px] font-black text-muted-foreground uppercase tracking-widest mt-1.5 px-2">
-                                                        {isMe ? 'CLIENT TRANSMISSION' : 'MARINA DUBSON SUPPORT'}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <div className="h-full flex flex-col justify-center items-center text-muted-foreground/30">
-                                        <MessageSquare className="h-16 w-16 mb-6 opacity-20" />
-                                        <p className="text-[10px] font-black uppercase tracking-[0.4em]">Initialize Tactical Comms...</p>
-                                    </div>
-                                )}
-                                <div ref={msgScrollRef} />
-                            </div>
-                            <div className="p-8 border-t border-border bg-card">
-                                <div className="flex gap-4 p-2 pl-6 pr-2 rounded-2xl bg-muted/50 border border-border focus-within:border-primary/20 transition-all">
-                                    <input
-                                        value={messageContent}
-                                        onChange={(e) => setMessageContent(e.target.value)}
-                                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                                        className="flex-1 bg-transparent border-none text-xs font-medium outline-none placeholder:text-muted-foreground text-foreground"
-                                        placeholder="Type your secure message..."
-                                    />
-                                    <button
-                                        onClick={handleSendMessage}
-                                        disabled={sendingMessage || !messageContent.trim()}
-                                        className="h-12 w-12 bg-primary text-primary-foreground rounded-xl flex items-center justify-center hover:scale-105 transition-all disabled:opacity-50 disabled:scale-100"
-                                    >
-                                        {sendingMessage ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-                                    </button>
-                                </div>
-                            </div>
+                        <div className="glass-panel rounded-[2.5rem] h-[700px] flex flex-col overflow-hidden bg-card border border-border">
+                            <CommMatrix />
                         </div>
                     )
                 }
