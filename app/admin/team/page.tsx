@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
 import {
     Users,
     UserPlus,
@@ -265,7 +264,14 @@ export default function TeamManagementPage() {
                                         <div className="flex items-center gap-4 min-w-0">
                                             <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-primary/10 flex-shrink-0 flex items-center justify-center text-primary font-black text-lg shadow-lg transition-transform group-hover:scale-105 duration-500 overflow-hidden relative">
                                                 {member.avatar ? (
-                                                    <Image src={member.avatar} alt={member.firstName} fill className="object-cover" />
+                                                    <img
+                                                        src={member.avatar}
+                                                        alt={member.firstName}
+                                                        className="h-full w-full object-cover"
+                                                        onError={(e) => {
+                                                            (e.currentTarget as HTMLImageElement).src = '/favicon.svg'
+                                                        }}
+                                                    />
                                                 ) : (
                                                     <>{(member.firstName?.[0] || member.email?.[0] || '?').toUpperCase()}{(member.lastName?.[0] || '').toUpperCase()}</>
                                                 )}

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import Image from 'next/image'
 import { format } from 'date-fns'
 import {
     ArrowLeft,
@@ -183,6 +182,7 @@ export default function UserProfilePage() {
     const isClient = user.role === 'CLIENT'
     const name = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email
     const initials = (user.firstName?.[0] || user.email[0]).toUpperCase() + (user.lastName?.[0] || '').toUpperCase()
+    const avatarSrc = user.avatar || '/favicon.svg'
 
     return (
         <div className="max-w-[1600px] w-[95%] mx-auto p-6 lg:p-12 pb-32 animate-in fade-in duration-700">
@@ -220,7 +220,14 @@ export default function UserProfilePage() {
                             <div className={`absolute inset-0 bg-gradient-to-br ${isClient ? 'from-primary to-indigo-800' : 'from-indigo-500 to-blue-800'} rounded-[2.5rem] blur-xl opacity-20 group-hover:opacity-40 transition-opacity`}></div>
                             <div className={`relative h-full w-full rounded-[2.5rem] bg-white dark:bg-[#001c14] border-2 border-white dark:border-white/10 flex items-center justify-center overflow-hidden shadow-2xl transition-transform group-hover:scale-[1.02] duration-500`}>
                                 {user.avatar ? (
-                                    <Image src={user.avatar} alt={name} fill className="object-cover" />
+                                    <img
+                                        src={avatarSrc}
+                                        alt={name}
+                                        className="h-full w-full object-cover"
+                                        onError={(e) => {
+                                            (e.currentTarget as HTMLImageElement).src = '/favicon.svg'
+                                        }}
+                                    />
                                 ) : (
                                     <span className={`text-4xl font-black ${isClient ? 'text-primary' : 'text-indigo-500'}`}>{initials}</span>
                                 )}

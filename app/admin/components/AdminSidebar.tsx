@@ -76,6 +76,7 @@ interface AdminSidebarProps {
 export default function AdminSidebar({ isCollapsed, toggleCollapse, isOpen, setIsOpen }: AdminSidebarProps) {
     const pathname = usePathname()
     const [user, setUser] = useState<any>(null)
+    const defaultAvatar = '/favicon.svg'
 
     useEffect(() => {
         const syncUser = () => {
@@ -124,9 +125,12 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isOpen, setI
                         style={{ background: 'hsl(210 35% 23%)', border: '1px solid hsl(210 35% 33%)' }}
                     >
                         <img
-                            src={user?.avatar || "/uploads/profiles/0cfae443-a9f1-41da-b5c5-32f97a379a59-admin-avatar.png.png"}
+                            src={user?.avatar || defaultAvatar}
                             alt="Profile"
                             className="h-full w-full object-cover rounded-lg"
+                            onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src = defaultAvatar
+                            }}
                         />
                     </div>
                     {!isCollapsed && (
@@ -219,9 +223,12 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isOpen, setI
                             <div className="h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-2"
                                 style={{ borderColor: 'hsl(38 80% 55%)' }}>
                                 <img
-                                    src={user.avatar || "/uploads/profiles/0cfae443-a9f1-41da-b5c5-32f97a379a59-admin-avatar.png.png"}
+                                    src={user.avatar || defaultAvatar}
                                     alt={`${user.firstName} ${user.lastName}`}
                                     className="h-full w-full object-cover"
+                                    onError={(e) => {
+                                        (e.currentTarget as HTMLImageElement).src = defaultAvatar
+                                    }}
                                 />
                             </div>
                             <div className="overflow-hidden flex-1 min-w-0">
@@ -241,9 +248,12 @@ export default function AdminSidebar({ isCollapsed, toggleCollapse, isOpen, setI
                             <div className="h-9 w-9 rounded-full flex items-center justify-center overflow-hidden border-2"
                                 style={{ borderColor: 'hsl(38 80% 55%)' }}>
                                 <img
-                                    src={user.avatar || "/uploads/profiles/0cfae443-a9f1-41da-b5c5-32f97a379a59-admin-avatar.png.png"}
+                                    src={user.avatar || defaultAvatar}
                                     alt="Profile"
                                     className="h-full w-full object-cover"
+                                    onError={(e) => {
+                                        (e.currentTarget as HTMLImageElement).src = defaultAvatar
+                                    }}
                                 />
                             </div>
                         </div>

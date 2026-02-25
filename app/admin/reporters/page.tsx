@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { format } from 'date-fns'
 import {
     Search,
@@ -134,6 +133,7 @@ function ReporterCard({ user }: { user: Reporter }) {
     const name = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email
     const initials = (user.firstName?.[0] || user.email[0]).toUpperCase() + (user.lastName?.[0] || '').toUpperCase()
     const joined = format(new Date(user.createdAt), 'MMM yyyy').toUpperCase()
+    const avatarSrc = user.avatar || '/favicon.svg'
 
     return (
         <div className="glass-panel group p-6 rounded-[2rem] hover:shadow-2xl transition-all relative overflow-hidden bg-card border border-border">
@@ -141,7 +141,14 @@ function ReporterCard({ user }: { user: Reporter }) {
                 <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-indigo-800 flex items-center justify-center text-primary-foreground font-black text-sm shadow-md transition-transform group-hover:scale-110 duration-500 overflow-hidden relative">
                         {user.avatar ? (
-                            <Image src={user.avatar} alt={name} fill className="object-cover" />
+                            <img
+                                src={avatarSrc}
+                                alt={name}
+                                className="h-full w-full object-cover"
+                                onError={(e) => {
+                                    (e.currentTarget as HTMLImageElement).src = '/favicon.svg'
+                                }}
+                            />
                         ) : (
                             initials
                         )}
