@@ -264,6 +264,46 @@ export default function UserProfilePage() {
                             <ClearanceLevel label="Financial Trust" level="RESTRICTED" color="text-amber-500" />
                         </div>
                     </div>
+
+                    {!isClient && (
+                        <div className="glass-panel p-10 rounded-[3rem] border border-indigo-100 dark:border-indigo-500/10 bg-indigo-50/30 dark:bg-indigo-500/5">
+                            <h3 className="text-sm font-black text-indigo-700 dark:text-indigo-400 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
+                                <Zap className="h-4 w-4" /> Payout Matrix
+                            </h3>
+                            <div className="space-y-6">
+                                <ProfileField
+                                    icon={<Plus className="text-indigo-500" />}
+                                    label="Base Page Rate"
+                                    value={`$${(user.basePageRate || 0).toFixed(2)}`}
+                                    isEditing={isEditing}
+                                    field="basePageRate"
+                                    val={editData.basePageRate}
+                                    onChange={(v: any) => setEditData({ ...editData, basePageRate: v })}
+                                />
+                                <ProfileField
+                                    icon={<Calendar className="text-indigo-500" />}
+                                    label="Base Appearance"
+                                    value={`$${(user.baseAppearanceFee || 0).toFixed(2)}`}
+                                    isEditing={isEditing}
+                                    field="baseAppearanceFee"
+                                    val={editData.baseAppearanceFee}
+                                    onChange={(v: any) => setEditData({ ...editData, baseAppearanceFee: v })}
+                                />
+                                <ProfileField
+                                    icon={<ShieldCheck className="text-indigo-500" />}
+                                    label="Payment Method"
+                                    value={user.paymentPreference || 'Standard ACH'}
+                                    isEditing={isEditing}
+                                    field="paymentPreference"
+                                    val={editData.paymentPreference}
+                                    onChange={(v: any) => setEditData({ ...editData, paymentPreference: v })}
+                                />
+                            </div>
+                            <p className="mt-8 text-[8px] font-bold text-indigo-400 uppercase tracking-widest leading-relaxed">
+                                These rates are locked into future assignments to guarantee operative margins.
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 {/* Main Content Area */}

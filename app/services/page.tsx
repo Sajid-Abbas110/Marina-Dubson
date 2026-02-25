@@ -5,9 +5,21 @@ import { PublicTopBar, PublicHeader, PublicFooter } from '../components/landing/
 
 export default function ServicesPage() {
     const services = [
-        { title: 'Court Reporting', img: 'https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=800&q=80' },
-        { title: 'Certified Transcript Delivery', img: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=600&q=80' },
-        { title: 'Remote Depositions', img: 'https://images.unsplash.com/photo-1577412647305-991150c7d163?auto=format&fit=crop&w=600&q=80' }
+        {
+            title: 'Court Reporting',
+            desc: 'Certified court reporters for depositions, hearings, and examinations with precise record capture.',
+            img: 'https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=800&q=80'
+        },
+        {
+            title: 'Certified Transcript Delivery',
+            desc: 'Fast, secure transcript production with reliable formatting standards and delivery timelines.',
+            img: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=600&q=80'
+        },
+        {
+            title: 'Remote Depositions',
+            desc: 'Hybrid and remote deposition support with stable communication protocols and exhibit coordination.',
+            img: 'https://images.unsplash.com/photo-1577412647305-991150c7d163?auto=format&fit=crop&w=600&q=80'
+        }
     ]
 
     return (
@@ -43,7 +55,7 @@ export default function ServicesPage() {
                                 <div className="text-center space-y-2">
                                     <h4 className="text-xl font-black text-[#1a1a1a] uppercase italic">{s.title}</h4>
                                     <p className="text-gray-500 text-xs italic font-medium px-4">
-                                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor.
+                                        {s.desc}
                                     </p>
                                 </div>
                             </div>

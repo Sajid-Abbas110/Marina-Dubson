@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -48,7 +48,8 @@ import {
     Trash2,
     Edit3,
     Save,
-    AlertCircle
+    AlertCircle,
+
 } from 'lucide-react'
 import ProfileUpload from '@/app/components/ui/ProfileUpload'
 import LoadingOverlay from '@/app/components/ui/LoadingOverlay'
@@ -107,6 +108,7 @@ export default function ReporterPortal() {
     const [messages, setMessages] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [payouts, setPayouts] = useState<any[]>([])
+    const [reporterInvoices, setReporterInvoices] = useState<any[]>([])
     const [shouldScroll, setShouldScroll] = useState(false)
 
     // Auto-scroll for messages
@@ -121,25 +123,44 @@ export default function ReporterPortal() {
                 return
             }
 
-            const [userRes, jobsRes, marketRes, msgsRes, bidsRes] = await Promise.all([
+            const [userRes, jobsRes, marketRes, msgsRes, bidsRes, invRes] = await Promise.all([
                 fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch('/api/bookings', { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch('/api/market', { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch('/api/messages', { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch('/api/market/bids', { headers: { 'Authorization': `Bearer ${token}` } })
+                fetch('/api/market/bids', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('/api/reporter/invoices', { headers: { 'Authorization': `Bearer ${token}` } })
             ])
 
-            const userData = await userRes.json()
-            const jobsData = await jobsRes.json()
-            const marketData = await marketRes.json()
-            const msgsData = await msgsRes.json()
-            const bidsData = await bidsRes.json()
+            if (userRes.ok) {
+                const userData = await userRes.json()
+                if (userData.user) setUser(userData.user)
+            }
 
-            if (userData.user) setUser(userData.user)
-            if (jobsData.bookings) setAssignedJobs(jobsData.bookings)
-            if (marketData.jobs) setMarketplaceJobs(marketData.jobs)
-            if (msgsData.messages) setMessages(msgsData.messages)
-            if (bidsData.bids) setPayouts(bidsData.bids)
+            if (jobsRes.ok) {
+                const jobsData = await jobsRes.json()
+                if (jobsData.bookings) setAssignedJobs(jobsData.bookings)
+            }
+
+            if (marketRes.ok) {
+                const marketData = await marketRes.json()
+                if (marketData.jobs) setMarketplaceJobs(marketData.jobs)
+            }
+
+            if (msgsRes.ok) {
+                const msgsData = await msgsRes.json()
+                if (msgsData.messages) setMessages(msgsData.messages)
+            }
+
+            if (bidsRes.ok) {
+                const bidsData = await bidsRes.json()
+                if (bidsData.bids) setPayouts(bidsData.bids)
+            }
+
+            if (invRes.ok) {
+                const invData = await invRes.json()
+                setReporterInvoices(Array.isArray(invData) ? invData : [])
+            }
 
         } catch (error) {
             console.error('Failed to fetch reporter data:', error)
@@ -205,6 +226,24 @@ export default function ReporterPortal() {
         }
     }
 
+
+    const handleActionInvoice = async (invoiceId: string, status: 'ACCEPTED' | 'DECLINED') => {
+        setIsPending(true)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch(`/api/reporter/invoices/${invoiceId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ status })
+            })
+            if (res.ok) fetchUserData(true)
+            else alert('Protocol update failed')
+        } catch (err) {
+            console.error(err)
+        } finally {
+            setIsPending(false)
+        }
+    }
 
     const handleBid = async (bookingId: string) => {
         const amount = prompt("Enter your bid amount ($):");
@@ -696,37 +735,183 @@ export default function ReporterPortal() {
                 )}
 
                 {activeTab === 'financials' && (
-                    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-700">
-                        {payouts.filter(b => b.status === 'PENDING').length > 0 ? (
-                            <section className="bg-muted/30 p-8 rounded-[2.5rem] border border-border/50">
-                                <div className="flex items-center justify-between mb-8">
-                                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight">My Active Bids</h3>
-                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Awaiting Command Review</span>
+                    <div className="space-y-12 animate-in fade-in slide-in-from-right-4 duration-700">
+
+                        {/* ── Section 1: Pending Payout Offers ── */}
+                        <section>
+                            <div className="flex items-center justify-between mb-8">
+                                <div>
+                                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Payout Offers</h3>
+                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mt-1">Offers from admin awaiting your response</p>
                                 </div>
-                                <div className="space-y-4">
-                                    {payouts.filter(b => b.status === 'PENDING').map(bid => (
-                                        <div key={bid.id} className="bg-card p-6 rounded-2xl border border-border flex items-center justify-between">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                                    <Clock className="h-5 w-5 text-primary" />
+                                {reporterInvoices.filter(i => i.status === 'PENDING').length > 0 && (
+                                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest bg-amber-500/10 px-4 py-2 rounded-xl border border-amber-500/20 animate-pulse">
+                                        {reporterInvoices.filter(i => i.status === 'PENDING').length} Action Required
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-6">
+                                {reporterInvoices.filter(i => i.status === 'PENDING').length > 0 ? (
+                                    reporterInvoices.filter(i => i.status === 'PENDING').map(inv => (
+                                        <div key={inv.id} className="glass-panel bg-card p-8 rounded-[2.5rem] border border-amber-500/20 shadow-lg flex flex-col xl:flex-row xl:items-center justify-between gap-8 group">
+                                            <div className="flex items-center gap-6">
+                                                <div className="h-16 w-16 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition-all duration-500 shadow-inner flex-shrink-0">
+                                                    <Zap className="h-8 w-8" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs font-black uppercase">{bid.booking.proceedingType}</p>
-                                                    <p className="text-[9px] font-bold text-muted-foreground uppercase">{bid.booking.bookingNumber}</p>
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <span className="px-2 py-0.5 rounded-lg bg-primary/10 text-[9px] font-black text-primary border border-primary/20 uppercase tracking-widest leading-none">{inv.invoiceNumber}</span>
+                                                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">#{inv.booking?.bookingNumber}</span>
+                                                    </div>
+                                                    <h4 className="text-xl font-black text-foreground uppercase tracking-tight">{inv.booking?.proceedingType}</h4>
+                                                    <div className="flex flex-wrap items-center gap-4 mt-2">
+                                                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Appearance: <span className="text-foreground">${inv.appearanceFee}</span></p>
+                                                        <div className="h-1 w-1 rounded-full bg-border" />
+                                                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Page Rate: <span className="text-foreground">${inv.pageRate}/pg</span></p>
+                                                        <div className="h-1 w-1 rounded-full bg-border" />
+                                                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Min Fee: <span className="text-foreground">${inv.minimumFee}</span></p>
+                                                    </div>
+                                                    {inv.notes && (
+                                                        <p className="mt-2 text-[9px] font-bold text-muted-foreground italic">&quot;{inv.notes}&quot;</p>
+                                                    )}
                                                 </div>
                                             </div>
-                                            <p className="text-sm font-black text-primary">${bid.amount}</p>
+
+                                            <div className="flex flex-row items-center justify-between xl:justify-end gap-8 border-t xl:border-t-0 pt-6 xl:pt-0">
+                                                <div className="text-right">
+                                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">Total Offered</p>
+                                                    <p className="text-3xl font-black text-foreground tracking-tighter">${inv.total?.toFixed(2) || inv.appearanceFee}</p>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <button
+                                                        onClick={() => handleActionInvoice(inv.id, 'DECLINED')}
+                                                        disabled={isPending}
+                                                        className="px-6 py-3 rounded-xl bg-muted border border-border text-muted-foreground hover:bg-rose-500 hover:text-white hover:border-rose-600 transition-all font-black text-[10px] uppercase tracking-widest disabled:opacity-50"
+                                                    >
+                                                        Decline
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleActionInvoice(inv.id, 'ACCEPTED')}
+                                                        disabled={isPending}
+                                                        className="px-8 py-3 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 transition-all font-black text-[10px] uppercase tracking-widest shadow-xl shadow-emerald-500/20 active:scale-95 disabled:opacity-50"
+                                                    >
+                                                        Accept Offer
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="py-12 text-center border-2 border-dashed border-border rounded-[2.5rem] bg-muted/10">
+                                        <Zap className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
+                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">No pending payout offers.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+
+                        <div className="h-px bg-border w-full opacity-50" />
+
+                        {/* ── Section 2: Accepted/Paid Invoices ── */}
+                        <section>
+                            <div className="flex items-center justify-between mb-8">
+                                <div>
+                                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight">My Invoices</h3>
+                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mt-1">Accepted offers & settled payouts</p>
+                                </div>
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                    {reporterInvoices.filter(i => i.status === 'ACCEPTED' || i.status === 'PAID').length} Records
+                                </span>
+                            </div>
+
+                            {reporterInvoices.filter(i => i.status === 'ACCEPTED' || i.status === 'PAID').length > 0 ? (
+                                <div className="space-y-4">
+                                    {reporterInvoices.filter(i => i.status === 'ACCEPTED' || i.status === 'PAID').map(inv => (
+                                        <div key={inv.id} className="bg-card p-6 rounded-2xl border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-primary/20 transition-all group">
+                                            <div className="flex items-center gap-4">
+                                                <div className={`h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 ${inv.status === 'PAID' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-primary/10 text-primary'}`}>
+                                                    <DollarSign className="h-6 w-6" />
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="px-2 py-0.5 rounded-lg bg-primary/10 text-[8px] font-black text-primary border border-primary/20 uppercase tracking-widest">{inv.invoiceNumber}</span>
+                                                        <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">#{inv.booking?.bookingNumber}</span>
+                                                    </div>
+                                                    <p className="text-xs font-black text-foreground uppercase tracking-tight">{inv.booking?.proceedingType}</p>
+                                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mt-1">
+                                                        {inv.invoiceDate ? format(new Date(inv.invoiceDate), 'MMM d, yyyy') : '—'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-8">
+                                                <div className="text-right">
+                                                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1">Payout</p>
+                                                    <p className="text-xl font-black text-foreground tracking-tighter">${inv.total?.toFixed(2) || inv.appearanceFee}</p>
+                                                </div>
+                                                <div className={`px-4 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest border ${inv.status === 'PAID' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-primary/10 text-primary border-primary/20'}`}>
+                                                    {inv.status === 'PAID' ? 'Settled' : 'Confirmed'}
+                                                </div>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
-                            </section>
-                        ) : (
-                            <div className="py-20 text-center border-2 border-dashed border-border rounded-[2rem]">
-                                <DollarSign className="h-16 w-16 text-muted-foreground/20 mx-auto mb-6" />
-                                <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-2">No active financial records</p>
-                                <p className="text-[10px] text-muted-foreground/60">Bids and earnings will appear here</p>
+                            ) : (
+                                <div className="py-12 text-center border-2 border-dashed border-border rounded-[2.5rem] bg-muted/10">
+                                    <DollarSign className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
+                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">No accepted invoices yet.</p>
+                                    <p className="text-[9px] text-muted-foreground/60 mt-2">Accept a payout offer above to see it here.</p>
+                                </div>
+                            )}
+                        </section>
+
+                        <div className="h-px bg-border w-full opacity-50" />
+
+                        {/* ── Section 3: Marketplace Bids ── */}
+                        <section>
+                            <div className="flex items-center justify-between mb-8">
+                                <div>
+                                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Marketplace Bid Status</h3>
+                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mt-1">Your submitted bids on open jobs</p>
+                                </div>
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Active Bids</span>
                             </div>
-                        )}
+
+                            {payouts.length > 0 ? (
+                                <div className="space-y-4">
+                                    {payouts.map(bid => (
+                                        <div key={bid.id} className="bg-card p-6 rounded-2xl border border-border flex items-center justify-between hover:border-primary/20 transition-all group">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:text-primary group-hover:bg-primary/5 transition-all">
+                                                    <Clock className="h-6 w-6" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-black uppercase text-foreground">{bid.booking?.proceedingType}</p>
+                                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">#{bid.booking?.bookingNumber}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-8">
+                                                <div className="text-right">
+                                                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1">Bid Amount</p>
+                                                    <p className="text-lg font-black text-primary tracking-tighter">${bid.amount}</p>
+                                                </div>
+                                                <div className={`px-4 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest border ${bid.status === 'ACCEPTED' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                                                    bid.status === 'DECLINED' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
+                                                        'bg-muted text-muted-foreground border-border'
+                                                    }`}>
+                                                    {bid.status}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="py-12 text-center border-2 border-dashed border-border rounded-[2.5rem] bg-muted/10">
+                                    <Clock className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
+                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">No marketplace bids submitted.</p>
+                                </div>
+                            )}
+                        </section>
                     </div>
                 )}
 
@@ -776,19 +961,16 @@ export default function ReporterPortal() {
                                                 alert('Target Assignment or File data missing for transmission');
                                                 return;
                                             }
-
                                             const formData = new FormData();
                                             formData.append('file', file);
                                             formData.append('category', 'TRANSCRIPT');
                                             formData.append('bookingId', bookingId);
-
                                             const token = localStorage.getItem('token');
                                             const res = await fetch('/api/documents', {
                                                 method: 'POST',
                                                 headers: { 'Authorization': `Bearer ${token}` },
                                                 body: formData
                                             });
-
                                             if (res.ok) alert('Asset Transmitted Successfully to Client Vault');
                                             else alert('Transmission Refused by Server');
                                         }}
@@ -1013,7 +1195,7 @@ export default function ReporterPortal() {
                                 <label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Quick Message to Admin</label>
                                 <textarea
                                     className="w-full p-4 rounded-2xl bg-muted/50 border border-border text-sm font-medium text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/20 min-h-[110px] resize-none"
-                                    placeholder="Describe your request — e.g. 'Please reset my password' or 'Update my User ID credentials to...' "
+                                    placeholder="Describe your request..."
                                     value={contactMessage}
                                     onChange={(e) => setContactMessage(e.target.value)}
                                 />
@@ -1207,4 +1389,5 @@ function AssignmentItem({ id, client, location, date, time, type, onClick }: any
         </button>
     )
 }
+
 

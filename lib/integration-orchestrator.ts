@@ -92,24 +92,30 @@ export class IntegrationOrchestrator {
      */
     async createInvoiceAfterApproval(data: BookingIntegrationData): Promise<void> {
         try {
+            const existingInvoice = await prisma.invoice.findUnique({
+                where: { bookingId: data.bookingId }
+            })
+
+            if (!existingInvoice) {
             const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`
 
-            await prisma.invoice.create({
-                data: {
-                    invoiceNumber,
-                    jobNumber: data.bookingNumber,
-                    contactId: (await prisma.booking.findUnique({ where: { id: data.bookingId } }))?.contactId || '',
-                    bookingId: data.bookingId,
-                    invoiceDate: new Date(),
-                    dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days
-                    status: 'DRAFT',
-                    pageRate: 0, // Will be updated during finalization
-                    appearanceFee: data.serviceAmount,
-                    subtotal: data.serviceAmount,
-                    total: data.serviceAmount,
-                    notes: `Automated invoice generated for ${data.serviceName} - ${data.proceedingType}`
-                }
-            })
+                await prisma.invoice.create({
+                    data: {
+                        invoiceNumber,
+                        jobNumber: data.bookingNumber,
+                        contactId: (await prisma.booking.findUnique({ where: { id: data.bookingId } }))?.contactId || '',
+                        bookingId: data.bookingId,
+                        invoiceDate: new Date(),
+                        dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days
+                        status: 'DRAFT',
+                        pageRate: 0, // Will be updated during finalization
+                        appearanceFee: data.serviceAmount,
+                        subtotal: data.serviceAmount,
+                        total: data.serviceAmount,
+                        notes: `Automated invoice generated for ${data.serviceName} - ${data.proceedingType}`
+                    }
+                })
+            }
 
             // Requirement 7.1: Also sync to Zoho Books
             try {
@@ -188,41 +194,52 @@ export class IntegrationOrchestrator {
                 isRemote: booking.location?.toLowerCase().includes('remote')
             })
 
-            const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`
             const jobNumber = booking.bookingNumber
-
-            const localInvoice = await prisma.invoice.create({
-                data: {
-                    invoiceNumber,
-                    jobNumber,
-                    contactId: booking.contactId,
-                    bookingId: booking.id,
-                    invoiceDate: new Date(),
-                    dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-                    status: 'SENT',
-                    pages: billingData.pages,
-                    originalCopies: billingData.originalCopies,
-                    additionalCopies: billingData.additionalCopies,
-                    pageRate: rates.pageRate,
-                    copyRate: rates.copyRate,
-                    appearanceFee: booking.location?.toLowerCase().includes('remote') ? rates.appearanceFeeRemote : rates.appearanceFeeInPerson,
-                    congestionFee: rates.congestionFee,
-                    realtimeFee: billingData.realtimeDevices ? (billingData.pages * rates.realtimeDeviceRate * billingData.realtimeDevices) : 0,
-                    realtimeDevices: billingData.realtimeDevices,
-                    roughFee: billingData.hasRough ? (billingData.pages * rates.roughRate) : 0,
-                    videographerFee: billingData.hasVideographer ? (billingData.pages * rates.videographerRate) : 0,
-                    interpreterFee: billingData.hasInterpreter ? (billingData.pages * rates.interpreterRate) : 0,
-                    expertFee: billingData.hasExpert ? (billingData.pages * rates.expertRate) : 0,
-                    afterHoursFee: billingData.afterHoursCount ? (billingData.afterHoursCount * rates.afterHoursRate) : 0,
-                    afterHoursCount: billingData.afterHoursCount,
-                    waitTimeFee: billingData.waitTimeCount ? (billingData.waitTimeCount * rates.waitTimeRate) : 0,
-                    waitTimeCount: billingData.waitTimeCount ?? null,
-                    subtotal,
-                    minimumFee: rates.minimumFee,
-                    total,
-                    notes: billingData.notes || `Job: ${booking.proceedingType}`
-                }
+            const existingInvoice = await prisma.invoice.findUnique({
+                where: { bookingId: booking.id }
             })
+
+            const invoiceData = {
+                jobNumber,
+                contactId: booking.contactId,
+                bookingId: booking.id,
+                invoiceDate: existingInvoice?.invoiceDate ?? new Date(),
+                dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+                status: 'SENT',
+                pages: billingData.pages,
+                originalCopies: billingData.originalCopies,
+                additionalCopies: billingData.additionalCopies,
+                pageRate: rates.pageRate,
+                copyRate: rates.copyRate,
+                appearanceFee: booking.location?.toLowerCase().includes('remote') ? rates.appearanceFeeRemote : rates.appearanceFeeInPerson,
+                congestionFee: rates.congestionFee,
+                realtimeFee: billingData.realtimeDevices ? (billingData.pages * rates.realtimeDeviceRate * billingData.realtimeDevices) : 0,
+                realtimeDevices: billingData.realtimeDevices,
+                roughFee: billingData.hasRough ? (billingData.pages * rates.roughRate) : 0,
+                videographerFee: billingData.hasVideographer ? (billingData.pages * rates.videographerRate) : 0,
+                interpreterFee: billingData.hasInterpreter ? (billingData.pages * rates.interpreterRate) : 0,
+                expertFee: billingData.hasExpert ? (billingData.pages * rates.expertRate) : 0,
+                afterHoursFee: billingData.afterHoursCount ? (billingData.afterHoursCount * rates.afterHoursRate) : 0,
+                afterHoursCount: billingData.afterHoursCount,
+                waitTimeFee: billingData.waitTimeCount ? (billingData.waitTimeCount * rates.waitTimeRate) : 0,
+                waitTimeCount: billingData.waitTimeCount ?? null,
+                subtotal,
+                minimumFee: rates.minimumFee,
+                total,
+                notes: billingData.notes || `Job: ${booking.proceedingType}`
+            }
+
+            const localInvoice = existingInvoice
+                ? await prisma.invoice.update({
+                    where: { id: existingInvoice.id },
+                    data: invoiceData
+                })
+                : await prisma.invoice.create({
+                    data: {
+                        invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
+                        ...invoiceData
+                    }
+                })
 
             let zohoInvoiceId = null
             try {

@@ -32,6 +32,14 @@ model User {
   assignedTasks    Task[]    @relation("AssignedTasks")
   contact          Contact?  @relation(fields: [contactId], references: [id])
   blogPosts        BlogPost[] @relation("BlogPosts")
+  reporterInvoices ReporterInvoice[] @relation("ReporterInvoices")
+  
+  // Reporter Payout Configuration (Fixed Rates)
+  basePageRate     Float?    // What admin pays this reporter per page
+  baseAppearanceFee Float?   // What admin pays this reporter per job
+  baseMinimumFee   Float?    // Minimum payout for this reporter
+  paymentPreference String?   // ACH, Check, Wire, etc.
+  taxId            String?   // Encrypted or managed via Zoho
 }
 
 model Contact {
@@ -137,6 +145,11 @@ model Booking {
   lockedMinimumFee     Float?
   lockedPageRate       Float?
   lockedRealtimeFee    Float?
+  
+  // Reporter-facing contract (Locked Payout Rates)
+  lockedReporterPageRate       Float?
+  lockedReporterAppearanceFee  Float?
+  lockedReporterMinimumFee     Float?
   bids                 Bid[]
   reporter             User?               @relation("ReporterBookings", fields: [reporterId], references: [id])
   user                 User                @relation("CreatedBookings", fields: [userId], references: [id])
@@ -144,6 +157,7 @@ model Booking {
   contact              Contact             @relation(fields: [contactId], references: [id])
   confirmation         ClientConfirmation?
   invoice              Invoice?
+  reporterInvoice      ReporterInvoice?    @relation("ReporterBookingInvoice")
   tasks                Task[]
 
   @@index([contactId])
@@ -265,6 +279,23 @@ model EmailLog {
   @@index([sentAt])
 }
 
+model Campaign {
+  id           String    @id @default(cuid())
+  name         String
+  subject      String
+  body         String
+  segment      String    // CLIENT, REPORTER, TEAM, ALL
+  reach        Int       @default(0)
+  opens        String    @default("0%")
+  clicks       String    @default("0%")
+  status       String    @default("SENT")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
 model Bid {
   id         String   @id @default(cuid())
   bookingId  String
@@ -281,6 +312,35 @@ model Bid {
   @@index([bookingId])
   @@index([reporterId])
   @@index([status])
+}
+
+model ReporterInvoice {
+  id                   String    @id @default(cuid())
+  invoiceNumber        String    @unique
+  bookingId            String    @unique
+  reporterId           String
+  invoiceDate          DateTime  @default(now())
+  dueDate              DateTime?
+  status               String    @default("PENDING") // PENDING, ACCEPTED, DECLINED, PAID
+  
+  // Offering Rates
+  pageRate             Float
+  appearanceFee        Float
+  minimumFee           Float     @default(400)
+  
+  total                Float     @default(0)
+  
+  notes                String?
+  paidAt               DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  
+  reporter             User      @relation("ReporterInvoices", fields: [reporterId], references: [id])
+  booking              Booking   @relation("ReporterBookingInvoice", fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([reporterId])
+  @@index([status])
+  @@index([invoiceNumber])
 }
 
 model TeamMember {

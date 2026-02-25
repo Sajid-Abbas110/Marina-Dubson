@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
         // Role-based filtering
         const userRole = payload.role?.toUpperCase() || 'CLIENT' // Default to safest role
 
-        if (['ADMIN', 'MANAGER', 'SUPER_ADMIN'].includes(userRole)) {
+        if (['ADMIN', 'MANAGER', 'SUPER_ADMIN', 'STAFF'].includes(userRole)) {
             // Admin can see all, or filter by specific contact
             if (contactIdParam) where.contactId = contactIdParam
         } else if (userRole === 'REPORTER') {

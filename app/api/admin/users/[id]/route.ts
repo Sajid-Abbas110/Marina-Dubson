@@ -38,7 +38,11 @@ export async function PATCH(
     try {
         const id = params.id
         const body = await request.json()
-        const { firstName, lastName, email, avatar, certification, company, bio, portfolio, availability } = body
+        const {
+            firstName, lastName, email, avatar, certification, company, bio,
+            portfolio, availability, basePageRate, baseAppearanceFee,
+            baseMinimumFee, paymentPreference, taxId
+        } = body
 
         const updateData: any = {
             firstName,
@@ -49,7 +53,12 @@ export async function PATCH(
             company,
             bio,
             portfolio,
-            availability
+            availability,
+            basePageRate: basePageRate ? parseFloat(basePageRate) : undefined,
+            baseAppearanceFee: baseAppearanceFee ? parseFloat(baseAppearanceFee) : undefined,
+            baseMinimumFee: baseMinimumFee ? parseFloat(baseMinimumFee) : undefined,
+            paymentPreference,
+            taxId
         }
 
         const updatedUser = await prisma.user.update({

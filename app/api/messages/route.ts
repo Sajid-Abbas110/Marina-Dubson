@@ -101,13 +101,13 @@ export async function POST(request: NextRequest) {
         const body = await request.json()
         const data = messageSchema.parse(body)
 
-        // Find recipient: use provided ID or default to an Admin node for Clients/Reporters
+        // Find recipient: use provided ID or default to an admin node for client/reporter/staff.
         let recipientId = data.recipientId
 
-        if (!recipientId && (userRole === 'CLIENT' || userRole === 'REPORTER')) {
+        if (!recipientId && (userRole === 'CLIENT' || userRole === 'REPORTER' || userRole === 'STAFF')) {
             const admin = await prisma.user.findFirst({
                 where: {
-                    role: { in: ['ADMIN', 'SUPER_ADMIN', 'staff'] }
+                    role: { in: ['ADMIN', 'SUPER_ADMIN', 'MANAGER', 'STAFF'] }
                 }
             })
             recipientId = admin?.id

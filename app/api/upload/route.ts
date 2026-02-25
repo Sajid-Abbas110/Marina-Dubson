@@ -27,14 +27,22 @@ export async function POST(req: NextRequest) {
         const safeName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
         const uploadDir = join(process.cwd(), 'public', 'uploads');
 
-        // Ensure directory exists
-        await mkdir(uploadDir, { recursive: true });
-        await writeFile(join(uploadDir, safeName), buffer);
+        try {
+            // Ensure directory exists
+            await mkdir(uploadDir, { recursive: true });
+            await writeFile(join(uploadDir, safeName), buffer);
 
-        const url = `/uploads/${safeName}`;
-        return NextResponse.json({ url }, { status: 201 });
+            const url = `/uploads/${safeName}`;
+            return NextResponse.json({ url }, { status: 201 });
+        } catch (fsError) {
+            console.error('Filesystem upload failed, using Base64 fallback:', fsError);
+            // On read-only systems like Vercel, return base64 data URL
+            const base64 = buffer.toString('base64');
+            const dataUrl = `data:${file.type || 'application/octet-stream'};base64,${base64}`;
+            return NextResponse.json({ url: dataUrl }, { status: 201 });
+        }
     } catch (error: any) {
-        console.error('Upload error:', error);
+        console.error('Upload catch-all error:', error);
         return NextResponse.json({ error: 'Upload failed', message: error.message }, { status: 500 });
     }
 }

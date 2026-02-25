@@ -37,6 +37,9 @@ export default function AdministrativeSettingsPage() {
         lastName: '',
         email: '',
         company: '',
+        availability: '',
+        portfolio: '',
+        certification: '',
         bio: '',
         twoFactor: true,
         encryption: true,
@@ -63,6 +66,9 @@ export default function AdministrativeSettingsPage() {
                         lastName: data.user.lastName || '',
                         email: data.user.email || '',
                         company: data.user.company || 'Marina Dubson Stenographic',
+                        availability: data.user.availability || '(917) 494-1859',
+                        portfolio: data.user.portfolio || 'MarinaDubson@gmail.com',
+                        certification: data.user.certification || '12A Saturn Lane, Staten Island, NY',
                         bio: data.user.bio || 'Directing the future of stenographic excellence.'
                     }))
                 }
@@ -199,9 +205,12 @@ export default function AdministrativeSettingsPage() {
                                 <SettingsField label="Professional First Name" value={formData.firstName} onChange={(v: string) => setFormData({ ...formData, firstName: v })} />
                                 <SettingsField label="Professional Last Name" value={formData.lastName} onChange={(v: string) => setFormData({ ...formData, lastName: v })} />
                                 <SettingsField label="Global Command Email" value={formData.email} disabled />
-                                <SettingsField label="Secure Mobile Link" value="+1 (917) 494-1859" />
+                                <SettingsField label="Public Company Name" value={formData.company} onChange={(v: string) => setFormData({ ...formData, company: v })} />
+                                <SettingsField label="Public Contact Phone" value={formData.availability} onChange={(v: string) => setFormData({ ...formData, availability: v })} />
+                                <SettingsField label="Public Contact Email" value={formData.portfolio} onChange={(v: string) => setFormData({ ...formData, portfolio: v })} />
                             </div>
 
+                            <SettingsField label="Public Address" value={formData.certification} onChange={(v: string) => setFormData({ ...formData, certification: v })} />
                             <SettingsField label="Biography Asset" value={formData.bio} onChange={(v: string) => setFormData({ ...formData, bio: v })} isTextArea />
 
                             <div className="pt-8 border-t border-border flex justify-end">

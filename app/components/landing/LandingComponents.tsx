@@ -104,6 +104,34 @@ export function LandingNavbar() {
 }
 
 export function LandingHero() {
+    const [liveStats, setLiveStats] = useState([
+        { label: 'Uptime Precision', value: '99.9%' },
+        { label: 'Active Bookings', value: '0' },
+        { label: 'Client Network', value: '0' },
+        { label: 'Service Readiness', value: '24/7' },
+    ])
+
+    useEffect(() => {
+        const fetchLiveStats = async () => {
+            try {
+                const res = await fetch('/api/debug-db')
+                if (!res.ok) return
+                const data = await res.json()
+                const counts = data?.counts || {}
+                setLiveStats([
+                    { label: 'Uptime Precision', value: '99.9%' },
+                    { label: 'Active Bookings', value: String(counts.bookings ?? 0) },
+                    { label: 'Client Network', value: String(counts.contacts ?? 0) },
+                    { label: 'Service Readiness', value: '24/7' },
+                ])
+            } catch (error) {
+                console.error('Failed to fetch live stats:', error)
+            }
+        }
+
+        fetchLiveStats()
+    }, [])
+
     return (
         <section className="relative min-h-[90vh] flex flex-col items-center justify-center pt-20 overflow-hidden">
             {/* Background elements */}
@@ -139,12 +167,7 @@ export function LandingHero() {
 
             {/* Hero Stats */}
             <div className="max-w-7xl mx-auto w-full px-6 grid grid-cols-2 md:grid-cols-4 gap-8 mt-24">
-                {[
-                    { label: 'Uptime Precision', value: '99.9%' },
-                    { label: 'Licensed Teams', value: '500+' },
-                    { label: 'Data Security', value: 'AES-256' },
-                    { label: 'Response Velocity', value: '< 2 Hours' },
-                ].map((stat, i) => (
+                {liveStats.map((stat, i) => (
                     <div key={i} className="text-center p-6 bg-card border border-border rounded-3xl group hover:border-primary/30 transition-all">
                         <p className="text-2xl font-black text-foreground">{stat.value}</p>
                         <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mt-1 opacity-60 group-hover:opacity-100">{stat.label}</p>
@@ -197,12 +220,15 @@ export function LandingServices() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {displayServices.map((s, i) => (
+                    {displayServices.slice(0, 8).map((s, i) => (
                         <div key={i} className="bg-card p-10 rounded-[2.5rem] border border-border hover:shadow-2xl hover:border-primary/50 transition-all group overflow-hidden relative">
                             <div className="absolute -top-10 -right-10 h-32 w-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/20 transition-all"></div>
                             <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center text-primary mb-8 group-hover:scale-110 transition-transform">
                                 <BookOpen className="h-6 w-6" />
                             </div>
+                            <span className="inline-flex mb-4 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20 text-[8px] font-black uppercase tracking-widest text-primary">
+                                {s.category?.replace('_', ' ') || 'Service'}
+                            </span>
                             <h4 className="text-xl font-black text-foreground uppercase tracking-tight mb-4">{s.serviceName}</h4>
                             <p className="text-sm text-muted-foreground font-medium leading-relaxed mb-6">
                                 {s.description || 'Professional stenographic sessions deployed for mission-critical legal contexts.'}
@@ -221,6 +247,22 @@ export function LandingServices() {
 export function LandingNewsletter() {
     const [email, setEmail] = useState('')
     const [submitted, setSubmitted] = useState(false)
+    const [blogPosts, setBlogPosts] = useState<any[]>([])
+
+    useEffect(() => {
+        const fetchBlogs = async () => {
+            try {
+                const res = await fetch('/api/blogs?limit=3')
+                if (!res.ok) return
+                const data = await res.json()
+                setBlogPosts(Array.isArray(data) ? data : [])
+            } catch (error) {
+                console.error('Failed to fetch landing blogs:', error)
+            }
+        }
+
+        fetchBlogs()
+    }, [])
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
@@ -246,15 +288,22 @@ export function LandingNewsletter() {
                         industry shifts, and new Marina Dubson infrastructure deployments.
                     </p>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-10">
-                        {[
-                            { title: 'De-Escalating High-Conflict EUOs', date: 'Feb 14, 2026', tag: 'Protocol' },
-                            { title: 'The Shift to Remote Litigative Hubs', date: 'Feb 10, 2026', tag: 'Trends' },
-                        ].map((post, i) => (
-                            <div key={i} className="p-5 bg-card border border-border rounded-3xl hover:border-primary/40 transition-all cursor-pointer group">
-                                <span className="text-[8px] font-black uppercase text-primary bg-primary/10 px-2 py-0.5 rounded-md mb-2 inline-block">{post.tag}</span>
-                                <h4 className="text-sm font-black text-foreground leading-tight group-hover:text-primary transition-colors">{post.title}</h4>
-                                <p className="text-[8px] font-bold text-muted-foreground uppercase mt-3">{post.date}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-10">
+                        {(blogPosts.length > 0 ? blogPosts : [
+                            { title: 'De-Escalating High-Conflict EUOs', createdAt: '2026-02-14T00:00:00.000Z' },
+                            { title: 'The Shift to Remote Litigative Hubs', createdAt: '2026-02-10T00:00:00.000Z' },
+                            { title: 'Building Better Deposition Workflows with AI', createdAt: '2026-02-06T00:00:00.000Z' },
+                        ]).map((post: any, i: number) => (
+                            <div key={post.id || i} className="p-5 bg-card border border-border rounded-3xl hover:border-primary/40 hover:-translate-y-1 transition-all cursor-pointer group">
+                                <span className="text-[8px] font-black uppercase text-primary bg-primary/10 px-2 py-0.5 rounded-md mb-2 inline-block">
+                                    {post.published ? 'Published' : 'Protocol'}
+                                </span>
+                                <h4 className="text-sm font-black text-foreground leading-tight group-hover:text-primary transition-colors">
+                                    {post.title}
+                                </h4>
+                                <p className="text-[8px] font-bold text-muted-foreground uppercase mt-3">
+                                    {post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recent'}
+                                </p>
                             </div>
                         ))}
                     </div>
@@ -297,6 +346,33 @@ export function LandingNewsletter() {
 }
 
 export function LandingContact() {
+    const [contactInfo, setContactInfo] = useState({
+        companyName: 'Marina Dubson Stenographic Services',
+        phone: '(917) 494-1859',
+        email: 'MarinaDubson@gmail.com',
+        address: '12A Saturn Lane, Staten Island, NY',
+    })
+
+    useEffect(() => {
+        const fetchContactInfo = async () => {
+            try {
+                const res = await fetch('/api/site-settings')
+                if (!res.ok) return
+                const data = await res.json()
+                setContactInfo({
+                    companyName: data.companyName || 'Marina Dubson Stenographic Services',
+                    phone: data.phone || '(917) 494-1859',
+                    email: data.email || 'MarinaDubson@gmail.com',
+                    address: data.address || '12A Saturn Lane, Staten Island, NY',
+                })
+            } catch (error) {
+                console.error('Failed to fetch contact settings:', error)
+            }
+        }
+
+        fetchContactInfo()
+    }, [])
+
     return (
         <section id="contact" className="py-24 bg-card">
             <div className="max-w-7xl mx-auto px-6">
@@ -311,9 +387,9 @@ export function LandingContact() {
 
                         <div className="space-y-8">
                             {[
-                                { icon: <MessageSquare className="h-6 w-6" />, label: 'Direct Transmission', value: '(917) 494-1859' },
-                                { icon: <Mail className="h-6 w-6" />, label: 'Data Inquiry', value: 'MarinaDubson@gmail.com' },
-                                { icon: <Scale className="h-6 w-6" />, label: 'Main Command', value: '12A Saturn Lane, Staten Island, NY' },
+                                { icon: <MessageSquare className="h-6 w-6" />, label: 'Direct Transmission', value: contactInfo.phone },
+                                { icon: <Mail className="h-6 w-6" />, label: 'Data Inquiry', value: contactInfo.email },
+                                { icon: <Scale className="h-6 w-6" />, label: 'Main Command', value: contactInfo.address },
                             ].map((item, i) => (
                                 <div key={i} className="flex items-start gap-6 group">
                                     <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">

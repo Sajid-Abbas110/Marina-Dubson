@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, CheckCircle2, Globe, Clock, ShieldCheck, Newspaper } from 'lucide-react'
 import Image from 'next/image'
@@ -118,14 +118,17 @@ export function ServiceGrid() {
     const services = [
         {
             title: 'Court Reporting',
+            desc: 'Certified reporters, realtime options, and on-time transcript delivery built for high-volume litigation teams.',
             img: 'https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=800&q=80'
         },
         {
             title: 'Certified Transcript Delivery',
+            desc: 'Digitally signed transcripts, secure delivery channels, and predictable turnarounds for firm operations.',
             img: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=600&q=80'
         },
         {
             title: 'Remote Depositions',
+            desc: 'Hybrid-ready remote deposition support with monitored audio quality and streamlined exhibit workflows.',
             img: 'https://images.unsplash.com/photo-1577412647305-991150c7d163?auto=format&fit=crop&w=600&q=80'
         }
     ]
@@ -144,7 +147,7 @@ export function ServiceGrid() {
                             />
                             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-10 text-white">
                                 <h4 className="text-2xl font-black uppercase italic mb-4">{s.title}</h4>
-                                <p className="text-xs text-white/70 italic mb-6">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor.</p>
+                                <p className="text-xs text-white/80 italic mb-6">{s.desc}</p>
                                 <ArrowRight className="h-6 w-6 text-[#0071c5] group-hover:translate-x-2 transition-transform" />
                             </div>
                         </div>
@@ -156,8 +159,28 @@ export function ServiceGrid() {
 }
 
 export function BlogTeaser() {
+    const [blogs, setBlogs] = useState<any[]>([])
+
+    useEffect(() => {
+        const fetchBlogs = async () => {
+            try {
+                const res = await fetch('/api/blogs?limit=4')
+                if (!res.ok) return
+                const data = await res.json()
+                setBlogs(Array.isArray(data) ? data : [])
+            } catch (error) {
+                console.error('Failed to fetch homepage blogs:', error)
+            }
+        }
+
+        fetchBlogs()
+    }, [])
+
+    const primaryBlog = blogs[0]
+    const sideBlogs = blogs.slice(1, 4)
+
     return (
-        <section className="py-24 bg-white">
+        <section id="blog" className="py-24 bg-white">
             <div className="max-w-7xl mx-auto px-4 md:px-8 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
                 <div className="space-y-8">
                     <div className="aspect-video overflow-hidden rounded-3xl shadow-xl relative">
@@ -169,19 +192,26 @@ export function BlogTeaser() {
                         />
                     </div>
                     <h3 className="text-3xl font-black text-[#1a1a1a] uppercase italic leading-tight">
-                        The Shift to Virtual Litigative Support Systems: Best Practices for 2026.
+                        {primaryBlog?.title || 'Practical Litigation Reporting Insights for Modern Legal Teams'}
                     </h3>
                     <p className="text-gray-500 font-medium italic leading-relaxed">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                        {primaryBlog?.excerpt || 'Read field-tested guidance on deposition preparation, transcript quality controls, and scalable workflows for high-volume case operations.'}
                     </p>
+                    <Link href={primaryBlog?.slug ? `/blogs/${primaryBlog.slug}` : '/blogs'} className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#0071c5] hover:text-[#0051a8]">
+                        Read Full Article <ArrowRight className="h-4 w-4" />
+                    </Link>
                 </div>
 
                 <div className="space-y-12">
-                    {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex gap-6 items-center group cursor-pointer">
+                    {(sideBlogs.length > 0 ? sideBlogs : [
+                        { title: 'Building Better Deposition Workflows for 2026', createdAt: new Date().toISOString(), slug: '' },
+                        { title: 'Remote Hearing Quality Controls That Actually Work', createdAt: new Date().toISOString(), slug: '' },
+                        { title: 'Reducing Transcript Revisions Through Better Prep', createdAt: new Date().toISOString(), slug: '' },
+                    ]).map((post, i) => (
+                        <Link key={i} href={post.slug ? `/blogs/${post.slug}` : '/blogs'} className="flex gap-6 items-center group cursor-pointer">
                             <div className="h-24 w-24 md:h-32 md:w-32 flex-shrink-0 rounded-2xl overflow-hidden shadow-md relative">
                                 <Image
-                                    src={`https://images.unsplash.com/photo-${i === 1 ? '1589829545856-d10d557cf95f' : i === 2 ? '1505664194779-8beaceb93744' : '1450101499163-c8848c66ca85'}?auto=format&fit=crop&w=300&q=80`}
+                                    src={`https://images.unsplash.com/photo-${i === 0 ? '1589829545856-d10d557cf95f' : i === 1 ? '1505664194779-8beaceb93744' : '1450101499163-c8848c66ca85'}?auto=format&fit=crop&w=300&q=80`}
                                     fill
                                     className="object-cover group-hover:scale-110 transition-all duration-500"
                                     alt="Side Article"
@@ -189,14 +219,17 @@ export function BlogTeaser() {
                             </div>
                             <div className="space-y-2">
                                 <h4 className="text-lg font-black text-[#1a1a1a] uppercase italic leading-tight transition-colors group-hover:text-[#0071c5]">
-                                    Court Documentation Trends and Advanced Reporting Protocols.
+                                    {post.title}
                                 </h4>
                                 <p className="text-[#a89100] text-[10px] font-black uppercase tracking-widest">
-                                    {20 + i} March, 2026
+                                    {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                 </p>
                             </div>
-                        </div>
+                        </Link>
                     ))}
+                    <Link href="/blogs" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#0071c5] hover:text-[#0051a8]">
+                        View All Blogs <ArrowRight className="h-4 w-4" />
+                    </Link>
                 </div>
             </div>
         </section>

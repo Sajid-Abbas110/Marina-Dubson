@@ -25,6 +25,9 @@ export default function DashboardPage() {
         upcomingJobs: 0,
         activeReporters: 0,
         reviewQueue: 0,
+        totalDelivered: 0,
+        totalBookings: 0,
+        completedBookings: 0,
     })
     const [recentBookings, setRecentBookings] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
@@ -50,14 +53,16 @@ export default function DashboardPage() {
                 ['SUBMITTED', 'ACCEPTED', 'CONFIRMED'].includes(b.bookingStatus)
             ).length
             const pendingApprovals = allBookings.filter((b: any) => b.bookingStatus === 'SUBMITTED').length
+            const completedBookings = allBookings.filter((b: any) => b.bookingStatus === 'COMPLETED').length
+            const totalBookings = allBookings.length
 
             // Invoices
             let totalRevenue = 0
             if (invoicesRes.status === 'fulfilled' && invoicesRes.value.ok) {
                 const d = await invoicesRes.value.json()
                 const allInvoices = Array.isArray(d.invoices) ? d.invoices : []
+                // Revenue dashboard should reflect billed value, not only settled payments.
                 totalRevenue = allInvoices
-                    .filter((i: any) => i.status === 'PAID')
                     .reduce((sum: number, i: any) => sum + (i.total || 0), 0)
             }
 
@@ -68,7 +73,15 @@ export default function DashboardPage() {
                 reporters = d.users?.filter((u: any) => u.role === 'REPORTER').length || 0
             }
 
-            setStats({ totalRevenue, upcomingJobs: upcoming, activeReporters: reporters, reviewQueue: pendingApprovals })
+            setStats({
+                totalRevenue,
+                upcomingJobs: upcoming,
+                activeReporters: reporters,
+                reviewQueue: pendingApprovals,
+                totalDelivered: completedBookings,
+                totalBookings,
+                completedBookings,
+            })
         } catch (err) {
             console.error('Dashboard fetch error:', err)
         } finally {
@@ -85,6 +98,8 @@ export default function DashboardPage() {
             `Upcoming Bookings,${stats.upcomingJobs}`,
             `Active Reporters,${stats.activeReporters}`,
             `Pending Review,${stats.reviewQueue}`,
+            `Delivered to Client,${stats.totalDelivered}`,
+            `Completed Bookings,${stats.completedBookings}/${stats.totalBookings}`,
         ].join('\n')
         const a = Object.assign(document.createElement('a'), {
             href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })),
@@ -161,6 +176,22 @@ export default function DashboardPage() {
             href: '/admin/bookings?status=SUBMITTED',
             alert: stats.reviewQueue > 0,
         },
+        {
+            label: 'Delivered to Client',
+            value: stats.totalDelivered,
+            icon: <CheckCircle2 className="h-5 w-5" />,
+            color: 'text-emerald-700',
+            bg: 'bg-emerald-50 dark:bg-emerald-950/30',
+            href: '/admin/bookings?status=COMPLETED',
+        },
+        {
+            label: 'Bookings Completed',
+            value: `${stats.completedBookings}/${stats.totalBookings}`,
+            icon: <BarChart3 className="h-5 w-5" />,
+            color: 'text-slate-700',
+            bg: 'bg-slate-100 dark:bg-slate-900/30',
+            href: '/admin/bookings',
+        },
     ]
 
     return (
@@ -189,7 +220,7 @@ export default function DashboardPage() {
             </div>
 
             {/* ── KPI Cards ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 stagger">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5 stagger">
                 {kpiCards.map((kpi) => (
                     <button
                         key={kpi.label}

@@ -26,6 +26,9 @@ import {
 export default function AdministrativeAnalyticsPage() {
     const [stats, setStats] = useState({
         totalRevenue: 0,
+        outgoingPayments: 0,
+        netProfit: 0,
+        margin: 0,
         revenueTrend: '+0%',
         uptime: '99.99%',
         avgVelocity: '0h',
@@ -43,20 +46,22 @@ export default function AdministrativeAnalyticsPage() {
     const fetchAnalytics = useCallback(async () => {
         try {
             const token = localStorage.getItem('token')
-            const [invRes, bookRes] = await Promise.all([
+            const [invRes, bookRes, finRes] = await Promise.all([
                 fetch('/api/invoices', { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch('/api/bookings', { headers: { 'Authorization': `Bearer ${token}` } })
+                fetch('/api/bookings', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('/api/admin/financial-summary', { headers: { 'Authorization': `Bearer ${token}` } })
             ])
 
             const invData = await invRes.json()
             const bookData = await bookRes.json()
+            const finData = await finRes.json()
 
             const allInvoices = Array.isArray(invData.invoices) ? invData.invoices : []
             const allBookings = Array.isArray(bookData.bookings) ? bookData.bookings : []
 
             // Revenue calculation
             const paidInvoices = allInvoices.filter((i: any) => i.status === 'PAID')
-            const totalRevenue = paidInvoices.reduce((sum: number, i: any) => sum + (i.total || 0), 0)
+            const totalRevenue = finData.grossRevenue || 0
 
             // Velocity calculation (avg time from booking to completion)
             const completedBookings = allBookings.filter((b: any) => b.bookingStatus === 'COMPLETED')
@@ -89,8 +94,7 @@ export default function AdministrativeAnalyticsPage() {
                     })
                     .reduce((sum: number, inv: any) => sum + (inv.total || 0), 0)
 
-                // Scale value for the bar chart (max 100%)
-                const percent = Math.min(100, (dayTotal / 500) * 100) // 500 is a dummy max for visual
+                const percent = Math.min(100, (dayTotal / 500) * 100)
 
                 return {
                     label: `${days[d.getDay()]} ${d.getDate()}`,
@@ -101,7 +105,10 @@ export default function AdministrativeAnalyticsPage() {
 
             setStats({
                 totalRevenue,
-                revenueTrend: '+12.5%', // Placeholder trend
+                outgoingPayments: finData.outgoingPayments || 0,
+                netProfit: finData.netProfit || 0,
+                margin: finData.marginPercentage || 0,
+                revenueTrend: '+12.5%',
                 uptime: '99.98%',
                 avgVelocity: `${avgVelocity.toFixed(1)}h`,
                 velocityTrend: '-2.4h',
@@ -173,11 +180,52 @@ export default function AdministrativeAnalyticsPage() {
             </div>
 
             {/* Performance Pulse */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <PulseCard label="Total Revenue (PAID)" value={`$${stats.totalRevenue.toLocaleString()}`} trend={stats.revenueTrend} color="text-emerald-500" icon={<DollarSign />} loading={loading} />
-                <PulseCard label="Avg Assignment Vel." value={stats.avgVelocity} trend={stats.velocityTrend} color="text-primary" icon={<Clock />} loading={loading} />
-                <PulseCard label="Reporter Utilization" value={stats.utilization} trend={stats.utilizationTrend} color="text-primary" icon={<Users />} loading={loading} />
-                <PulseCard label="Market Dominance" value={stats.marketDominance} trend={stats.dominanceTrend} color="text-primary" icon={<TrendingUp />} loading={loading} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                <PulseCard
+                    label="Gross Volume (In)"
+                    value={`$${stats.totalRevenue.toLocaleString()}`}
+                    trend={stats.revenueTrend}
+                    color="text-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.1)]"
+                    icon={<DollarSign />}
+                    loading={loading}
+                    subtext="Total Paid Invoices"
+                />
+                <PulseCard
+                    label="Total Outgoings (Out)"
+                    value={`$${stats.outgoingPayments.toLocaleString()}`}
+                    trend="Fixed Snap"
+                    color="text-rose-400"
+                    icon={<TrendingDown className="h-4 w-4" />}
+                    loading={loading}
+                    subtext="Reporter Payout Obligations"
+                />
+                <PulseCard
+                    label="Net Operational Profit"
+                    value={`$${stats.netProfit.toLocaleString()}`}
+                    trend={`${stats.margin.toFixed(1)}%`}
+                    color="text-primary"
+                    icon={<Zap />}
+                    loading={loading}
+                    subtext="Revenue - Snap Payouts"
+                />
+                <PulseCard
+                    label="Avg Assignment Vel."
+                    value={stats.avgVelocity}
+                    trend={stats.velocityTrend}
+                    color="text-primary/70"
+                    icon={<Clock />}
+                    loading={loading}
+                    subtext="Creation to Completion"
+                />
+                <PulseCard
+                    label="Reporter Utilization"
+                    value={stats.utilization}
+                    trend={stats.utilizationTrend}
+                    color="text-primary/70"
+                    icon={<Users />}
+                    loading={loading}
+                    subtext="Active Assignment Load"
+                />
             </div>
 
             {/* Visual Analytics Grid */}
@@ -250,16 +298,19 @@ export default function AdministrativeAnalyticsPage() {
     )
 }
 
-function PulseCard({ label, value, trend, color, icon, loading }: any) {
+function PulseCard({ label, value, trend, color, icon, loading, subtext }: any) {
     return (
         <div className="bg-card p-6 rounded-[2rem] border border-border shadow-sm hover:shadow-xl transition-all group overflow-hidden relative">
             <div className={`absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.1] transition-opacity group-hover:rotate-12 duration-700`}>
                 {icon}
             </div>
             <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-2">{label}</p>
-            <div className={`text-2xl font-black tracking-tighter uppercase ${color} mb-4`}>
+            <div className={`text-2xl font-black tracking-tighter uppercase ${color} mb-1`}>
                 {loading ? <Activity className="h-6 w-6 animate-pulse" /> : value}
             </div>
+            {subtext && (
+                <p className="text-[8px] font-bold text-muted-foreground/60 uppercase tracking-widest mb-4">{subtext}</p>
+            )}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                     <span className={`text-[9px] font-black uppercase tracking-widest ${trend.startsWith('+') ? 'text-emerald-500' : 'text-rose-500'}`}>{trend}</span>

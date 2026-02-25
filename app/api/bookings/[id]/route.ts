@@ -44,6 +44,19 @@ export async function PATCH(
             return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
         }
 
+        // If reporterId is provided or changed, fetch and lock reporter base rates
+        if (data.reporterId && data.reporterId !== existingBooking.reporterId) {
+            const reporter = await prisma.user.findUnique({
+                where: { id: data.reporterId }
+            });
+
+            if (reporter) {
+                (data as any).lockedReporterPageRate = reporter.basePageRate;
+                (data as any).lockedReporterAppearanceFee = reporter.baseAppearanceFee;
+                (data as any).lockedReporterMinimumFee = reporter.baseMinimumFee;
+            }
+        }
+
         // Update booking
         const rawBooking = await prisma.booking.update({
             where: { id: params.id },
@@ -51,6 +64,7 @@ export async function PATCH(
             include: {
                 contact: true,
                 service: true,
+                reporter: true,
             },
         })
         const booking = rawBooking as any

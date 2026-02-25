@@ -7,7 +7,7 @@ import {
     Strikethrough, Link2, List, ListOrdered, Quote, Code, AlignLeft,
     AlignCenter, AlignRight, AlignJustify, Image as ImageIcon, Video,
     Heading1, Heading2, Heading3, Upload, Link, Unlink, RotateCcw,
-    RotateCw, Type, Minus, Table, Subscript, Superscript
+    RotateCw, Type, Minus, Table, Subscript, Superscript, ArrowUpRight
 } from 'lucide-react'
 
 /* ─────────────────── Rich Text Toolbar ─────────────────── */
@@ -353,9 +353,13 @@ export default function BlogManagementPage() {
                 body: JSON.stringify({ ...formData, seoScore })
             })
             if (res.ok) {
+                const savedBlog = await res.json()
                 setShowModal(false)
                 fetchBlogs()
                 resetForm()
+                if (savedBlog?.published && savedBlog?.slug) {
+                    window.open(`/blogs/${savedBlog.slug}`, '_blank')
+                }
             } else {
                 const err = await res.json()
                 alert(err.message || err.error || 'Failed to save blog')
@@ -476,7 +480,17 @@ export default function BlogManagementPage() {
                                     </div>
                                     <span className="text-[10px] font-bold text-slate-500 uppercase">{blog.author?.firstName} {blog.author?.lastName}</span>
                                 </div>
-                                <Globe className={`h-4 w-4 ${blog.published ? 'text-emerald-500' : 'text-slate-200'}`} />
+                                <div className="flex items-center gap-2">
+                                    {blog.published && blog.slug && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); window.open(`/blogs/${blog.slug}`, '_blank') }}
+                                            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all"
+                                        >
+                                            View Live <ArrowUpRight className="h-3 w-3" />
+                                        </button>
+                                    )}
+                                    <Globe className={`h-4 w-4 ${blog.published ? 'text-emerald-500' : 'text-slate-200'}`} />
+                                </div>
                             </div>
                         </div>
                     </div>

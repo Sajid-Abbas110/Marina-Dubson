@@ -267,7 +267,9 @@ export default function AdministrativeJobNexus() {
             bookingStatus: job.bookingStatus,
             isMarketplace: job.isMarketplace,
             reporterId: job.reporterId || '',
-            notes: job.notes || ''
+            notes: job.notes || '',
+            lockedReporterPageRate: job.lockedReporterPageRate || '',
+            lockedReporterAppearanceFee: job.lockedReporterAppearanceFee || ''
         })
         setShowEditModal(true)
     }
@@ -576,7 +578,41 @@ function EditModal({ title, onClose, onSubmit, saving, data, setData, reporters 
                         <option value="">Unassigned</option>
                         {reporters.map((r: any) => <option key={r.id} value={r.id}>{r.firstName} {r.lastName}</option>)}
                     </select>
-                    <textarea className="luxury-input min-h-[100px]" placeholder="Staff Notes" value={data.notes} onChange={e => setData({ ...data, notes: e.target.value })} />
+
+                    {data.reporterId && (
+                        <div className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                            <div className="space-y-1">
+                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Locked Page Rate (Payable)</label>
+                                <div className="relative">
+                                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        className="w-full pl-8 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-100"
+                                        value={data.lockedReporterPageRate || ''}
+                                        onChange={e => setData({ ...data, lockedReporterPageRate: e.target.value })}
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Locked Appearance (Payable)</label>
+                                <div className="relative">
+                                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        className="w-full pl-8 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-100"
+                                        value={data.lockedReporterAppearanceFee || ''}
+                                        onChange={e => setData({ ...data, lockedReporterAppearanceFee: e.target.value })}
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <textarea className="luxury-input min-h-[80px]" placeholder="Staff Notes" value={data.notes} onChange={e => setData({ ...data, notes: e.target.value })} />
                     <div className="flex gap-4 pt-4">
                         <button type="button" onClick={onClose} className="flex-1 py-4 bg-slate-100 text-slate-500 font-bold uppercase rounded-xl">Cancel</button>
                         <button type="submit" disabled={saving} className="flex-1 py-4 bg-blue-600 text-white font-bold uppercase rounded-xl hover:bg-blue-700">
