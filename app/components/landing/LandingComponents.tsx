@@ -200,16 +200,38 @@ export function LandingServices() {
         fetchServices()
     }, [])
 
-    // Static fallback services if API fails or needs auth
-    const fallbackServices = [
-        { serviceName: 'Premium Court Reporting', category: 'COURT_REPORTING', description: 'Certified stenographic reporting for legal depositions.' },
-        { serviceName: 'Technical Deposition Service', category: 'COURT_REPORTING', description: 'Expert technical testimony reporting with full protocol support.' },
-        { serviceName: 'Virtual Hearing Stream', category: 'LEGAL_PROCEEDINGS', description: 'High-fidelity remote hearing streaming and recording.' },
-        { serviceName: 'Arbitration Management', category: 'LEGAL_PROCEEDINGS', description: 'End-to-end transcript coordination for arbitration panels.' },
-        { serviceName: 'EUO Specialist Protocol', category: 'COURT_REPORTING', description: 'Expert examination under oath reporting services.' },
+    // Curate to two primary services only
+    const cartDescription = 'CART Services (Communication Access Real-Time Translation) deliver live, verbatim captions in real time so Deaf and hard-of-hearing participants can fully participate in proceedings.'
+    const curatedServices = [
+        {
+            name: 'Premium Court Reporting',
+            fallback: {
+                serviceName: 'Premium Court Reporting',
+                category: 'COURT_REPORTING',
+                description: 'Certified stenographic reporting for depositions, arbitrations, mediations, and examinations under oath.'
+            }
+        },
+        {
+            name: 'CART Services (Communication Access Real-Time Translation)',
+            fallback: {
+                serviceName: 'CART Services (Communication Access Real-Time Translation)',
+                category: 'ACCESSIBILITY',
+                description: cartDescription
+            }
+        }
     ]
 
-    const displayServices = services.length > 0 ? services : fallbackServices
+    const displayServices = curatedServices.map((target) => {
+        const match = services.find((svc) =>
+            svc.serviceName?.toLowerCase().includes(target.name.toLowerCase().split(' ')[0]) ||
+            svc.serviceName === target.name
+        )
+        return {
+            serviceName: target.name,
+            category: match?.category || target.fallback.category,
+            description: match?.description || target.fallback.description,
+        }
+    })
 
     return (
         <section id="services" className="py-24 bg-muted/30">

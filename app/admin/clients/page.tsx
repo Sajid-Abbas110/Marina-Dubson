@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import {
@@ -23,11 +23,15 @@ import {
     Activity
 } from 'lucide-react'
 
-export default function ClientsPage() {
+type LockedType = 'PRIVATE' | 'AGENCY' | null
+
+function ClientsPage({ lockedType = null }: { lockedType?: LockedType }) {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const [users, setUsers] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
+    const [clientType, setClientType] = useState<'ALL' | 'PRIVATE' | 'AGENCY'>(lockedType || 'ALL')
 
     const fetchUsers = useCallback(async () => {
         try {
@@ -37,7 +41,8 @@ export default function ClientsPage() {
                 return
             }
 
-            const res = await fetch('/api/admin/users', {
+            const typeParam = clientType === 'ALL' ? '' : `&clientType=${clientType}`
+            const res = await fetch(`/api/admin/users?role=CLIENT${typeParam}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
 
@@ -51,11 +56,22 @@ export default function ClientsPage() {
         } finally {
             setLoading(false)
         }
-    }, [router])
+    }, [router, clientType])
+
+    useEffect(() => {
+        if (lockedType) {
+            setClientType(lockedType)
+            return
+        }
+        const type = searchParams.get('type')
+        if (type === 'PRIVATE' || type === 'AGENCY') {
+            setClientType(type)
+        }
+    }, [searchParams, lockedType])
 
     useEffect(() => {
         fetchUsers()
-    }, [fetchUsers])
+    }, [fetchUsers, clientType])
 
     const filteredUsers = users.filter(u => {
         if (!searchQuery) return true
@@ -63,23 +79,48 @@ export default function ClientsPage() {
         return (
             u.firstName?.toLowerCase().includes(query) ||
             u.lastName?.toLowerCase().includes(query) ||
-            u.email?.toLowerCase().includes(query)
+            u.email?.toLowerCase().includes(query) ||
+            u.contact?.companyName?.toLowerCase().includes(query) ||
+            u.contact?.clientType?.toLowerCase().includes(query)
         )
     })
+
+    const heading = lockedType === 'PRIVATE' ? 'Private Clients' : lockedType === 'AGENCY' ? 'Agency Clients' : 'Legal Clients'
+    const subheading = lockedType === 'PRIVATE'
+        ? 'Managing private clients registered in the system.'
+        : lockedType === 'AGENCY'
+            ? 'Managing agency partners and coverage coordinators registered in the system.'
+            : 'Managing law firms, private clients, and agencies registered in the system.'
 
     return (
         <div className="max-w-[1600px] w-[95%] mx-auto p-6 lg:p-12 space-y-12 pb-24 animate-in fade-in duration-700 font-poppins">
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
                 <div className="space-y-2">
                     <h1 className="text-2xl font-black text-foreground tracking-tight uppercase leading-none">
-                        Legal <span className="brand-gradient italic">Clients</span>
+                        {heading.split(' ')[0]} <span className="brand-gradient italic">{heading.split(' ').slice(1).join(' ') || 'Clients'}</span>
                     </h1>
                     <p className="text-muted-foreground font-black uppercase text-[9px] tracking-[0.3em]">
-                        Managing law firms and independent legal counsel registered in the system.
+                        {subheading}
                         {!loading && <span className="text-primary ml-2 italic"> • {users.length} Registered Clusters</span>}
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
+                    {!lockedType && (
+                        <div className="bg-card border border-border rounded-xl p-1 flex gap-1">
+                            {(['ALL', 'PRIVATE', 'AGENCY'] as const).map(type => {
+                                const active = clientType === type
+                                return (
+                                    <button
+                                        key={type}
+                                        onClick={() => setClientType(type)}
+                                        className={`px-3 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${active ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                                    >
+                                        {type === 'ALL' ? 'All' : type.charAt(0) + type.slice(1).toLowerCase()}
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    )}
                     <div className="relative group w-full sm:w-auto font-poppins">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                         <input
@@ -119,12 +160,27 @@ export default function ClientsPage() {
     )
 }
 
+export default function ClientsPageDefault() {
+    return <ClientsPage />
+}
+
+// Named exports for locked views
+export function PrivateClientsPage() {
+    return <ClientsPage lockedType="PRIVATE" />
+}
+
+export function AgencyClientsPage() {
+    return <ClientsPage lockedType="AGENCY" />
+}
+
 function ClientCard({ user }: { user: any }) {
     const router = useRouter()
     const name = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email
     const initials = (user.firstName?.[0] || user.email[0]).toUpperCase() + (user.lastName?.[0] || '').toUpperCase()
     const joined = format(new Date(user.createdAt), 'MMM yyyy').toUpperCase()
     const avatarSrc = user.avatar || '/favicon.svg'
+    const type = user.contact?.clientType || 'CLIENT'
+    const company = user.contact?.companyName || user.company || '—'
 
     return (
         <div className="glass-panel group p-6 rounded-[2rem] hover:shadow-2xl transition-all relative overflow-hidden border border-border bg-card shadow-lg hover:translate-y-[-2px] duration-500">
@@ -151,8 +207,8 @@ function ClientCard({ user }: { user: any }) {
                     <div className="space-y-1">
                         <h3 className="text-base font-black text-foreground uppercase tracking-tight line-clamp-1 group-hover:text-primary transition-colors">{name}</h3>
                         <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 rounded bg-primary/10 text-[8px] font-black text-primary uppercase tracking-widest border border-primary/20">Client</span>
-                            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest truncate max-w-[100px]">{user.company || 'Wilson Law LLC'}</span>
+                            <span className="px-2 py-0.5 rounded bg-primary/10 text-[8px] font-black text-primary uppercase tracking-widest border border-primary/20">{type === 'PRIVATE' ? 'Private' : type === 'AGENCY' ? 'Agency' : 'Client'}</span>
+                            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest truncate max-w-[120px]">{company}</span>
                         </div>
                     </div>
                 </div>

@@ -10,6 +10,7 @@ const registerSchema = z.object({
     firstName: z.string().min(1),
     lastName: z.string().min(1),
     role: z.enum(['ADMIN', 'MANAGER', 'STAFF', 'REPORTER', 'CLIENT']).default('CLIENT'),
+    clientType: z.enum(['PRIVATE', 'AGENCY']).optional(),
     company: z.string().optional(),
     certification: z.string().optional()
 })
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
                             lastName: data.lastName,
                             email: data.email,
                             companyName: data.company,
-                            clientType: 'LAW_FIRM', // Default to Law Firm
+                            clientType: data.clientType || 'PRIVATE',
                             status: 'Active'
                         }
                     })

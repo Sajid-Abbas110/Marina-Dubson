@@ -110,9 +110,12 @@ export default function ReporterPortal() {
     const [payouts, setPayouts] = useState<any[]>([])
     const [reporterInvoices, setReporterInvoices] = useState<any[]>([])
     const [shouldScroll, setShouldScroll] = useState(false)
+    const [bidAlertCount, setBidAlertCount] = useState(0)
 
     // Auto-scroll for messages
     const msgScrollRef = useRef<HTMLDivElement>(null)
+    const prevMarketplaceCount = useRef(0)
+    const marketBootstrapped = useRef(false)
     useEffect(() => { if (activeTab === 'messages') msgScrollRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, activeTab])
 
     const fetchUserData = useCallback(async (isPoll = false) => {
@@ -144,7 +147,16 @@ export default function ReporterPortal() {
 
             if (marketRes.ok) {
                 const marketData = await marketRes.json()
-                if (marketData.jobs) setMarketplaceJobs(marketData.jobs)
+                if (marketData.jobs) {
+                    setMarketplaceJobs(marketData.jobs)
+
+                    const jobCount = marketData.jobs.length
+                    if (marketBootstrapped.current && jobCount > prevMarketplaceCount.current) {
+                        setBidAlertCount(jobCount - prevMarketplaceCount.current)
+                    }
+                    if (!marketBootstrapped.current) marketBootstrapped.current = true
+                    prevMarketplaceCount.current = jobCount
+                }
             }
 
             if (msgsRes.ok) {
@@ -186,6 +198,10 @@ export default function ReporterPortal() {
         }
     }, [activeTab, shouldScroll])
 
+    useEffect(() => {
+        if (activeTab === 'market') setBidAlertCount(0)
+    }, [activeTab])
+
     const [contactMessage, setContactMessage] = useState('')
     const [contactSending, setContactSending] = useState(false)
     const [contactSent, setContactSent] = useState(false)
@@ -199,6 +215,20 @@ export default function ReporterPortal() {
             setCopied(key)
             setTimeout(() => setCopied(null), 2000)
         })
+    }
+
+    const formatCurrency = (value?: number | null) => {
+        if (value === undefined || value === null || Number.isNaN(value)) return null
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value)
+    }
+
+    const getMinimumBid = (job: any) => {
+        if (!job) return undefined
+        return job.lockedMinimumFee
+            ?? job.minimumFee
+            ?? job.service?.lockedMinimumFee
+            ?? job.service?.minimumFee
+            ?? job.service?.defaultMinimumFee
     }
 
     const handleContactAdmin = async () => {
@@ -245,11 +275,23 @@ export default function ReporterPortal() {
         }
     }
 
-    const handleBid = async (bookingId: string) => {
-        const amount = prompt("Enter your bid amount ($):");
-        if (!amount) return;
+    const handleBid = async (bookingId: string, minimum?: number) => {
+        const formattedMin = formatCurrency(minimum ?? null)
+        const amount = prompt(
+            formattedMin
+                ? `Enter your bid amount (minimum ${formattedMin}):`
+                : 'Enter your bid amount ($):',
+            formattedMin ? String(minimum) : ''
+        )
+        if (!amount) return
 
-        setBidding(true);
+        const parsedAmount = parseFloat(amount)
+        if (Number.isNaN(parsedAmount)) {
+            alert('Please enter a valid number for your bid.')
+            return
+        }
+
+        setBidding(true)
         try {
             const token = localStorage.getItem('token');
             const res = await fetch('/api/market/bids', {
@@ -260,7 +302,7 @@ export default function ReporterPortal() {
                 },
                 body: JSON.stringify({
                     bookingId,
-                    amount: parseFloat(amount),
+                    amount: parsedAmount,
                     notes: "Submitted via Reporter Portal"
                 })
             });
@@ -296,7 +338,7 @@ export default function ReporterPortal() {
     }
 
     const handleDeclineAssignment = async (bookingId: string) => {
-        if (!confirm('Are you sure you want to decline this assignment? It will be sent back to the marketplace.')) return
+        if (!confirm('Are you sure you want to decline this assignment? It will be sent back to the jobs board.')) return
         setIsPending(true)
         try {
             const token = localStorage.getItem('token')
@@ -353,6 +395,30 @@ export default function ReporterPortal() {
 
     return (
         <div className="animate-in fade-in duration-500 px-4 py-6 md:p-8">
+            {(marketplaceJobs.length > 0 || bidAlertCount > 0) && (
+                <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4 md:p-5 rounded-2xl border border-primary/20 bg-primary/5">
+                    <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                            <Bell className="h-5 w-5" />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-primary">Bidding Notifications</p>
+                            <p className="text-sm font-semibold text-foreground">
+                                {bidAlertCount > 0
+                                    ? `${bidAlertCount} new job${bidAlertCount > 1 ? 's' : ''} added since your last view`
+                                    : `${marketplaceJobs.length} open job${marketplaceJobs.length === 1 ? '' : 's'} ready for bids`}
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => navigateTab('market')}
+                        className="self-start md:self-auto px-5 py-3 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all"
+                    >
+                        Review Jobs
+                    </button>
+                </div>
+            )}
+
             {/* Reporter Profile Hero */}
             <div className="mb-12 flex flex-col xl:flex-row xl:items-center justify-between gap-10 animate-in fade-in slide-in-from-top-4 duration-700">
                 <div className="flex flex-col md:flex-row items-center md:items-center gap-8">
@@ -405,9 +471,9 @@ export default function ReporterPortal() {
                                 onClick={() => navigateTab('upload')}
                             />
                             <MetricCard
-                                label="Market Jobs"
+                                label="Open Jobs"
                                 value={String(marketplaceJobs.length).padStart(2, '0')}
-                                sub="Open for Bidding"
+                                sub="Awaiting Bids"
                                 color="text-blue-500"
                                 onClick={() => navigateTab('market')}
                             />
@@ -527,7 +593,7 @@ export default function ReporterPortal() {
                                             onClick={() => navigateTab('market')}
                                             className="mt-4 px-6 py-3 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
                                         >
-                                            Browse Marketplace
+                                            Browse Jobs
                                         </button>
                                     </div>
                                 )}
@@ -542,18 +608,27 @@ export default function ReporterPortal() {
 
                 {activeTab === 'market' && (
                     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-700">
-                        <section>
+                        <section id="marketplace-section">
                             <div className="flex items-center justify-between mb-8">
-                                <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Marketplace Opportunities</h3>
+                                <div>
+                                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Jobs Board</h3>
+                                    <p className="text-sm font-semibold text-foreground/80">Service details, timing, and minimum bid are visible before you place a bid.</p>
+                                </div>
                                 <span className="px-4 py-2 bg-primary/10 text-primary rounded-xl text-[10px] font-black uppercase tracking-widest border border-primary/20">{marketplaceJobs.length} Jobs Open</span>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {marketplaceJobs.length > 0 ? marketplaceJobs.map(job => (
-                                    <MarketplaceCard key={job.id} job={job} onBid={() => handleBid(job.id)} isBidding={bidding} />
+                                    <MarketplaceCard
+                                        key={job.id}
+                                        job={job}
+                                        minBid={getMinimumBid(job)}
+                                        onBid={() => handleBid(job.id, getMinimumBid(job))}
+                                        isBidding={bidding}
+                                    />
                                 )) : (
                                     <div className="col-span-2 py-20 text-center border-2 border-dashed border-border rounded-[2rem]">
                                         <Search className="h-16 w-16 text-muted-foreground/20 mx-auto mb-6" />
-                                        <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-2">No marketplace opportunities available</p>
+                                        <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-2">No open jobs available</p>
                                         <p className="text-[10px] text-muted-foreground/60">Check back soon for new assignments from the Command Center</p>
                                     </div>
                                 )}
@@ -867,11 +942,11 @@ export default function ReporterPortal() {
 
                         <div className="h-px bg-border w-full opacity-50" />
 
-                        {/* ── Section 3: Marketplace Bids ── */}
+                        {/* ── Section 3: Job Bids ── */}
                         <section>
                             <div className="flex items-center justify-between mb-8">
                                 <div>
-                                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Marketplace Bid Status</h3>
+                                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Job Bid Status</h3>
                                     <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mt-1">Your submitted bids on open jobs</p>
                                 </div>
                                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Active Bids</span>
@@ -908,7 +983,7 @@ export default function ReporterPortal() {
                             ) : (
                                 <div className="py-12 text-center border-2 border-dashed border-border rounded-[2.5rem] bg-muted/10">
                                     <Clock className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
-                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">No marketplace bids submitted.</p>
+                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">No job bids submitted.</p>
                                 </div>
                             )}
                         </section>
@@ -1299,34 +1374,69 @@ function AssignmentRow({ job, onClick, onAccept, onDecline, isPending }: { job: 
     )
 }
 
-function MarketplaceCard({ job, onBid, isBidding }: { job: any, onBid: () => void, isBidding?: boolean }) {
+function MarketplaceCard({ job, onBid, isBidding, minBid }: { job: any, onBid: () => void, isBidding?: boolean, minBid?: number }) {
+    const minBidLabel = formatCurrency(minBid ?? null) || 'Not set'
+    const clientName = (job?.contact?.companyName || `${job?.contact?.firstName ?? ''} ${job?.contact?.lastName ?? ''}`.trim()) || 'Client pending'
+    const instructions = job?.notes || job?.bookingNotes || job?.instructions
+
     return (
         <div className="bg-card p-8 rounded-[2.5rem] border border-border shadow-sm hover:shadow-2xl transition-all relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-4">
-                <span className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-lg text-[8px] font-black uppercase border border-blue-500/20">Open Opportunity</span>
+                <span className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-lg text-[8px] font-black uppercase border border-blue-500/20">Open Job</span>
             </div>
             <div className="space-y-6">
-                <div>
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{job.service.serviceName}</p>
-                    <h4 className="text-xl font-black text-foreground uppercase tracking-tighter leading-none">{job.proceedingType}</h4>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        <span className="text-[10px] font-black uppercase">{format(new Date(job.bookingDate), 'MMM dd, yyyy')}</span>
+                <div className="flex items-start justify-between gap-4">
+                    <div>
+                        <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">{job?.service?.serviceName || 'Service pending'}</p>
+                        <h4 className="text-xl font-black text-foreground uppercase tracking-tighter leading-none">{job?.proceedingType || 'Proceeding TBD'}</h4>
+                        <p className="text-sm font-semibold text-foreground/80 mt-2">#{job?.bookingNumber || job?.id} • {clientName}</p>
                     </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        <span className="text-[10px] font-black uppercase truncate">{job.location || 'Remote'}</span>
+                    <div className="text-right">
+                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Minimum Bid</span>
+                        <div className="mt-1 px-3 py-1 rounded-lg bg-primary/10 border border-primary/20 text-primary text-sm font-black">
+                            {minBidLabel}
+                        </div>
                     </div>
                 </div>
+                <div className="grid grid-cols-2 gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    <div className="flex items-center gap-2 text-foreground">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span>{job?.bookingDate ? format(new Date(job.bookingDate), 'MMM dd, yyyy') : 'Date TBD'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-foreground">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span>{job?.bookingTime || 'Time TBD'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-foreground">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <span className="truncate">{job?.location || 'Remote'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-foreground">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <span className="truncate">{clientName}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-foreground">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="truncate">{job?.service?.subService || job?.service?.category || 'Service detail'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-foreground">
+                        <Hash className="h-4 w-4 text-muted-foreground" />
+                        <span>{job?.bookingNumber || job?.id}</span>
+                    </div>
+                </div>
+                {instructions && (
+                    <div className="p-4 rounded-2xl bg-muted/30 border border-border">
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Job Details</p>
+                        <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">{instructions}</p>
+                    </div>
+                )}
                 <button
                     onClick={onBid}
                     disabled={isBidding}
                     className="luxury-button w-full py-4 text-[10px] flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                     {isBidding ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-                    {isBidding ? 'Establishing Bid...' : 'Submit Deployment Bid'}
+                    {isBidding ? 'Submitting Bid...' : 'Place Bid'}
                 </button>
             </div>
         </div>

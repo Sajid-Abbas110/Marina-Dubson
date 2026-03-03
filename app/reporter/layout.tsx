@@ -15,7 +15,7 @@ import {
 const navigation = [
     { name: 'Dashboard', href: '/reporter/portal?tab=overview', icon: LayoutDashboard },
     { name: 'Assignments', href: '/reporter/portal?tab=jobs', icon: Briefcase },
-    { name: 'Marketplace', href: '/reporter/portal?tab=market', icon: Globe },
+    { name: 'Jobs', href: '/reporter/portal?tab=market', icon: Globe },
     { name: 'Calendar', href: '/reporter/portal?tab=calendar', icon: Calendar },
     { name: 'Financials', href: '/reporter/portal?tab=financials', icon: DollarSign },
     { name: 'Messages', href: '/reporter/portal?tab=messages', icon: MessageSquare },

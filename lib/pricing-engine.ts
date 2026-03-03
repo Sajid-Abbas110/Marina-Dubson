@@ -64,6 +64,54 @@ export class PricingEngine {
             expedite3Day: service.expedite3Day || 1.25,
         }
 
+        // Apply client-type defaults (e.g., PRIVATE vs AGENCY) via env overrides without schema changes
+        // Example env keys: AGENCY_PAGE_RATE=3.75, PRIVATE_MINIMUM_FEE=450
+        const clientType = contact?.clientType?.toUpperCase()
+        if (clientType && ['PRIVATE', 'AGENCY', 'LAW_FIRM', 'CORPORATE'].includes(clientType)) {
+            const prefixes = {
+                pageRate: `${clientType}_PAGE_RATE`,
+                appearanceFeeRemote: `${clientType}_APPEARANCE_FEE_REMOTE`,
+                appearanceFeeInPerson: `${clientType}_APPEARANCE_FEE_IN_PERSON`,
+                minimumFee: `${clientType}_MINIMUM_FEE`,
+                realtimeFee: `${clientType}_REALTIME_FEE`,
+                roughRate: `${clientType}_ROUGH_RATE`,
+                videographerRate: `${clientType}_VIDEOGRAPHER_RATE`,
+                interpreterRate: `${clientType}_INTERPRETER_RATE`,
+                expediteImmediate: `${clientType}_EXPEDITE_IMMEDIATE`,
+                expedite1Day: `${clientType}_EXPEDITE_1_DAY`,
+                expedite2Day: `${clientType}_EXPEDITE_2_DAY`,
+                expedite3Day: `${clientType}_EXPEDITE_3_DAY`,
+            } as const
+
+            const maybeOverride = (key: keyof typeof prefixes, current: number) => {
+                const raw = process.env[prefixes[key]]
+                const parsed = raw ? Number(raw) : NaN
+                return Number.isFinite(parsed) ? parsed : current
+            }
+
+            rates.pageRate = maybeOverride('pageRate', rates.pageRate)
+            rates.appearanceFeeRemote = maybeOverride('appearanceFeeRemote', rates.appearanceFeeRemote)
+            rates.appearanceFeeInPerson = maybeOverride('appearanceFeeInPerson', rates.appearanceFeeInPerson)
+            rates.minimumFee = maybeOverride('minimumFee', rates.minimumFee)
+            rates.realtimeFee = maybeOverride('realtimeFee', rates.realtimeFee)
+            rates.roughRate = maybeOverride('roughRate', rates.roughRate)
+            rates.videographerRate = maybeOverride('videographerRate', rates.videographerRate)
+            rates.interpreterRate = maybeOverride('interpreterRate', rates.interpreterRate)
+            rates.expediteImmediate = maybeOverride('expediteImmediate', rates.expediteImmediate)
+            rates.expedite1Day = maybeOverride('expedite1Day', rates.expedite1Day)
+            rates.expedite2Day = maybeOverride('expedite2Day', rates.expedite2Day)
+            rates.expedite3Day = maybeOverride('expedite3Day', rates.expedite3Day)
+        }
+
+        // Apply a modest uplift for agencies when no explicit custom pricing is set
+        if (clientType === 'AGENCY' && (!contact?.customPricingEnabled || contact.customPricing.length === 0)) {
+            rates.pageRate *= 1.1
+            rates.appearanceFeeRemote *= 1.08
+            rates.appearanceFeeInPerson *= 1.08
+            rates.minimumFee *= 1.08
+            rates.realtimeFee *= 1.1
+        }
+
         // Apply custom pricing if enabled and available
         if (contact?.customPricingEnabled && contact.customPricing.length > 0) {
             const custom = contact.customPricing[0]

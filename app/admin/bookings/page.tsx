@@ -31,6 +31,7 @@ export default function BookingManagementPage() {
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
     const [isPending, setIsPending] = useState(false)
+    const router = useRouter()
     const searchParams = useSearchParams()
 
     const handleFilterChange = (newFilter: string) => {
@@ -615,7 +616,14 @@ export default function BookingManagementPage() {
                                     </div>
                                 </div>
 
-                                <button className="flex h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-card border border-border items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/20 transition-all flex-shrink-0">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        router.push(`/admin/bookings/${b.id}`)
+                                    }}
+                                    className="flex h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-card border border-border items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/20 transition-all flex-shrink-0"
+                                    aria-label="Open booking details"
+                                >
                                     <ArrowRight className="h-4 sm:h-6 w-4 sm:w-6" />
                                 </button>
                             </div>

@@ -24,7 +24,8 @@ export default function RegisterPage() {
         lastName: '',
         email: '',
         password: '',
-        role: 'CLIENT' // Default
+        role: 'CLIENT', // Default
+        clientType: 'PRIVATE' as 'PRIVATE' | 'AGENCY'
     })
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
@@ -62,7 +63,7 @@ export default function RegisterPage() {
             {/* Background Aesthetics */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600"></div>
 
-            <div className="w-full max-w-xl relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <div className="w-full max-w-5xl relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
                 <div className="text-center mb-8">
                     <Link href="/" className="inline-block px-6 py-2 rounded-2xl bg-white shadow-sm border border-gray-100 mb-6 font-black text-2xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                         MARIA DUBSON
@@ -86,14 +87,22 @@ export default function RegisterPage() {
                     ) : step === 1 ? (
                         <div className="space-y-8 animate-in fade-in transition-all duration-500">
                             <h2 className="text-sm font-black text-gray-400 uppercase tracking-[0.3em] text-center">Select Your Account Purpose</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
                                 <RoleCard
                                     icon={<Globe className="h-10 w-10" />}
-                                    title="Legal Client"
+                                    title="Private Client"
                                     desc="Book reporters and manage case transcripts."
-                                    active={formData.role === 'CLIENT'}
-                                    onClick={() => setFormData({ ...formData, role: 'CLIENT' })}
+                                    active={formData.role === 'CLIENT' && formData.clientType === 'PRIVATE'}
+                                    onClick={() => setFormData({ ...formData, role: 'CLIENT', clientType: 'PRIVATE' })}
                                     color="blue"
+                                />
+                                <RoleCard
+                                    icon={<ShieldCheck className="h-10 w-10" />}
+                                    title="Agency"
+                                    desc="Manage coverage requests on behalf of your clients."
+                                    active={formData.role === 'CLIENT' && formData.clientType === 'AGENCY'}
+                                    onClick={() => setFormData({ ...formData, role: 'CLIENT', clientType: 'AGENCY' })}
+                                    color="teal"
                                 />
                                 <RoleCard
                                     icon={<Briefcase className="h-10 w-10" />}
@@ -206,11 +215,13 @@ export default function RegisterPage() {
 function RoleCard({ icon, title, desc, active, onClick, color }: any) {
     const themes: any = {
         blue: active ? 'border-blue-500 bg-blue-50/50 shadow-lg shadow-blue-500/10' : 'border-gray-100 hover:border-blue-200',
-        purple: active ? 'border-purple-500 bg-purple-50/50 shadow-lg shadow-purple-500/10' : 'border-gray-100 hover:border-purple-200'
+        purple: active ? 'border-purple-500 bg-purple-50/50 shadow-lg shadow-purple-500/10' : 'border-gray-100 hover:border-purple-200',
+        teal: active ? 'border-emerald-500 bg-emerald-50/50 shadow-lg shadow-emerald-500/10' : 'border-gray-100 hover:border-emerald-200',
     }
     const iconThemes: any = {
         blue: active ? 'text-blue-600' : 'text-gray-400',
-        purple: active ? 'text-purple-600' : 'text-gray-400'
+        purple: active ? 'text-purple-600' : 'text-gray-400',
+        teal: active ? 'text-emerald-600' : 'text-gray-400',
     }
 
     return (

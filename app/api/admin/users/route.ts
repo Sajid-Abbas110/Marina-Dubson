@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url)
         const role = searchParams.get('role')
         const search = searchParams.get('search')
+        const clientType = searchParams.get('clientType')
 
         const where: any = {}
         if (role && role !== 'All Roles') {
@@ -18,6 +19,9 @@ export async function GET(request: NextRequest) {
                 { email: { contains: search, mode: 'insensitive' } },
             ]
         }
+        if (clientType) {
+            where.contact = { clientType }
+        }
 
         const users = await prisma.user.findMany({
             where,
@@ -29,6 +33,12 @@ export async function GET(request: NextRequest) {
                 lastName: true,
                 role: true,
                 createdAt: true,
+                contact: {
+                    select: {
+                        clientType: true,
+                        companyName: true
+                    }
+                }
             },
         })
 

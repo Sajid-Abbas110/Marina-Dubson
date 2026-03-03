@@ -31,12 +31,21 @@ export default function NewBookingPage() {
     const [formData, setFormData] = useState({
         serviceId: '',
         proceedingType: 'DEPOSITION',
+        customProceeding: '',
         bookingDate: '',
         bookingTime: '',
         appearanceType: 'REMOTE' as 'REMOTE' | 'IN_PERSON',
         state: 'NY',
         jurisdiction: '',
         specialRequirements: '',
+        addOns: {
+            roughDraft: false,
+            expedite: '',
+            videographer: false,
+            realtimeSync: false,
+            interpreter: false,
+            other: '',
+        }
     })
 
     useEffect(() => {
@@ -78,13 +87,33 @@ export default function NewBookingPage() {
         setLoading(true)
         try {
             const token = localStorage.getItem('token') // Assuming token is stored in localStorage
+            const selectedProceeding = formData.proceedingType === 'OTHER'
+                ? (formData.customProceeding.trim() || 'OTHER')
+                : formData.proceedingType
+
+            const { customProceeding, addOns, specialRequirements, ...rest } = formData
+
+            // Fold add-on selections into special requirements to avoid backend schema changes
+            const addOnNotes: string[] = []
+            if (addOns.roughDraft) addOnNotes.push('Rough Draft requested')
+            if (addOns.expedite) addOnNotes.push(`Expedite delivery: ${addOns.expedite} business day(s)`)
+            if (addOns.videographer) addOnNotes.push('Videographer requested')
+            if (addOns.realtimeSync) addOnNotes.push('Realtime sync requested')
+            if (addOns.interpreter) addOnNotes.push('Interpreter requested')
+            if (addOns.other?.trim()) addOnNotes.push(`Other add-ons: ${addOns.other.trim()}`)
+
+            const mergedSpecialRequirements = [
+                specialRequirements?.trim(),
+                addOnNotes.length ? `Add-Ons: ${addOnNotes.join('; ')}` : ''
+            ].filter(Boolean).join('\n')
+
             const res = await fetch('/api/bookings', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({ ...rest, proceedingType: selectedProceeding, specialRequirements: mergedSpecialRequirements }),
             })
 
             if (res.ok) {
@@ -152,19 +181,28 @@ export default function NewBookingPage() {
                                         onChange={(e) => setFormData({ ...formData, jurisdiction: e.target.value })}
                                     />
                                 </div>
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Type of Proceeding</label>
-                                    <select
-                                        className="luxury-input"
-                                        value={formData.proceedingType}
-                                        onChange={(e) => setFormData({ ...formData, proceedingType: e.target.value })}
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Type of Proceeding</label>
+                                <select
+                                    className="luxury-input"
+                                    value={formData.proceedingType}
+                                    onChange={(e) => setFormData({ ...formData, proceedingType: e.target.value })}
                                     >
                                         <option value="DEPOSITION">Deposition</option>
-                                        <option value="HEARING">Hearing</option>
-                                        <option value="TRIAL">Trial</option>
-                                        <option value="ARBITRATION">Arbitration</option>
-                                        <option value="MEDIATION">Mediation</option>
+                                        <option value="ARBITRATION_MEDIATION">Arbitration / Mediation</option>
+                                        <option value="EXAMINATION_UNDER_OATH">Examination Under Oath</option>
+                                        <option value="OTHER">Other (specify)</option>
                                     </select>
+                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight ml-2 mt-2">If none apply, select Deposition to get started.</p>
+                                    {formData.proceedingType === 'OTHER' && (
+                                        <input
+                                            className="luxury-input mt-4"
+                                            placeholder="Enter proceeding type"
+                                            value={formData.customProceeding}
+                                            onChange={(e) => setFormData({ ...formData, customProceeding: e.target.value })}
+                                            required
+                                        />
+                                    )}
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-end">
@@ -256,11 +294,66 @@ export default function NewBookingPage() {
                                 </div>
                             </div>
 
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Add-On Services</label>
+                                    <span className="text-[9px] font-bold text-primary uppercase tracking-widest">Optional</span>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {[
+                                        { key: 'roughDraft', label: 'Rough Draft' },
+                                        { key: 'videographer', label: 'Videographer' },
+                                        { key: 'realtimeSync', label: 'Realtime Sync' },
+                                        { key: 'interpreter', label: 'Interpreter' },
+                                    ].map(item => (
+                                        <label key={item.key} className="flex items-center gap-3 p-4 border border-border rounded-2xl cursor-pointer hover:border-primary/40 transition-colors">
+                                            <input
+                                                type="checkbox"
+                                                className="h-4 w-4 accent-primary"
+                                                checked={(formData.addOns as any)[item.key]}
+                                                onChange={(e) => setFormData({
+                                                    ...formData,
+                                                    addOns: { ...formData.addOns, [item.key]: e.target.checked }
+                                                })}
+                                            />
+                                            <span className="text-sm font-bold text-muted-foreground">{item.label}</span>
+                                        </label>
+                                    ))}
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Expedite Delivery</label>
+                                        <select
+                                            className="luxury-input"
+                                            value={formData.addOns.expedite}
+                                            onChange={(e) => setFormData({ ...formData, addOns: { ...formData.addOns, expedite: e.target.value } })}
+                                        >
+                                            <option value="">Select delivery target</option>
+                                            <option value="IMMEDIATE">Immediate</option>
+                                            {[1,2,3,4,5,6,7,8,9,10].map(day => (
+                                                <option key={day} value={String(day)}>{day} business day{day === 1 ? '' : 's'}{day === 10 ? ' (regular)' : ''}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Other Add-On Services</label>
+                                        <input
+                                            className="luxury-input"
+                                            placeholder="Enter other add-on requests"
+                                            value={formData.addOns.other}
+                                            onChange={(e) => setFormData({ ...formData, addOns: { ...formData.addOns, other: e.target.value } })}
+                                        />
+                                        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight ml-2">Leave blank if none. Admin will review.</p>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Tactical Requirements</label>
                                 <textarea
                                     className="luxury-input min-h-[120px] py-6 resize-none"
-                                    placeholder="LIST EXPEDITE REQUESTS, VIDEOGRAPHER NEEDS, OR INTERPRETER LANGUAGES..."
+                                    placeholder="Provide case nuances, terminology preferences, or appearance logistics..."
                                     value={formData.specialRequirements}
                                     onChange={(e) => setFormData({ ...formData, specialRequirements: e.target.value })}
                                 />

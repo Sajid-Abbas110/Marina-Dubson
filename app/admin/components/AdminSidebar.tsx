@@ -45,7 +45,8 @@ const navigation = [
         section: 'Personnel Registry',
         items: [
             { name: 'Team', href: '/admin/team', icon: Users, roles: ['ADMIN', 'MANAGER', 'REPORTER'] },
-            { name: 'Clients', href: '/admin/clients', icon: UserCheck, roles: ['ADMIN'] },
+            { name: 'Private Clients', href: '/admin/clients/private', icon: UserCheck, roles: ['ADMIN'] },
+            { name: 'Agency Clients', href: '/admin/clients/agency', icon: UserCheck, roles: ['ADMIN'] },
             { name: 'Reporters', href: '/admin/reporters', icon: UserCog, roles: ['ADMIN'] },
             { name: 'Messages', href: '/admin/messages', icon: MessageSquare, roles: ['ADMIN', 'MANAGER', 'STAFF', 'REPORTER'] },
         ]

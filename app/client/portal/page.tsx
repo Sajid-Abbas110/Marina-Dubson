@@ -120,18 +120,24 @@ export default function ClientPortal() {
             setBookings(userBookings)
             setServices(Array.isArray(servicesData.services) ? servicesData.services : [])
             setDocuments(Array.isArray(docsData.documents) ? docsData.documents : [])
-            setInvoices(Array.isArray(invoicesData.invoices) ? invoicesData.invoices : [])
+            // Restrict invoices to this client/contact
+            const rawInvoices = Array.isArray(invoicesData.invoices) ? invoicesData.invoices : []
+            const contactId = userData.user?.contactId
+            const scopedInvoices = rawInvoices.filter((inv: any) =>
+                contactId ? inv.contactId === contactId : inv.contact?.email === userData.user?.email
+            )
+            setInvoices(scopedInvoices)
             setMessages(Array.isArray(messagesData.messages) ? messagesData.messages : [])
 
             // Calculate stats
             const active = userBookings.filter((b: any) => ['SUBMITTED', 'ACCEPTED', 'CONFIRMED'].includes(b.bookingStatus)).length
-            const unpaid = (invoicesData.invoices || [])
+            const unpaidTotal = scopedInvoices
                 .filter((i: any) => i.status !== 'PAID')
-                .length
+                .reduce((sum: number, i: any) => sum + (Number(i.total) || 0), 0)
 
             setStats({
                 active,
-                unpaid,
+                unpaid: unpaidTotal,
                 files: docsData.documents?.length || 0
             })
         } catch (error) {
