@@ -193,7 +193,7 @@ export default function NewBookingPage() {
                                         <option value="EXAMINATION_UNDER_OATH">Examination Under Oath</option>
                                         <option value="OTHER">Other (specify)</option>
                                     </select>
-                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight ml-2 mt-2 italic">Select the nature of this assignment. If unlisted, select "Other" to specify details.</p>
+                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight ml-2 mt-2 italic">Select the nature of this assignment. If unlisted, select &quot;Other&quot; to specify details.</p>
                                     {formData.proceedingType === 'OTHER' && (
                                         <div className="space-y-2 mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
                                             <label className="text-[9px] font-black text-primary uppercase tracking-widest ml-2">Specify Proceeding Type</label>
