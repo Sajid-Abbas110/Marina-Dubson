@@ -53,6 +53,30 @@ export async function POST(request: NextRequest) {
             }
         })
 
+        // Create a separate chat thread (initial message) between Admin and that reporter
+        try {
+            const reporter = await prisma.user.findUnique({
+                where: { id: payload.userId }
+            })
+            const admin = await prisma.user.findFirst({
+                where: { role: 'ADMIN' },
+                orderBy: { createdAt: 'asc' }
+            })
+
+            if (admin && reporter) {
+                await prisma.message.create({
+                    data: {
+                        senderId: reporter.id,
+                        recipientId: admin.id,
+                        content: `System Alert: Reporter ${reporter.firstName} ${reporter.lastName} has claimed Job #${job.bookingNumber} (${job.proceedingType}). Please review and assign.`
+                    }
+                })
+            }
+        } catch (msgErr) {
+            console.error('Failed to create auto-message for claim:', msgErr)
+            // Non-critical failure, don't block the bid creation
+        }
+
         return NextResponse.json(bid, { status: 201 })
     } catch (error) {
         if (error instanceof z.ZodError) {

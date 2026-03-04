@@ -354,10 +354,11 @@ export default function ClientPortal() {
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-4">
-                    <Link href="/client/bookings/new" className="luxury-button flex items-center gap-3 px-8 py-4 rounded-2xl bg-foreground text-background font-black text-[10px] uppercase tracking-[0.3em]">
+                <div className="flex flex-col items-center gap-2">
+                    <Link href="/client/bookings/new" className="luxury-button flex items-center gap-3 px-8 py-4 rounded-2xl bg-foreground text-background font-black text-[10px] uppercase tracking-[0.3em] w-full text-center">
                         <Plus className="h-4 w-4" /> <span>New Assignment</span>
                     </Link>
+                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest animate-pulse">Click here to get started</p>
                 </div>
             </div>
 

@@ -181,27 +181,30 @@ export default function NewBookingPage() {
                                         onChange={(e) => setFormData({ ...formData, jurisdiction: e.target.value })}
                                     />
                                 </div>
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Type of Proceeding</label>
-                                <select
-                                    className="luxury-input"
-                                    value={formData.proceedingType}
-                                    onChange={(e) => setFormData({ ...formData, proceedingType: e.target.value })}
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Type of Proceeding</label>
+                                    <select
+                                        className="luxury-input"
+                                        value={formData.proceedingType}
+                                        onChange={(e) => setFormData({ ...formData, proceedingType: e.target.value })}
                                     >
                                         <option value="DEPOSITION">Deposition</option>
                                         <option value="ARBITRATION_MEDIATION">Arbitration / Mediation</option>
                                         <option value="EXAMINATION_UNDER_OATH">Examination Under Oath</option>
                                         <option value="OTHER">Other (specify)</option>
                                     </select>
-                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight ml-2 mt-2">If none apply, select Deposition to get started.</p>
+                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight ml-2 mt-2 italic">Select the nature of this assignment. If unlisted, select "Other" to specify details.</p>
                                     {formData.proceedingType === 'OTHER' && (
-                                        <input
-                                            className="luxury-input mt-4"
-                                            placeholder="Enter proceeding type"
-                                            value={formData.customProceeding}
-                                            onChange={(e) => setFormData({ ...formData, customProceeding: e.target.value })}
-                                            required
-                                        />
+                                        <div className="space-y-2 mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                            <label className="text-[9px] font-black text-primary uppercase tracking-widest ml-2">Specify Proceeding Type</label>
+                                            <input
+                                                className="luxury-input"
+                                                placeholder="e.g. Arbitration Hearing, EUO, etc."
+                                                value={formData.customProceeding}
+                                                onChange={(e) => setFormData({ ...formData, customProceeding: e.target.value })}
+                                                required
+                                            />
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -331,7 +334,7 @@ export default function NewBookingPage() {
                                         >
                                             <option value="">Select delivery target</option>
                                             <option value="IMMEDIATE">Immediate</option>
-                                            {[1,2,3,4,5,6,7,8,9,10].map(day => (
+                                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(day => (
                                                 <option key={day} value={String(day)}>{day} business day{day === 1 ? '' : 's'}{day === 10 ? ' (regular)' : ''}</option>
                                             ))}
                                         </select>

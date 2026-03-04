@@ -353,7 +353,7 @@ export default function AdministrativeJobNexus() {
                 <JobStat label="Total Jobs" value={bookings.length.toString()} trend="Global Pool" icon={<Briefcase />} color="text-blue-600" />
                 <JobStat label="Unassigned" value={bookings.filter(b => !b.reporterId).length.toString()} trend="Pending Reporter" icon={<Users />} color="text-slate-400" />
                 <JobStat label="Active Jobs" value={bookings.filter(b => b.bookingStatus === 'ACCEPTED' || b.bookingStatus === 'CONFIRMED').length.toString()} trend="Daily Ops" icon={<Clock />} color="text-blue-600" />
-                <JobStat label="Market Live" value={bookings.filter(b => b.isMarketplace).length.toString()} trend="Public Bidding" icon={<TrendingUp />} color="text-emerald-600" />
+                <JobStat label="Market Live" value={bookings.filter(b => b.isMarketplace).length.toString()} trend="Pending Claims" icon={<TrendingUp />} color="text-emerald-600" />
             </div>
 
             {/* Board */}
@@ -380,7 +380,7 @@ export default function AdministrativeJobNexus() {
                                             onToggleMarket={() => toggleMarketplace(job)}
                                             onDelete={() => handleDeleteJob(job.id)}
                                             onEdit={() => openEditModal(job)}
-                                            onViewBids={() => viewBids(job.id)}
+                                            onViewClaims={() => viewBids(job.id)}
                                         />
                                     ))
                                 )}
@@ -396,12 +396,12 @@ export default function AdministrativeJobNexus() {
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowBidsModal(false)} />
                     <div className="relative w-full max-w-2xl bg-white rounded-3xl p-8 shadow-2xl flex flex-col max-h-[80vh]">
                         <div className="flex items-center justify-between mb-8">
-                            <h2 className="text-2xl font-bold text-slate-900 uppercase">Marketplace Bids</h2>
+                            <h2 className="text-2xl font-bold text-slate-900 uppercase">Marketplace Claims</h2>
                             <button onClick={() => setShowBidsModal(false)} className="p-2 rounded-xl bg-slate-100 text-slate-500"><X /></button>
                         </div>
                         <div className="flex-1 overflow-y-auto space-y-4 pr-2">
                             {selectedBookingBids.length === 0 ? (
-                                <div className="py-12 text-center text-slate-400 font-bold uppercase text-xs tracking-widest">No bids received yet</div>
+                                <div className="py-12 text-center text-slate-400 font-bold uppercase text-xs tracking-widest">No claims received yet</div>
                             ) : (
                                 selectedBookingBids.map((bid) => (
                                     <div key={bid.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
@@ -411,7 +411,7 @@ export default function AdministrativeJobNexus() {
                                             </div>
                                             <div>
                                                 <p className="font-bold text-slate-900">{bid.reporter.firstName} {bid.reporter.lastName}</p>
-                                                <p className="text-xs font-bold text-blue-600 uppercase tracking-widest">${bid.amount}</p>
+                                                <p className="text-xs font-bold text-blue-600 uppercase tracking-widest italic">Reporter Interested</p>
                                             </div>
                                         </div>
                                         {bid.status === 'PENDING' ? (
@@ -439,14 +439,14 @@ export default function AdministrativeJobNexus() {
     )
 }
 
-function JobOperationalCard({ job, onDelete, onEdit, onToggleMarket, isPublishing, onViewBids }: any) {
+function JobOperationalCard({ job, onDelete, onEdit, onToggleMarket, isPublishing, onViewClaims }: any) {
     return (
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
             <div className="flex justify-between items-start mb-4">
                 <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{job.bookingNumber}</span>
                 <div className="flex gap-2">
                     {job.isMarketplace && (
-                        <button onClick={onViewBids} className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="View Bids">
+                        <button onClick={onViewClaims} className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="View Claims">
                             <TrendingUp className="h-4 w-4" />
                         </button>
                     )}

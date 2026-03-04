@@ -1,7 +1,7 @@
 'use client'
 
-import { AgencyClientsPage } from '../page'
+import { AgencyClientsView } from '../ClientsPageView'
 
 export default function AdminAgencyClientsPage() {
-    return <AgencyClientsPage />
+    return <AgencyClientsView />
 }

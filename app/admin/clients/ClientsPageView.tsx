@@ -1,0 +1,255 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
+import { format } from 'date-fns'
+import {
+    Search,
+    ArrowRight,
+    User,
+    Building2,
+    Calendar,
+    Mail,
+    Phone,
+    MoreHorizontal,
+    ShieldCheck,
+    Briefcase,
+} from 'lucide-react'
+
+type LockedType = 'PRIVATE' | 'AGENCY' | null
+
+export function ClientsPageView({ lockedType = null }: { lockedType?: LockedType }) {
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const [users, setUsers] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+    const [searchQuery, setSearchQuery] = useState('')
+    const [clientType, setClientType] = useState<'ALL' | 'PRIVATE' | 'AGENCY'>(lockedType || 'ALL')
+
+    const fetchUsers = useCallback(async () => {
+        try {
+            const token = localStorage.getItem('token')
+            if (!token) {
+                router.push('/login')
+                return
+            }
+
+            const typeParam = clientType === 'ALL' ? '' : `&clientType=${clientType}`
+            const res = await fetch(`/api/admin/users?role=CLIENT${typeParam}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+
+            if (!res.ok) throw new Error('Failed to fetch users')
+
+            const data = await res.json()
+            const clients = (data.users || []).filter((u: any) => u.role === 'CLIENT')
+            setUsers(clients)
+        } catch (error) {
+            console.error('Failed to fetch clients:', error)
+        } finally {
+            setLoading(false)
+        }
+    }, [router, clientType])
+
+    useEffect(() => {
+        if (lockedType) {
+            setClientType(lockedType)
+            return
+        }
+        const type = searchParams.get('type')
+        if (type === 'PRIVATE' || type === 'AGENCY') {
+            setClientType(type)
+        }
+    }, [searchParams, lockedType])
+
+    useEffect(() => {
+        fetchUsers()
+    }, [fetchUsers, clientType])
+
+    const filteredUsers = users.filter(u => {
+        if (!searchQuery) return true
+        const query = searchQuery.toLowerCase()
+        return (
+            u.firstName?.toLowerCase().includes(query) ||
+            u.lastName?.toLowerCase().includes(query) ||
+            u.email?.toLowerCase().includes(query) ||
+            u.contact?.companyName?.toLowerCase().includes(query) ||
+            u.contact?.clientType?.toLowerCase().includes(query)
+        )
+    })
+
+    const heading = lockedType === 'PRIVATE' ? 'Private Clients' : lockedType === 'AGENCY' ? 'Agency Clients' : 'Legal Clients'
+    const subheading = lockedType === 'PRIVATE'
+        ? 'Managing private clients registered in the system.'
+        : lockedType === 'AGENCY'
+            ? 'Managing agency partners and coverage coordinators registered in the system.'
+            : 'Managing law firms, private clients, and agencies registered in the system.'
+
+    return (
+        <div className="max-w-[1600px] w-[95%] mx-auto p-6 lg:p-12 space-y-12 pb-24 animate-in fade-in duration-700 font-poppins">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                <div className="space-y-2">
+                    <h1 className="text-2xl font-black text-foreground tracking-tight uppercase leading-none">
+                        {heading.split(' ')[0]} <span className="brand-gradient italic">{heading.split(' ').slice(1).join(' ') || 'Clients'}</span>
+                    </h1>
+                    <p className="text-muted-foreground font-black uppercase text-[9px] tracking-[0.3em]">
+                        {subheading}
+                        {!loading && <span className="text-primary ml-2 italic"> • {users.length} Registered Clusters</span>}
+                    </p>
+                </div>
+                <div className="flex items-center gap-3">
+                    {!lockedType && (
+                        <div className="bg-card border border-border rounded-xl p-1 flex gap-1">
+                            {(['ALL', 'PRIVATE', 'AGENCY'] as const).map(type => {
+                                const active = clientType === type
+                                return (
+                                    <button
+                                        key={type}
+                                        onClick={() => setClientType(type)}
+                                        className={`px-3 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${active ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                                    >
+                                        {type === 'ALL' ? 'All' : type.charAt(0) + type.slice(1).toLowerCase()}
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    )}
+                    <div className="relative group w-full sm:w-auto font-poppins">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                        <input
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full sm:min-w-[300px] pl-10 pr-4 py-3 rounded-xl bg-card border border-border text-[9px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/10 text-foreground transition-all"
+                            placeholder="Search by name or email..."
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {loading ? (
+                <div className="flex flex-col items-center justify-center py-40 space-y-8">
+                    <div className="relative">
+                        <div className="h-32 w-32 rounded-full border-t-4 border-b-4 border-primary animate-spin shadow-[0_0_20px_rgba(var(--primary),0.3)]"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <ShieldCheck className="h-10 w-10 text-primary animate-pulse" />
+                        </div>
+                    </div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground animate-pulse">Loading clients...</p>
+                </div>
+            ) : filteredUsers.length === 0 ? (
+                <div className="text-center py-32 glass-panel rounded-[3rem] border-2 border-dashed border-border bg-card shadow-2xl">
+                    <Building2 className="h-20 w-20 text-muted/20 mx-auto mb-8" />
+                    <p className="font-black text-sm uppercase tracking-[0.3em] text-foreground mb-3">No clients found</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Expand your search parameters or register new client clusters.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                    {filteredUsers.map(user => (
+                        <ClientCard key={user.id} user={user} />
+                    ))}
+                </div>
+            )}
+        </div>
+    )
+}
+
+export function PrivateClientsView() {
+    return <ClientsPageView lockedType="PRIVATE" />
+}
+
+export function AgencyClientsView() {
+    return <ClientsPageView lockedType="AGENCY" />
+}
+
+function ClientCard({ user }: { user: any }) {
+    const router = useRouter()
+    const name = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email
+    const initials = (user.firstName?.[0] || user.email[0]).toUpperCase() + (user.lastName?.[0] || '').toUpperCase()
+    const joined = format(new Date(user.createdAt), 'MMM yyyy').toUpperCase()
+    const avatarSrc = user.avatar || '/favicon.svg'
+    const type = user.contact?.clientType || 'CLIENT'
+    const company = user.contact?.companyName || user.company || '—'
+
+    return (
+        <div className="glass-panel group p-6 rounded-[2rem] hover:shadow-2xl transition-all relative overflow-hidden border border-border bg-card shadow-lg hover:translate-y-[-2px] duration-500">
+            <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:scale-110 transition-transform duration-1000">
+                <Building2 className="h-24 w-24 text-primary" />
+            </div>
+
+            <div className="flex items-start justify-between relative z-10 mb-4">
+                <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-primary-foreground font-black text-sm shadow-lg transition-all group-hover:rotate-6 duration-500 overflow-hidden border border-primary/20">
+                        {user.avatar ? (
+                            <img
+                                src={avatarSrc}
+                                alt={name}
+                                className="h-full w-full object-cover"
+                                onError={(e) => {
+                                    (e.currentTarget as HTMLImageElement).src = '/favicon.svg'
+                                }}
+                            />
+                        ) : (
+                            initials
+                        )}
+                    </div>
+                    <div className="space-y-1">
+                        <h3 className="text-base font-black text-foreground uppercase tracking-tight line-clamp-1 group-hover:text-primary transition-colors">{name}</h3>
+                        <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded bg-primary/10 text-[8px] font-black text-primary uppercase tracking-widest border border-primary/20">{type === 'PRIVATE' ? 'Private' : type === 'AGENCY' ? 'Agency' : 'Client'}</span>
+                            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest truncate max-w-[120px]">{company}</span>
+                        </div>
+                    </div>
+                </div>
+                <button className="h-8 w-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-all">
+                    <MoreHorizontal className="h-3.5 w-3.5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 relative z-10">
+                <div className="flex items-center gap-2.5 text-muted-foreground bg-muted/30 p-2 rounded-lg border border-border group-hover:border-primary/10 transition-all">
+                    <div className="h-5 w-5 rounded bg-card border border-border flex items-center justify-center text-primary shadow-sm">
+                        <Mail className="h-2.5 w-2.5" />
+                    </div>
+                    <span className="text-[8px] font-black uppercase tracking-widest truncate">{user.email}</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-muted-foreground bg-muted/30 p-2 rounded-lg border border-border group-hover:border-primary/10 transition-all">
+                    <div className="h-5 w-5 rounded bg-card border border-border flex items-center justify-center text-primary shadow-sm">
+                        <Calendar className="h-2.5 w-2.5" />
+                    </div>
+                    <span className="text-[8px] font-black uppercase tracking-widest">Since {joined}</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-muted-foreground bg-muted/30 p-2 rounded-lg border border-border group-hover:border-primary/10 transition-all">
+                    <div className="h-5 w-5 rounded bg-card border border-border flex items-center justify-center text-primary shadow-sm">
+                        <Phone className="h-2.5 w-2.5" />
+                    </div>
+                    <span className="text-[8px] font-black uppercase tracking-widest">{user.phone || '(No phone on file)'}</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-muted-foreground bg-muted/30 p-2 rounded-lg border border-border group-hover:border-primary/10 transition-all">
+                    <div className="h-5 w-5 rounded bg-card border border-border flex items-center justify-center text-primary shadow-sm">
+                        <User className="h-2.5 w-2.5" />
+                    </div>
+                    <span className="text-[8px] font-black uppercase tracking-widest">Role: {user.role}</span>
+                </div>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-border flex items-center justify-between relative z-10">
+                <div className="flex -space-x-1.5">
+                    {[1, 2, 3].map(i => (
+                        <div key={i} className="h-6 w-6 rounded-full border border-card bg-muted flex items-center justify-center shadow-sm">
+                            <Briefcase className="h-2.5 w-2.5 text-muted-foreground/30" />
+                        </div>
+                    ))}
+                    <div className="h-6 w-6 rounded-full border border-card bg-primary/10 flex items-center justify-center text-[7px] font-black text-primary shadow-sm">+4</div>
+                </div>
+                <button
+                    onClick={() => router.push(`/admin/clients/${user.id}`)}
+                    className="luxury-button flex items-center gap-1.5 px-4 py-2 shadow-lg"
+                >
+                    <span className="text-[7px] font-black uppercase tracking-widest">Profile</span>
+                    <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                </button>
+            </div>
+        </div>
+    )
+}

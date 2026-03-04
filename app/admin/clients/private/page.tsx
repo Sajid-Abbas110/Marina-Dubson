@@ -1,7 +1,7 @@
 'use client'
 
-import { PrivateClientsPage } from '../page'
+import { PrivateClientsView } from '../ClientsPageView'
 
 export default function AdminPrivateClientsPage() {
-    return <PrivateClientsPage />
+    return <PrivateClientsView />
 }
