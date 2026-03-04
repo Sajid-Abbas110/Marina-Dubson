@@ -100,7 +100,7 @@ export default function AdminHeader({ onToggleSidebar }: { onToggleSidebar: () =
                 setUnreadMsgCount(msgs.filter((m: any) => !m.isRead && m.recipientId === (user?.id || user?.userId)).length)
             }
         } catch { /* silent */ }
-    }, [user?.id])
+    }, [user?.id, user?.userId])
 
     useEffect(() => {
         fetchData()

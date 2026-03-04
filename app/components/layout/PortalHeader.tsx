@@ -74,7 +74,7 @@ export default function PortalHeader({ userRole }: { userRole?: string }) {
                 setUnreadMsgCount(msgs.filter((m: any) => !m.isRead && m.recipientId === (user?.id || user?.userId)).length)
             }
         } catch { /* silent */ }
-    }, [userRole, user?.id])
+    }, [userRole, user?.id, user?.userId])
 
     useEffect(() => {
         fetchData()
