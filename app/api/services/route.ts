@@ -5,8 +5,8 @@ import { z } from 'zod'
 
 const serviceSchema = z.object({
     serviceName: z.string().min(1),
-    category: z.enum(['COURT_REPORTING', 'LEGAL_PROCEEDINGS']),
-    subService: z.enum(['DEPOSITIONS', 'HEARINGS', 'ARBITRATIONS', 'EUO', 'OTHER']),
+    category: z.enum(['COURT_REPORTING', 'ACCESSIBILITY']),
+    subService: z.enum(['DEPOSITION', 'ARBITRATION_MEDIATION', 'EXAMINATION_UNDER_OATH', 'CART', 'OTHER']),
     defaultMinimumFee: z.number().default(400),
     pageRate: z.number(),
     appearanceFeeRemote: z.number(),

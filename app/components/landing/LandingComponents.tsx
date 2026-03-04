@@ -201,14 +201,14 @@ export function LandingServices() {
     }, [])
 
     // Curate to two primary services only
-    const cartDescription = 'CART Services (Communication Access Real-Time Translation) deliver live, verbatim captions in real time so Deaf and hard-of-hearing participants can fully participate in proceedings.'
+    const cartDescription = 'CART (Communication Access Real-Time Translation) provides live verbatim captions—ideal for Deaf and hard-of-hearing participants or anyone needing immediate text access to the record.'
     const curatedServices = [
         {
             name: 'Premium Court Reporting',
             fallback: {
                 serviceName: 'Premium Court Reporting',
                 category: 'COURT_REPORTING',
-                description: 'Certified stenographic reporting for depositions, arbitrations, mediations, and examinations under oath.'
+                description: 'Proceeding coverage: Deposition, Arbitration / Mediation, Examination Under Oath with realtime + exhibit support.'
             }
         },
         {

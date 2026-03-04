@@ -6,19 +6,16 @@ import { PublicTopBar, PublicHeader, PublicFooter } from '../components/landing/
 export default function ServicesPage() {
     const services = [
         {
-            title: 'Court Reporting',
-            desc: 'Certified court reporters for depositions, hearings, and examinations with precise record capture.',
-            img: 'https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=800&q=80'
+            title: 'Premium Court Reporting',
+            desc: 'Dedicated realtime stenographers for complex matters with exhibits and remote coordination. Proceeding coverage: Deposition, Arbitration / Mediation, Examination Under Oath.',
+            bullets: ['Deposition', 'Arbitration / Mediation', 'Examination Under Oath'],
+            img: 'https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=960&q=80'
         },
         {
-            title: 'Certified Transcript Delivery',
-            desc: 'Fast, secure transcript production with reliable formatting standards and delivery timelines.',
-            img: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=600&q=80'
-        },
-        {
-            title: 'Remote Depositions',
-            desc: 'Hybrid and remote deposition support with stable communication protocols and exhibit coordination.',
-            img: 'https://images.unsplash.com/photo-1577412647305-991150c7d163?auto=format&fit=crop&w=600&q=80'
+            title: 'CART Services (Communication Access Real-Time Translation)',
+            desc: 'Live verbatim captions delivered in real time so Deaf and hard-of-hearing participants can fully participate in any proceeding.',
+            bullets: ['Remote or on-site captioning', 'Secure viewer links', 'Speaker-identification ready'],
+            img: 'https://images.unsplash.com/photo-1580894894513-541e068a3e2c?auto=format&fit=crop&w=960&q=80'
         }
     ]
 
@@ -40,11 +37,10 @@ export default function ServicesPage() {
                 </div>
             </section>
 
-            <main className="max-w-7xl mx-auto px-4 md:px-8 py-24">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 gap-y-16">
-                    {[1, 2, 3].map((row) => (
-                        services.map((s, i) => (
-                            <div key={`${row}-${i}`} className="space-y-6">
+            <main className="max-w-7xl mx-auto px-4 md:px-8 py-24 space-y-20">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    {services.map((s) => (
+                        <div key={s.title} className="space-y-6">
                                 <div className="aspect-[4/5] rounded-[2rem] overflow-hidden shadow-xl border border-gray-100 group">
                                     <img
                                         src={s.img}
@@ -52,16 +48,28 @@ export default function ServicesPage() {
                                         alt={s.title}
                                     />
                                 </div>
-                                <div className="text-center space-y-2">
+                                <div className="space-y-3 text-center">
                                     <h4 className="text-xl font-black text-[#1a1a1a] uppercase italic">{s.title}</h4>
-                                    <p className="text-gray-500 text-xs italic font-medium px-4">
-                                        {s.desc}
-                                    </p>
+                                    <p className="text-gray-600 text-sm font-medium px-6 leading-relaxed">{s.desc}</p>
+                                    {s.bullets && (
+                                        <ul className="text-gray-500 text-xs font-semibold uppercase tracking-widest space-y-1">
+                                            {s.bullets.map((b) => <li key={b}>• {b}</li>)}
+                                        </ul>
+                                    )}
                                 </div>
-                            </div>
-                        ))
+                        </div>
                     ))}
                 </div>
+
+                <section className="max-w-5xl mx-auto bg-gray-50 rounded-[2rem] p-10 border border-gray-100">
+                    <h2 className="text-2xl font-black uppercase tracking-tight mb-6">FAQ</h2>
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-black uppercase tracking-tight">What is CART?</h3>
+                        <p className="text-gray-600 leading-relaxed">
+                            CART (Communication Access Real-Time Translation) delivers live, verbatim captions produced by a trained captioner. It lets Deaf and hard-of-hearing participants follow every spoken word during depositions, hearings, mediations, or meetings—on-site or remotely.
+                        </p>
+                    </div>
+                </section>
             </main>
 
             <PublicFooter />

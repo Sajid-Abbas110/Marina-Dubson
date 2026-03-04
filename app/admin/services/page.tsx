@@ -23,7 +23,7 @@ export default function ServicesAdmin() {
     const [formData, setFormData] = useState({
         serviceName: '',
         category: 'COURT_REPORTING',
-        subService: 'DEPOSITIONS',
+        subService: 'DEPOSITION',
         defaultMinimumFee: 400,
         pageRate: 0,
         appearanceFeeRemote: 0,
@@ -103,7 +103,7 @@ export default function ServicesAdmin() {
         setFormData({
             serviceName: '',
             category: 'COURT_REPORTING',
-            subService: 'DEPOSITIONS',
+        subService: 'DEPOSITION',
             defaultMinimumFee: 400,
             pageRate: 0,
             appearanceFeeRemote: 0,
@@ -241,7 +241,7 @@ export default function ServicesAdmin() {
                                     onChange={e => setFormData({ ...formData, category: e.target.value })}
                                 >
                                     <option value="COURT_REPORTING">COURT REPORTING</option>
-                                    <option value="LEGAL_PROCEEDINGS">LEGAL PROCEEDINGS</option>
+                                    <option value="ACCESSIBILITY">ACCESSIBILITY</option>
                                 </select>
                             </div>
 

@@ -23,7 +23,6 @@ import {
     LayoutDashboard,
     Upload,
     Send,
-    Layout,
     Cpu,
     Copy,
     CheckCircle2,
@@ -36,8 +35,6 @@ import {
     AlertTriangle,
     DollarSign
 } from 'lucide-react'
-import ClientCalendar from '../components/ClientCalendar'
-import BookingRequest from '../components/BookingRequest'
 import ProfileUpload from '@/app/components/ui/ProfileUpload'
 import LoadingOverlay from '@/app/components/ui/LoadingOverlay'
 import CommMatrix from '@/app/components/messages/CommMatrix'
@@ -521,37 +518,6 @@ export default function ClientPortal() {
                     </div>
                 )
                 }
-
-                {
-                    activeTab === 'scheduler' && (
-                        <div className="glass-panel rounded-[1.5rem] sm:rounded-[2.5rem] px-3 py-6 sm:p-10">
-                            {user.role === 'CLIENT' ? (
-                                <BookingRequest
-                                    services={services}
-                                    onBookingCreated={() => {
-                                        const token = localStorage.getItem('token')
-                                        fetch('/api/bookings', { headers: { 'Authorization': `Bearer ${token}` } })
-                                            .then(res => res.json())
-                                            .then(data => setBookings(Array.isArray(data.bookings) ? data.bookings : []))
-                                    }}
-                                />
-                            ) : (
-                                <ClientCalendar
-                                    bookings={bookings}
-                                    services={services}
-                                    onBookingCreated={() => {
-                                        const token = localStorage.getItem('token')
-                                        fetch('/api/bookings', { headers: { 'Authorization': `Bearer ${token}` } })
-                                            .then(res => res.json())
-                                            .then(data => setBookings(Array.isArray(data.bookings) ? data.bookings : []))
-                                    }}
-                                />
-                            )}
-                        </div>
-                    )
-                }
-
-
                 {
                     activeTab === 'transcripts' && (
                         <div className="glass-panel rounded-[2.5rem] p-5 md:p-10">
