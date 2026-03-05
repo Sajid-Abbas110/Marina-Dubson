@@ -17,9 +17,6 @@ jobs:
  - name: Checkout
  uses: actions/checkout@v4
 
- - name: Set lowercase image name
- run: echo "IMAGE=ghcr.io/sajid-abbas110/marina-dubson:latest" >> $GITHUB_ENV
-
  - name: Set up Docker Buildx
  uses: docker/setup-buildx-action@v3
 
@@ -30,9 +27,9 @@ jobs:
  username: ${{ github.actor }}
  password: ${{ secrets.GITHUB_TOKEN }}
 
- - name: Build & push
+ - name: Build and push
  uses: docker/build-push-action@v6
  with:
  context: .
  push: true
- tags: ${{ env.IMAGE }}
+ tags: ghcr.io/sajid-abbas110/marina-dubson:latest
