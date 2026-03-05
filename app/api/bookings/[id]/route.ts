@@ -1,88 +1,71 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { extractTokenFromHeader, verifyToken } from '@/lib/auth'
+import { z } from 'zod'
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-    try {
-        const token = extractTokenFromHeader(request.headers.get('Authorization'))
-        const payload = token ? verifyToken(token) : null
+const updateSchema = z.object({
+    specialRequirements: z.string().optional(),
+})
 
-        if (!payload) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-        }
-
-        const booking = await prisma.booking.findUnique({
-            where: { id: params.id },
-            include: {
-                contact: true,
-                service: true,
-                reporter: true,
-                user: true,
-                invoice: true,
-            }
-        })
-
-        if (!booking) {
-            return NextResponse.json({ error: 'Not found' }, { status: 404 })
-        }
-
-        return NextResponse.json(booking)
-    } catch (error) {
-        console.error('Booking detail error:', error)
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-    }
-}
-
-// Update a booking (status, marketplace toggle, reporter assignment, open state)
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
     try {
         const token = extractTokenFromHeader(request.headers.get('Authorization'))
         const payload = token ? verifyToken(token) : null
-
         if (!payload) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const body = await request.json()
-        const { bookingStatus, isMarketplace, reporterId, isOpened } = body || {}
-
-        // Build update payload only for allowed fields
-        const updateData: any = {}
-        if (bookingStatus) updateData.bookingStatus = bookingStatus
-        if (typeof isMarketplace === 'boolean') updateData.isMarketplace = isMarketplace
-        if (typeof isOpened === 'boolean') updateData.isOpened = isOpened
-        if (reporterId) updateData.reporterId = reporterId
-
-        if (Object.keys(updateData).length === 0) {
-            return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
+        const bookingId = params?.id
+        if (!bookingId) {
+            return NextResponse.json({ error: 'Booking ID missing' }, { status: 400 })
         }
 
-        // Authorization: Admin-like roles can edit any; others only their own bookings
-        const adminRoles = ['ADMIN', 'MANAGER', 'STAFF', 'SUPER_ADMIN']
-        const isAdmin = adminRoles.includes((payload.role || '').toUpperCase())
+        const body = await request.json()
+        const data = updateSchema.parse(body)
 
-        if (!isAdmin) {
-            const owns = await prisma.booking.findFirst({
-                where: {
-                    id: params.id,
-                    OR: [{ userId: payload.userId }, { reporterId: payload.userId }]
-                },
-                select: { id: true }
-            })
-
-            if (!owns) {
-                return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+        const booking = await prisma.booking.findUnique({
+            where: { id: bookingId },
+            include: {
+                invoice: true,
+                contact: true,
             }
+        })
+
+        if (!booking) {
+            return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
+        }
+
+        // Lock edits once an invoice is finalized/paid
+        const invoiceStatus = booking.invoice?.status?.toUpperCase()
+        if (invoiceStatus === 'PAID' || invoiceStatus === 'FINALIZED') {
+            return NextResponse.json({ error: 'Add-ons can no longer be edited after final invoice.' }, { status: 403 })
+        }
+
+        // Authorization: client contact owner or admin/staff
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'STAFF', 'MANAGER'].includes((payload.role || '').toUpperCase())
+        const isOwner = booking.contact?.email === payload.email
+        if (!isAdmin && !isOwner) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
         }
 
         const updated = await prisma.booking.update({
-            where: { id: params.id },
-            data: updateData,
+            where: { id: bookingId },
+            data: {
+                specialRequirements: data.specialRequirements ?? booking.specialRequirements,
+            },
+            include: {
+                reporter: true,
+                service: true,
+                invoice: true,
+            }
         })
 
         return NextResponse.json(updated)
     } catch (error) {
-        console.error('Booking update error:', error)
+        if (error instanceof z.ZodError) {
+            return NextResponse.json({ error: 'Invalid input', details: error.errors }, { status: 400 })
+        }
+        console.error('Update booking error:', error)
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }

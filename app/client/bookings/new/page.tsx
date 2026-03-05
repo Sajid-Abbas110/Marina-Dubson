@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -26,6 +26,8 @@ import {
 export default function NewBookingPage() {
     const router = useRouter()
     const [step, setStep] = useState(1)
+    const dateInputRef = useRef<HTMLInputElement>(null)
+    const timeInputRef = useRef<HTMLInputElement>(null)
     const [services, setServices] = useState<any[]>([])
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
@@ -66,6 +68,11 @@ export default function NewBookingPage() {
                 if (res.ok) {
                     const data = await res.json()
                     const servicesList = Array.isArray(data.services) ? data.services : []
+                        // Limit to allowed client-facing services
+                        .filter((s: any) =>
+                            ['Premium Court Reporting', 'CART Services (Communication Access Real-Time Translation)']
+                                .includes(s.serviceName)
+                        )
                     setServices(servicesList)
                     if (servicesList.length > 0) {
                         setFormData(prev => ({ ...prev, serviceId: servicesList[0].id }))
@@ -191,21 +198,8 @@ export default function NewBookingPage() {
                                         <option value="DEPOSITION">Deposition</option>
                                         <option value="ARBITRATION_MEDIATION">Arbitration / Mediation</option>
                                         <option value="EXAMINATION_UNDER_OATH">Examination Under Oath</option>
-                                        <option value="OTHER">Other (specify)</option>
                                     </select>
-                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight ml-2 mt-2 italic">Select the nature of this assignment. If unlisted, select &quot;Other&quot; to specify details.</p>
-                                    {formData.proceedingType === 'OTHER' && (
-                                        <div className="space-y-2 mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                            <label className="text-[9px] font-black text-primary uppercase tracking-widest ml-2">Specify Proceeding Type</label>
-                                            <input
-                                                className="luxury-input"
-                                                placeholder="e.g. Arbitration Hearing, EUO, etc."
-                                                value={formData.customProceeding}
-                                                onChange={(e) => setFormData({ ...formData, customProceeding: e.target.value })}
-                                                required
-                                            />
-                                        </div>
-                                    )}
+                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight ml-2 mt-2 italic">Select the nature of this assignment. These are the available premium options.</p>
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-end">
@@ -221,6 +215,9 @@ export default function NewBookingPage() {
                                             <option key={s.id} value={s.id}>{s.serviceName}</option>
                                         ))}
                                     </select>
+                                    <p className="text-[9px] font-bold text-primary uppercase tracking-widest ml-2 mt-2">
+                                        CART = Communication Access Real-Time Translation
+                                    </p>
                                 </div>
 
                                 <div className="flex justify-end">
@@ -241,9 +238,16 @@ export default function NewBookingPage() {
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Calendar Date</label>
                                     <div className="relative group">
-                                        <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-blue-600 transition-colors pointer-events-none" />
+                                        <button
+                                            type="button"
+                                            onMouseDown={(e) => { e.preventDefault(); dateInputRef.current?.showPicker?.(); dateInputRef.current?.focus(); }}
+                                            className="absolute left-3 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+                                        >
+                                            <Calendar className="h-5 w-5" />
+                                        </button>
                                         <input
                                             type="date"
+                                            ref={dateInputRef}
                                             className="luxury-input pl-14"
                                             value={formData.bookingDate}
                                             onChange={(e) => setFormData({ ...formData, bookingDate: e.target.value })}
@@ -253,9 +257,16 @@ export default function NewBookingPage() {
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Start Sequence</label>
                                     <div className="relative group">
-                                        <Clock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-blue-600 transition-colors pointer-events-none" />
+                                        <button
+                                            type="button"
+                                            onMouseDown={(e) => { e.preventDefault(); timeInputRef.current?.showPicker?.(); timeInputRef.current?.focus(); }}
+                                            className="absolute left-3 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+                                        >
+                                            <Clock className="h-5 w-5" />
+                                        </button>
                                         <input
                                             type="time"
+                                            ref={timeInputRef}
                                             className="luxury-input pl-14"
                                             value={formData.bookingTime}
                                             onChange={(e) => setFormData({ ...formData, bookingTime: e.target.value })}
@@ -284,7 +295,7 @@ export default function NewBookingPage() {
                                         active={formData.appearanceType === 'REMOTE'}
                                         onClick={() => setFormData({ ...formData, appearanceType: 'REMOTE' })}
                                         icon={<Globe className="h-6 w-6" />}
-                                        title="Remote Digital"
+                                        title="Remote"
                                         desc="Zoom / WebEx integration with global technical support."
                                     />
                                     <VenueCard

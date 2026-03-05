@@ -79,9 +79,15 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Auth failed' }, { status: 401 })
         }
 
-        // If a clientType was explicitly selected, enforce match
-        if (clientType && user.contact?.clientType && user.contact.clientType !== clientType) {
-            return NextResponse.json({ error: `This account is registered as ${user.contact.clientType}. Please select the matching client type to log in.` }, { status: 403 })
+        // If a clientType was explicitly selected, enforce match strictly (including missing mapping)
+        if (clientType) {
+            const registeredType = user.contact?.clientType
+            if (!registeredType || registeredType !== clientType) {
+                return NextResponse.json(
+                    { error: `This account is registered as ${registeredType || 'an unmapped type'}. Please select the matching client tab to log in.` },
+                    { status: 403 }
+                )
+            }
         }
 
         const token = generateToken({

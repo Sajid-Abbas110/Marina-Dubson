@@ -37,7 +37,6 @@ import {
 } from 'lucide-react'
 import ProfileUpload from '@/app/components/ui/ProfileUpload'
 import LoadingOverlay from '@/app/components/ui/LoadingOverlay'
-import CommMatrix from '@/app/components/messages/CommMatrix'
 
 export default function ClientPortal() {
     const router = useRouter()
@@ -73,6 +72,11 @@ export default function ClientPortal() {
     const [cancelBookingId, setCancelBookingId] = useState<string | null>(null)
     const [cancelInfo, setCancelInfo] = useState<{ canCancel: boolean; deadline: string; hoursRemaining?: number; message: string } | null>(null)
     const [cancelLoading, setCancelLoading] = useState(false)
+
+    // Edit add-ons modal state
+    const [editBookingId, setEditBookingId] = useState<string | null>(null)
+    const [editNotes, setEditNotes] = useState('')
+    const [editSaving, setEditSaving] = useState(false)
 
     const [scrolled, setScrolled] = useState(false)
 
@@ -243,6 +247,39 @@ export default function ClientPortal() {
             setCancelInfo(null)
         } finally {
             setCancelLoading(false)
+        }
+    }
+
+    const openEditAddOns = (booking: any) => {
+        setEditBookingId(booking.id)
+        setEditNotes(booking.specialRequirements || '')
+    }
+
+    const saveEditAddOns = async () => {
+        if (!editBookingId) return
+        setEditSaving(true)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch(`/api/bookings/${editBookingId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ specialRequirements: editNotes })
+            })
+            if (res.ok) {
+                const updated = await res.json()
+                setBookings(bookings.map(b => b.id === updated.id ? { ...b, ...updated } : b))
+                setEditBookingId(null)
+            } else {
+                const err = await res.json()
+                alert(err.error || 'Unable to update add-ons')
+            }
+        } catch (e) {
+            console.error('Save add-ons failed', e)
+        } finally {
+            setEditSaving(false)
         }
     }
 
@@ -491,6 +528,15 @@ export default function ClientPortal() {
                                                         <DollarSign className="h-3 w-3" /> View Invoice
                                                     </Link>
                                                 )}
+                                                {['SUBMITTED', 'ACCEPTED', 'CONFIRMED'].includes(booking.bookingStatus) && (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); openEditAddOns(booking) }}
+                                                        className="px-3 py-1.5 rounded-xl bg-primary/10 text-primary text-[9px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all border border-primary/20 hover:border-primary flex items-center gap-1.5"
+                                                        title="Edit add-ons / special requirements"
+                                                    >
+                                                        <Plus className="h-3 w-3" /> Add-Ons
+                                                    </button>
+                                                )}
                                                 {/* Cancel button — available on all active statuses */}
                                                 {['SUBMITTED', 'ACCEPTED', 'CONFIRMED', 'PENDING', 'MAYBE'].includes(booking.bookingStatus) && (
                                                     <button
@@ -646,7 +692,54 @@ export default function ClientPortal() {
                 {
                     activeTab === 'messages' && (
                         <div className="glass-panel rounded-[2.5rem] h-[700px] flex flex-col overflow-hidden bg-card border border-border">
-                            <CommMatrix />
+                            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-sm font-black uppercase tracking-widest text-foreground">Messages</h3>
+                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Direct channel to admin support</p>
+                                </div>
+                                <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-black uppercase tracking-widest">Live</span>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto p-6 space-y-3 custom-scrollbar">
+                                {messages.length === 0 && (
+                                    <div className="h-full flex flex-col items-center justify-center text-center gap-3 text-muted-foreground">
+                                        <MessageSquare className="h-10 w-10 text-muted-foreground/40" />
+                                        <p className="text-sm font-semibold text-foreground">No messages yet</p>
+                                        <p className="text-xs text-muted-foreground">Start a thread and we will respond here.</p>
+                                    </div>
+                                )}
+                                {messages.slice().reverse().map(msg => (
+                                    <div key={msg.id} className={`flex ${msg.senderId === user?.id ? 'justify-end' : 'justify-start'}`}>
+                                        <div className={`max-w-[70%] px-4 py-3 rounded-2xl border text-sm leading-relaxed ${msg.senderId === user?.id
+                                            ? 'bg-primary text-primary-foreground border-primary/30 rounded-br-sm'
+                                            : 'bg-muted text-foreground border-border rounded-bl-sm'
+                                            }`}>
+                                            <p className="text-[10px] uppercase font-black tracking-widest mb-1 text-muted-foreground">{msg.sender?.firstName || 'Support'}</p>
+                                            <p>{msg.content}</p>
+                                            <p className="text-[9px] text-muted-foreground mt-1">{format(new Date(msg.createdAt), 'MMM d, hh:mm a')}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                                <div ref={msgScrollRef} />
+                            </div>
+
+                            <div className="p-5 border-t border-border bg-muted/30">
+                                <div className="flex items-center gap-3">
+                                    <textarea
+                                        className="flex-1 resize-none min-h-[80px] p-4 rounded-2xl bg-card border border-border text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                                        placeholder="Type your message..."
+                                        value={messageContent}
+                                        onChange={(e) => setMessageContent(e.target.value)}
+                                    />
+                                    <button
+                                        onClick={handleSendMessage}
+                                        disabled={sendingMessage}
+                                        className="h-[80px] w-20 rounded-2xl bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-60"
+                                    >
+                                        {sendingMessage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )
                 }
@@ -655,7 +748,10 @@ export default function ClientPortal() {
                     activeTab === 'services' && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-700">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {services.filter(s => s.active).map(service => (
+                                {services
+                                    .filter(s => s.active)
+                                    .filter(s => ['Premium Court Reporting', 'CART Services (Communication Access Real-Time Translation)'].includes(s.serviceName))
+                                    .map(service => (
                                     <div key={service.id} className="glass-panel rounded-[2.5rem] p-8 border border-border hover:shadow-2xl hover:border-primary/10 transition-all group">
                                         <div className="flex justify-between items-start mb-6">
                                             <div className="h-12 w-12 rounded-xl bg-primary/5 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -973,6 +1069,52 @@ export default function ClientPortal() {
                                 <button onClick={() => setShowCancelModal(false)} className="w-full py-3 rounded-2xl bg-muted border border-border text-muted-foreground font-black text-[10px] uppercase tracking-widest">Close</button>
                             </>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* ── Edit Add-Ons Modal ── */}
+            {editBookingId && (
+                <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setEditBookingId(null)} />
+                    <div className="relative w-full max-w-lg bg-card rounded-[2rem] p-7 shadow-3xl border border-border overflow-hidden">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 className="text-sm font-black text-foreground uppercase tracking-tight">Add-On Requests</h3>
+                                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Editable until final invoice is issued</p>
+                            </div>
+                            <button
+                                onClick={() => setEditBookingId(null)}
+                                className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-all"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        <label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-2 block">Add-On Notes / Special Requirements</label>
+                        <textarea
+                            value={editNotes}
+                            onChange={(e) => setEditNotes(e.target.value)}
+                            className="w-full min-h-[140px] p-4 rounded-2xl bg-muted/50 border border-border text-sm font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
+                            placeholder="Example: Add videographer; add realtime sync; expedite 1-day delivery..."
+                        />
+                        <p className="text-[10px] text-muted-foreground mt-2">We will apply these add-ons to this booking. Changes are allowed until the invoice is finalized.</p>
+
+                        <div className="flex gap-3 justify-end mt-5">
+                            <button
+                                onClick={() => setEditBookingId(null)}
+                                className="px-4 py-2.5 rounded-xl bg-muted border border-border text-muted-foreground text-[10px] font-black uppercase tracking-widest"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={saveEditAddOns}
+                                disabled={editSaving}
+                                className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-lg disabled:opacity-60"
+                            >
+                                {editSaving ? 'Saving...' : 'Save'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
