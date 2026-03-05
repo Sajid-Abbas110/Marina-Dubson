@@ -96,7 +96,7 @@ export default function NewBookingPage() {
             }
         }
         fetchServices()
-    }, [])
+    }, [requestedServiceId])
 
     const selectedService = services.find(s => s.id === formData.serviceId)
     const isCourtReporting = selectedService?.serviceName === 'Premium Court Reporting'

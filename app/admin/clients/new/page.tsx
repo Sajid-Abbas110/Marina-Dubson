@@ -105,7 +105,17 @@ export default function AdminNewClientPage() {
     )
 }
 
-function Field({ label, icon, value, onChange, type = 'text', required = false, placeholder }: any) {
+interface FieldProps {
+    label: string
+    icon: React.ReactNode
+    value: string
+    onChange: (value: string) => void
+    type?: string
+    required?: boolean
+    placeholder?: string
+}
+
+function Field({ label, icon, value, onChange, type = 'text', required = false, placeholder }: FieldProps) {
     return (
         <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{label}</label>
