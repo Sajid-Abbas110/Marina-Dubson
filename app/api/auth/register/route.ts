@@ -50,18 +50,22 @@ export async function POST(request: NextRequest) {
                     where: { email: data.email }
                 })
 
-                if (!existingContact) {
-                    await prisma.contact.create({
-                        data: {
-                            firstName: data.firstName,
-                            lastName: data.lastName,
-                            email: data.email,
-                            companyName: data.company,
-                            clientType: data.clientType || 'PRIVATE',
-                            status: 'Active'
-                        }
-                    })
-                }
+                const contact = existingContact || await prisma.contact.create({
+                    data: {
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        email: data.email,
+                        companyName: data.company,
+                        clientType: data.clientType || 'PRIVATE',
+                        status: 'Active'
+                    }
+                })
+
+                // Link user -> contact for clientType filtering
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: { contactId: contact.id }
+                })
             } catch (contactError) {
                 console.error('Failed to create contact for new user:', contactError)
                 // We don't fail the registration if contact creation fails, just log it
@@ -81,6 +85,24 @@ export async function POST(request: NextRequest) {
         } catch (emailError) {
             console.error('Failed to send welcome email:', emailError)
             // Log but don't fail registration
+        }
+
+        // Notify admin of new signup
+        try {
+            const adminEmail = process.env.ADMIN_EMAIL || 'admin@marinadubson.com'
+            await sendEmail({
+                to: adminEmail,
+                subject: `New ${data.clientType || 'PRIVATE'} client signup: ${user.firstName} ${user.lastName}`,
+                html: `<p>A new client has registered.</p>
+                       <ul>
+                         <li>Name: ${user.firstName} ${user.lastName}</li>
+                         <li>Email: ${user.email}</li>
+                         <li>Client Type: ${data.clientType || 'PRIVATE'}</li>
+                         <li>Company: ${data.company || '—'}</li>
+                       </ul>`
+            })
+        } catch (notifyError) {
+            console.error('Admin notification failed:', notifyError)
         }
 
         return NextResponse.json({

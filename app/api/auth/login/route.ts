@@ -6,6 +6,7 @@ import { z } from 'zod'
 const loginSchema = z.object({
     email: z.string().email(),
     password: z.string().min(6),
+    clientType: z.enum(['PRIVATE', 'AGENCY']).optional(),
 })
 
 const ADMIN_EMAIL = 'admin@marinadubson.com'
@@ -14,7 +15,7 @@ const ADMIN_PASSWORD = 'SecurePassword123!'
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
-        const { email, password } = loginSchema.parse(body)
+        const { email, password, clientType } = loginSchema.parse(body)
 
         // ─── Admin Bootstrap ────────────────────────────────────────────────────
         // If logging in with the default admin credentials, ensure the admin user
@@ -60,7 +61,14 @@ export async function POST(request: NextRequest) {
         }
 
         // ─── Standard DB Authentication ─────────────────────────────────────────
-        const user = await prisma.user.findUnique({ where: { email } })
+        const user = await prisma.user.findUnique({
+            where: { email },
+            include: {
+                contact: {
+                    select: { clientType: true, companyName: true, email: true }
+                }
+            }
+        })
 
         if (!user) {
             return NextResponse.json({ error: 'Auth failed' }, { status: 401 })
@@ -71,12 +79,18 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Auth failed' }, { status: 401 })
         }
 
+        // If a clientType was explicitly selected, enforce match
+        if (clientType && user.contact?.clientType && user.contact.clientType !== clientType) {
+            return NextResponse.json({ error: `This account is registered as ${user.contact.clientType}. Please select the matching client type to log in.` }, { status: 403 })
+        }
+
         const token = generateToken({
             userId: user.id,
             id: user.id,
             email: user.email,
             role: user.role,
-            firstName: user.firstName
+            firstName: user.firstName,
+            clientType: user.contact?.clientType
         })
 
         return NextResponse.json({
@@ -88,6 +102,7 @@ export async function POST(request: NextRequest) {
                 lastName: user.lastName,
                 role: user.role,
                 avatar: user.avatar,
+                clientType: user.contact?.clientType
             },
         })
     } catch (error) {
