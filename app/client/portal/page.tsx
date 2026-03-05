@@ -359,7 +359,19 @@ export default function ClientPortal() {
         </div>
     )
 
-    if (!user) return null
+    if (!user) return (
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-6 text-center">
+            <div className="h-10 w-10 border-2 border-rose-300 border-t-rose-500 rounded-full animate-spin"></div>
+            <h2 className="text-xl font-black text-foreground">Session expired</h2>
+            <p className="text-sm text-muted-foreground">We couldn&apos;t load your profile. Please sign in again.</p>
+            <button
+                onClick={() => router.push('/login')}
+                className="luxury-button px-6 py-3"
+            >
+                Go to Login
+            </button>
+        </div>
+    )
 
 
 
@@ -752,7 +764,11 @@ export default function ClientPortal() {
                                     .filter(s => s.active)
                                     .filter(s => ['Premium Court Reporting', 'CART Services (Communication Access Real-Time Translation)'].includes(s.serviceName))
                                     .map(service => (
-                                    <div key={service.id} className="glass-panel rounded-[2.5rem] p-8 border border-border hover:shadow-2xl hover:border-primary/10 transition-all group">
+                                    <button
+                                        key={service.id}
+                                        onClick={() => router.push(`/client/bookings/new?serviceId=${service.id}`)}
+                                        className="text-left glass-panel rounded-[2.5rem] p-8 border border-border hover:shadow-2xl hover:border-primary/10 transition-all group w-full"
+                                    >
                                         <div className="flex justify-between items-start mb-6">
                                             <div className="h-12 w-12 rounded-xl bg-primary/5 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
                                                 <Cpu className="h-6 w-6" />
@@ -776,7 +792,7 @@ export default function ClientPortal() {
                                                 <p className="text-[10px] font-black text-foreground uppercase">Authorized</p>
                                             </div>
                                         </div>
-                                    </div>
+                                    </button>
                                 ))}
                             </div>
                         </div>

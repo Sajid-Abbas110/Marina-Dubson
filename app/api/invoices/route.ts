@@ -17,6 +17,7 @@ const invoiceSchema = z.object({
     hasInterpreter: z.boolean().optional(),
     hasExpert: z.boolean().optional(),
     notes: z.string().optional(),
+    sendNow: z.boolean().optional()
 })
 
 // GET all invoices
@@ -87,6 +88,19 @@ export async function POST(request: NextRequest) {
         const body = await request.json()
         const data = invoiceSchema.parse(body)
 
+        // Load booking to check client type (skip invoicing for agency)
+        const booking = await prisma.booking.findUnique({
+            where: { id: data.bookingId },
+            include: { contact: true }
+        })
+
+        if (booking?.contact?.clientType?.toUpperCase() === 'AGENCY') {
+            return NextResponse.json(
+                { message: 'Agency payment handled via direct deposit. No invoice generated.' },
+                { status: 200 }
+            )
+        }
+
         // Use the centralized IntegrationOrchestrator to ensure consistency
         // with pricing, Zoho Books sync, and Mailchimp updates.
         const result = await integrationOrchestrator.generateFinalInvoice(data.bookingId, {
@@ -101,7 +115,7 @@ export async function POST(request: NextRequest) {
             afterHoursCount: data.afterHoursCount,
             waitTimeCount: data.waitTimeCount,
             notes: data.notes
-        })
+        }, { sendNow: data.sendNow ?? false })
 
         // Build Stripe checkout session (Optional addition to standard flow)
         let stripePaymentUrl: string | null = null

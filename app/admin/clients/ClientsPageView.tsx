@@ -15,6 +15,7 @@ import {
     MoreHorizontal,
     ShieldCheck,
     Briefcase,
+    Plus
 } from 'lucide-react'
 
 type LockedType = 'PRIVATE' | 'AGENCY' | null
@@ -124,6 +125,13 @@ export function ClientsPageView({ lockedType = null }: { lockedType?: LockedType
                             placeholder="Search by name or email..."
                         />
                     </div>
+                    <Link
+                        href={`/admin/clients/new${lockedType ? `?type=${lockedType}` : ''}`}
+                        className="luxury-button flex items-center gap-2 px-4 py-3 shadow-lg"
+                    >
+                        <Plus className="h-4 w-4" />
+                        <span className="text-[8px] font-black uppercase tracking-widest">New Client</span>
+                    </Link>
                 </div>
             </div>
 

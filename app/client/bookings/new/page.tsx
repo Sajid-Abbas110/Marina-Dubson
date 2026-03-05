@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
     Calendar,
@@ -25,6 +25,8 @@ import {
 
 export default function NewBookingPage() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const requestedServiceId = searchParams.get('serviceId')
     const [step, setStep] = useState(1)
     const dateInputRef = useRef<HTMLInputElement>(null)
     const timeInputRef = useRef<HTMLInputElement>(null)
@@ -68,17 +70,18 @@ export default function NewBookingPage() {
                 if (res.ok) {
                     const data = await res.json()
                     const servicesList = Array.isArray(data.services) ? data.services : []
-                        // Limit to allowed client-facing services
                         .filter((s: any) =>
                             ['Premium Court Reporting', 'CART Services (Communication Access Real-Time Translation)']
                                 .includes(s.serviceName)
                         )
                     setServices(servicesList)
                     if (servicesList.length > 0) {
+                        const requested = servicesList.find((s: any) => s.id === requestedServiceId)
+                        const chosen = requested || servicesList[0]
                         setFormData(prev => ({
                             ...prev,
-                            serviceId: servicesList[0].id,
-                            proceedingType: servicesList[0].serviceName === 'Premium Court Reporting'
+                            serviceId: chosen.id,
+                            proceedingType: chosen.serviceName === 'Premium Court Reporting'
                                 ? 'DEPOSITION'
                                 : 'OTHER'
                         }))
@@ -208,6 +211,36 @@ export default function NewBookingPage() {
                                     />
                                 </div>
                                 <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Select Service</label>
+                                    <select
+                                        className="luxury-input appearance-none bg-no-repeat"
+                                        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\' /%3E%3C/svg%3E")', backgroundPosition: 'right 1.5rem center', backgroundSize: '1.25rem' }}
+                                        value={formData.serviceId}
+                                        onChange={(e) => {
+                                            const nextServiceId = e.target.value
+                                            const svc = services.find(s => s.id === nextServiceId)
+                                            const nextProceeding = svc?.serviceName === 'Premium Court Reporting'
+                                                ? 'DEPOSITION'
+                                                : 'OTHER'
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                serviceId: nextServiceId,
+                                                proceedingType: nextProceeding,
+                                                customProceeding: ''
+                                            }))
+                                        }}
+                                    >
+                                        {services.map(s => (
+                                            <option key={s.id} value={s.id}>{s.serviceName}</option>
+                                        ))}
+                                    </select>
+                                    <p className="text-[9px] font-bold text-primary uppercase tracking-widest ml-2 mt-2">
+                                        CART = Communication Access Real-Time Translation
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-end">
+                                <div className="space-y-3">
                                     <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Type of Proceeding</label>
                                     <select
                                         className="luxury-input"
@@ -244,36 +277,6 @@ export default function NewBookingPage() {
                                             CART bookings use a custom proceeding description—enter details under “Other.”
                                         </p>
                                     )}
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-end">
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Select Service</label>
-                                    <select
-                                        className="luxury-input appearance-none bg-no-repeat"
-                                        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\' /%3E%3C/svg%3E")', backgroundPosition: 'right 1.5rem center', backgroundSize: '1.25rem' }}
-                                        value={formData.serviceId}
-                                        onChange={(e) => {
-                                            const nextServiceId = e.target.value
-                                            const svc = services.find(s => s.id === nextServiceId)
-                                            const nextProceeding = svc?.serviceName === 'Premium Court Reporting'
-                                                ? 'DEPOSITION'
-                                                : 'OTHER'
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                serviceId: nextServiceId,
-                                                proceedingType: nextProceeding,
-                                                customProceeding: ''
-                                            }))
-                                        }}
-                                    >
-                                        {services.map(s => (
-                                            <option key={s.id} value={s.id}>{s.serviceName}</option>
-                                        ))}
-                                    </select>
-                                    <p className="text-[9px] font-bold text-primary uppercase tracking-widest ml-2 mt-2">
-                                        CART = Communication Access Real-Time Translation
-                                    </p>
                                 </div>
 
                                 <div className="flex justify-end">
@@ -451,7 +454,7 @@ export default function NewBookingPage() {
                             </div>
                             {loading && (
                                 <p className="text-[10px] font-black text-primary animate-pulse text-center mt-6 uppercase tracking-[0.3em]">
-                                    Establishing Secure Connection to Reporter...
+                                    Establishing Secure Connection to Admin...
                                 </p>
                             )}
                         </div>

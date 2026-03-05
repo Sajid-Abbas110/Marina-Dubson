@@ -25,12 +25,31 @@ export async function POST(
         const id = params.id
         const billingData = await request.json()
 
-        // Trigger the Final Automation Flow
-        const result = await integrationOrchestrator.generateFinalInvoice(id, billingData)
+        // Load booking to check client type
+        const booking = await prisma.booking.findUnique({
+            where: { id },
+            include: { contact: true }
+        })
+
+        if (!booking) {
+            return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
+        }
+
+        // If agency, skip invoice generation (direct deposit handling)
+        if (booking.contact?.clientType?.toUpperCase() === 'AGENCY') {
+            return NextResponse.json({
+                success: true,
+                message: 'Agency booking completed. Direct deposit handled outside invoicing.',
+                invoiceId: null
+            })
+        }
+
+        // Trigger the Final Automation Flow (draft by default)
+        const result = await integrationOrchestrator.generateFinalInvoice(id, billingData, { sendNow: false })
 
         return NextResponse.json({
             success: true,
-            message: 'Job completed and invoice generated successfully.',
+            message: 'Job completed and invoice draft generated successfully.',
             invoiceId: result.localInvoice.id
         })
     } catch (error: any) {

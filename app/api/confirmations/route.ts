@@ -81,31 +81,9 @@ export async function POST(request: NextRequest) {
             }
         })
 
-        // Step 2 of Integration Flow: Create Invoice in Zoho Books after Client Confirmation
-        // Requirement 7.1: Triggered only after: - Booking Accepted - Client Confirmation
-        if (updatedBooking) {
-            try {
-                await integrationOrchestrator.createInvoiceAfterApproval({
-                    bookingId: updatedBooking.id,
-                    contactEmail: (updatedBooking.contact as any).email,
-                    contactFirstName: updatedBooking.contact.firstName,
-                    contactLastName: updatedBooking.contact.lastName,
-                    contactPhone: updatedBooking.contact.phone || undefined,
-                    companyName: updatedBooking.contact.companyName || undefined,
-                    serviceName: updatedBooking.service.serviceName,
-                    serviceAmount: updatedBooking.service.defaultMinimumFee,
-                    bookingDate: format(updatedBooking.bookingDate, 'yyyy-MM-dd'),
-                    bookingNumber: updatedBooking.bookingNumber,
-                    proceedingType: updatedBooking.proceedingType,
-                })
-            } catch (invoiceError) {
-                console.error('Automated invoice trigger failed after confirmation:', invoiceError)
-            }
-        }
-
         return NextResponse.json({
             success: true,
-            message: 'Booking confirmed successfully and invoice generated',
+            message: 'Booking confirmed successfully',
             confirmation,
             booking: updatedBooking
         })

@@ -170,7 +170,7 @@ export class IntegrationOrchestrator {
         afterHoursCount?: number,
         waitTimeCount?: number,
         notes?: string
-    }): Promise<any> {
+    }, options: { sendNow?: boolean } = {}): Promise<any> {
         try {
             const booking = await prisma.booking.findUnique({
                 where: { id: bookingId },
@@ -205,7 +205,7 @@ export class IntegrationOrchestrator {
                 bookingId: booking.id,
                 invoiceDate: existingInvoice?.invoiceDate ?? new Date(),
                 dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-                status: 'SENT',
+                status: options.sendNow ? 'SENT' : 'DRAFT',
                 pages: billingData.pages,
                 originalCopies: billingData.originalCopies,
                 additionalCopies: billingData.additionalCopies,
@@ -242,110 +242,112 @@ export class IntegrationOrchestrator {
                 })
 
             let zohoInvoiceId = null
-            try {
-                const customerResult = await zohoBooks.upsertCustomer({
-                    contact_name: `${booking.contact.firstName} ${booking.contact.lastName}`,
-                    company_name: booking.contact.companyName ?? undefined,
-                    email: booking.contact.email
-                })
+            if (options.sendNow) {
+                try {
+                    const customerResult = await zohoBooks.upsertCustomer({
+                        contact_name: `${booking.contact.firstName} ${booking.contact.lastName}`,
+                        company_name: booking.contact.companyName ?? undefined,
+                        email: booking.contact.email
+                    })
 
-                const lineItems = [
-                    {
-                        name: 'Original Transcript',
-                        description: `(${billingData.pages} pgs x $${rates.pageRate})`,
-                        rate: rates.pageRate,
-                        quantity: billingData.pages * billingData.originalCopies
+                    const lineItems = [
+                        {
+                            name: 'Original Transcript',
+                            description: `(${billingData.pages} pgs x $${rates.pageRate})`,
+                            rate: rates.pageRate,
+                            quantity: billingData.pages * billingData.originalCopies
+                        }
+                    ]
+
+                    if (billingData.additionalCopies > 0) {
+                        lineItems.push({
+                            name: 'Transcript Copies',
+                            description: `(${billingData.pages} pgs x $${rates.copyRate})`,
+                            rate: rates.copyRate,
+                            quantity: billingData.pages * billingData.additionalCopies
+                        })
                     }
-                ]
 
-                if (billingData.additionalCopies > 0) {
                     lineItems.push({
-                        name: 'Transcript Copies',
-                        description: `(${billingData.pages} pgs x $${rates.copyRate})`,
-                        rate: rates.copyRate,
-                        quantity: billingData.pages * billingData.additionalCopies
+                        name: 'Appearance & Logistics',
+                        description: 'Flat Fee + Congestion Surcharge',
+                        rate: (booking.location?.toLowerCase().includes('remote') ? rates.appearanceFeeRemote : rates.appearanceFeeInPerson) + rates.congestionFee,
+                        quantity: 1
                     })
-                }
 
-                lineItems.push({
-                    name: 'Appearance & Logistics',
-                    description: 'Flat Fee + Congestion Surcharge',
-                    rate: (booking.location?.toLowerCase().includes('remote') ? rates.appearanceFeeRemote : rates.appearanceFeeInPerson) + rates.congestionFee,
-                    quantity: 1
-                })
+                    if (billingData.hasRough) {
+                        lineItems.push({
+                            name: 'Rough Draft Access',
+                            description: `(+$${rates.roughRate} per page)`,
+                            rate: rates.roughRate,
+                            quantity: billingData.pages
+                        })
+                    }
 
-                if (billingData.hasRough) {
-                    lineItems.push({
-                        name: 'Rough Draft Access',
-                        description: `(+$${rates.roughRate} per page)`,
-                        rate: rates.roughRate,
-                        quantity: billingData.pages
+                    if (billingData.hasVideographer) {
+                        lineItems.push({
+                            name: 'Videography Services',
+                            description: `(+$${rates.videographerRate} per page)`,
+                            rate: rates.videographerRate,
+                            quantity: billingData.pages
+                        })
+                    }
+
+                    if (billingData.hasInterpreter) {
+                        lineItems.push({
+                            name: 'Interpreter Services',
+                            description: `(+$${rates.interpreterRate} per page)`,
+                            rate: rates.interpreterRate,
+                            quantity: billingData.pages
+                        })
+                    }
+
+                    if (billingData.hasExpert) {
+                        lineItems.push({
+                            name: 'Expert Witness Services',
+                            description: `(+$${rates.expertRate} per page)`,
+                            rate: rates.expertRate,
+                            quantity: billingData.pages
+                        })
+                    }
+
+                    if (billingData.afterHoursCount && billingData.afterHoursCount > 0) {
+                        lineItems.push({
+                            name: 'After-hours Surcharge',
+                            description: `(${billingData.afterHoursCount} hours after 5:30 PM)`,
+                            rate: rates.afterHoursRate,
+                            quantity: billingData.afterHoursCount
+                        })
+                    }
+
+                    if (billingData.waitTimeCount && billingData.waitTimeCount > 0) {
+                        lineItems.push({
+                            name: 'Wait Time Surcharge',
+                            description: `(${billingData.waitTimeCount} hours wait time)`,
+                            rate: rates.waitTimeRate,
+                            quantity: billingData.waitTimeCount
+                        })
+                    }
+
+                    const zohoInvoice = await zohoBooks.createInvoice({
+                        customer_id: customerResult.id,
+                        date: new Date().toISOString().split('T')[0],
+                        due_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        line_items: lineItems,
+                        notes: `Invoice for ${booking.proceedingType}. JOB: ${booking.bookingNumber}`
                     })
+                    zohoInvoiceId = zohoInvoice.id
+                } catch (zohoError) {
+                    console.error('Zoho Books sync failed during completion:', zohoError)
                 }
-
-                if (billingData.hasVideographer) {
-                    lineItems.push({
-                        name: 'Videography Services',
-                        description: `(+$${rates.videographerRate} per page)`,
-                        rate: rates.videographerRate,
-                        quantity: billingData.pages
-                    })
-                }
-
-                if (billingData.hasInterpreter) {
-                    lineItems.push({
-                        name: 'Interpreter Services',
-                        description: `(+$${rates.interpreterRate} per page)`,
-                        rate: rates.interpreterRate,
-                        quantity: billingData.pages
-                    })
-                }
-
-                if (billingData.hasExpert) {
-                    lineItems.push({
-                        name: 'Expert Witness Services',
-                        description: `(+$${rates.expertRate} per page)`,
-                        rate: rates.expertRate,
-                        quantity: billingData.pages
-                    })
-                }
-
-                if (billingData.afterHoursCount && billingData.afterHoursCount > 0) {
-                    lineItems.push({
-                        name: 'After-hours Surcharge',
-                        description: `(${billingData.afterHoursCount} hours after 5:30 PM)`,
-                        rate: rates.afterHoursRate,
-                        quantity: billingData.afterHoursCount
-                    })
-                }
-
-                if (billingData.waitTimeCount && billingData.waitTimeCount > 0) {
-                    lineItems.push({
-                        name: 'Wait Time Surcharge',
-                        description: `(${billingData.waitTimeCount} hours wait time)`,
-                        rate: rates.waitTimeRate,
-                        quantity: billingData.waitTimeCount
-                    })
-                }
-
-                const zohoInvoice = await zohoBooks.createInvoice({
-                    customer_id: customerResult.id,
-                    date: new Date().toISOString().split('T')[0],
-                    due_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                    line_items: lineItems,
-                    notes: `Invoice for ${booking.proceedingType}. JOB: ${booking.bookingNumber}`
-                })
-                zohoInvoiceId = zohoInvoice.id
-            } catch (zohoError) {
-                console.error('Zoho Books sync failed during completion:', zohoError)
             }
 
             const currentMetadata = JSON.parse(booking.notes || '{}')
             await prisma.booking.update({
                 where: { id: bookingId },
                 data: {
-                    bookingStatus: 'COMPLETED',
-                    invoiceStatus: 'SENT',
+                    bookingStatus: options.sendNow ? 'COMPLETED' : booking.bookingStatus,
+                    invoiceStatus: options.sendNow ? 'SENT' : 'DRAFT',
                     notes: JSON.stringify({
                         ...currentMetadata,
                         zohoBooksInvoiceId: zohoInvoiceId
@@ -353,49 +355,51 @@ export class IntegrationOrchestrator {
                 }
             })
 
-            try {
-                if (zohoInvoiceId) {
-                    try {
-                        await zohoBooks.sendInvoiceEmail(zohoInvoiceId)
-                    } catch (zErr) {
-                        console.warn('Failed to dispatch Zoho email, continuing local sync...', zErr)
+            if (options.sendNow) {
+                try {
+                    if (zohoInvoiceId) {
+                        try {
+                            await zohoBooks.sendInvoiceEmail(zohoInvoiceId)
+                        } catch (zErr) {
+                            console.warn('Failed to dispatch Zoho email, continuing local sync...', zErr)
+                        }
                     }
+
+                    const clientEmailData = emailTemplates.invoiceGenerated(
+                        booking.contact.firstName,
+                        localInvoice.invoiceNumber,
+                        localInvoice.total,
+                        `${process.env.NEXT_PUBLIC_APP_URL}/client/invoices/${localInvoice.id}`,
+                        `${process.env.NEXT_PUBLIC_APP_URL}/client/invoices/${localInvoice.id}`
+                    )
+                    await sendEmail({
+                        to: booking.contact.email,
+                        ...clientEmailData
+                    })
+
+                    const adminEmailData = emailTemplates.adminInvoiceNotification(
+                        'Marina',
+                        `${booking.contact.firstName} ${booking.contact.lastName}`,
+                        localInvoice.invoiceNumber,
+                        localInvoice.total,
+                        `${process.env.NEXT_PUBLIC_APP_URL}/admin/invoices/${localInvoice.id}`
+                    )
+                    await sendEmail({
+                        to: process.env.SMTP_USER || 'MarinaDubson@gmail.com',
+                        ...adminEmailData
+                    })
+
+                    await mailchimp.updateMemberForBookingStage(
+                        booking.contact.email,
+                        booking.contact.firstName,
+                        booking.contact.lastName,
+                        'invoiced'
+                    )
+
+                    console.log('Automated invoice notifications dispatched.')
+                } catch (emailError) {
+                    console.error('Notification dispatch failed:', emailError)
                 }
-
-                const clientEmailData = emailTemplates.invoiceGenerated(
-                    booking.contact.firstName,
-                    localInvoice.invoiceNumber,
-                    localInvoice.total,
-                    `${process.env.NEXT_PUBLIC_APP_URL}/client/invoices/${localInvoice.id}`,
-                    `${process.env.NEXT_PUBLIC_APP_URL}/client/invoices/${localInvoice.id}`
-                )
-                await sendEmail({
-                    to: booking.contact.email,
-                    ...clientEmailData
-                })
-
-                const adminEmailData = emailTemplates.adminInvoiceNotification(
-                    'Marina',
-                    `${booking.contact.firstName} ${booking.contact.lastName}`,
-                    localInvoice.invoiceNumber,
-                    localInvoice.total,
-                    `${process.env.NEXT_PUBLIC_APP_URL}/admin/invoices/${localInvoice.id}`
-                )
-                await sendEmail({
-                    to: process.env.SMTP_USER || 'MarinaDubson@gmail.com',
-                    ...adminEmailData
-                })
-
-                await mailchimp.updateMemberForBookingStage(
-                    booking.contact.email,
-                    booking.contact.firstName,
-                    booking.contact.lastName,
-                    'invoiced'
-                )
-
-                console.log('Automated invoice notifications dispatched.')
-            } catch (emailError) {
-                console.error('Notification dispatch failed:', emailError)
             }
 
             return { localInvoice, zohoInvoiceId }
