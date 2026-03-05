@@ -9,7 +9,7 @@ const registerSchema = z.object({
     password: z.string().min(8),
     firstName: z.string().min(1),
     lastName: z.string().min(1),
-    role: z.enum(['ADMIN', 'MANAGER', 'STAFF', 'REPORTER', 'CLIENT']).default('CLIENT'),
+    role: z.enum(['ADMIN', 'MANAGER', 'STAFF', 'REPORTER', 'CLIENT', 'AGENCY']).default('CLIENT'),
     clientType: z.enum(['PRIVATE', 'AGENCY']).optional(),
     company: z.string().optional(),
     certification: z.string().optional()
@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
             }
         })
 
-        // Also create or link a Contact for clients to enable CRM features
-        if (data.role === 'CLIENT') {
+        // Also create or link a Contact for clients/agencies to enable CRM features
+        if (data.role === 'CLIENT' || data.role === 'AGENCY') {
             try {
                 const existingContact = await prisma.contact.findUnique({
                     where: { email: data.email }
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
                         lastName: data.lastName,
                         email: data.email,
                         companyName: data.company,
-                        clientType: data.clientType || 'PRIVATE',
+                        clientType: data.clientType || (data.role === 'AGENCY' ? 'AGENCY' : 'PRIVATE'),
                         status: 'Active'
                     }
                 })
@@ -92,12 +92,12 @@ export async function POST(request: NextRequest) {
             const adminEmail = process.env.ADMIN_EMAIL || 'admin@marinadubson.com'
             await sendEmail({
                 to: adminEmail,
-                subject: `New ${data.clientType || 'PRIVATE'} client signup: ${user.firstName} ${user.lastName}`,
-                html: `<p>A new client has registered.</p>
+                subject: `New ${data.role === 'AGENCY' ? 'agency' : (data.clientType || 'PRIVATE')} signup: ${user.firstName} ${user.lastName}`,
+                html: `<p>A new ${data.role === 'AGENCY' ? 'agency contact' : 'client'} has registered.</p>
                        <ul>
                          <li>Name: ${user.firstName} ${user.lastName}</li>
                          <li>Email: ${user.email}</li>
-                         <li>Client Type: ${data.clientType || 'PRIVATE'}</li>
+                         <li>Client Type: ${data.clientType || (data.role === 'AGENCY' ? 'AGENCY' : 'PRIVATE')}</li>
                          <li>Company: ${data.company || '—'}</li>
                        </ul>`
             })

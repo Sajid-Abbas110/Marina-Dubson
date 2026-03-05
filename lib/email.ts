@@ -160,7 +160,7 @@ export const emailTemplates = {
           </div>
 
           <div style="background: #e0f2fe; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0369a1;">
-            <p style="margin: 0; font-weight: bold; color: #075985;">Financial Responsibility</p>
+            <p style="margin: 0; font-weight: bold; color: #075985;">30 Days (default)</p>
             <p style="margin: 10px 0 0 0; color: #075985; font-size: 14px;">
               By confirming, you acknowledge financial responsibility for all charges. Payment is due within 14 days of invoice date.
             </p>

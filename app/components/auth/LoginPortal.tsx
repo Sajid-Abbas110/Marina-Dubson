@@ -107,7 +107,7 @@ export default function LoginPortal() {
 
     const features = [
         { icon: <FileText className="h-5 w-5" />, title: 'Booking Management', desc: 'Schedule and track all court reporting sessions in one place.' },
-        { icon: <Gavel className="h-5 w-5" />, title: 'Legal Transcripts', desc: 'Securely access and manage your certified transcripts.' },
+        { icon: <Gavel className="h-5 w-5" />, title: 'Documents Vault', desc: 'Securely access and manage all uploaded case documents and transcripts.' },
         { icon: <Award className="h-5 w-5" />, title: 'Certified Reporters', desc: 'Access to a vetted network of professional court reporters.' },
     ]
 

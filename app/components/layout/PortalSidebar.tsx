@@ -53,7 +53,6 @@ export default function PortalSidebar({
         return false
     }
 
-    const portalLabel = userRole === 'CLIENT' ? 'Client Portal' : 'Reporter Portal'
     const initials = user ? `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}` : '?'
 
     return (
@@ -83,9 +82,6 @@ export default function PortalSidebar({
                         <div className="overflow-hidden animate-fade-in">
                             <p className="text-white font-black text-sm uppercase tracking-tight leading-none">
                                 Marina Dubson
-                            </p>
-                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mt-1">
-                                {portalLabel}
                             </p>
                         </div>
                     )}

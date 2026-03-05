@@ -47,6 +47,7 @@ export default function BookingManagementPage() {
     }, [searchParams])
 
     const [reporters, setReporters] = useState<any[]>([])
+    const [currentUser, setCurrentUser] = useState<any>(null)
     const [showAssignModal, setShowAssignModal] = useState(false)
     const [assigningBookingId, setAssigningBookingId] = useState<string | null>(null)
 
@@ -92,7 +93,7 @@ export default function BookingManagementPage() {
         return {
             all: b.length,
             submitted: b.filter(x => x.bookingStatus === 'SUBMITTED').length,
-            accepted: b.filter(x => x.bookingStatus === 'ACCEPTED').length
+            accepted: b.filter(x => ['ACCEPTED', 'ASSIGNED'].includes(x.bookingStatus)).length
         }
     }, [bookings])
 
@@ -162,7 +163,7 @@ export default function BookingManagementPage() {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const data = await res.json()
-            setSelectedBookingBids(data.bids || [])
+            setSelectedBookingBids(data.claims || data.bids || [])
             setSelectedBookingId(bookingId)
             setShowBidsModal(true)
         } catch (error) {
@@ -180,7 +181,7 @@ export default function BookingManagementPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ bidId, status: 'ACCEPTED' })
+                body: JSON.stringify({ claimId: bidId, status: 'ACCEPTED' })
             })
             if (res.ok) {
                 viewBids(selectedBookingId!)
@@ -202,7 +203,7 @@ export default function BookingManagementPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ bidId, status: 'DECLINED' })
+                body: JSON.stringify({ claimId: bidId, status: 'DECLINED' })
             })
             if (res.ok) {
                 viewBids(selectedBookingId!)
@@ -368,7 +369,7 @@ export default function BookingManagementPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ reporterId }),
+                body: JSON.stringify({ reporterId, bookingStatus: 'ASSIGNED', isMarketplace: false }),
             })
             if (res.ok) {
                 setShowAssignModal(false)
@@ -384,6 +385,17 @@ export default function BookingManagementPage() {
     useEffect(() => {
         fetchBookings()
         fetchReporters()
+        const fetchMe = async () => {
+            try {
+                const token = localStorage.getItem('token')
+                const res = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } })
+                const data = await res.json()
+                setCurrentUser(data.user || null)
+            } catch (error) {
+                console.error('Failed to fetch current user:', error)
+            }
+        }
+        fetchMe()
     }, [])
 
     return (
@@ -632,7 +644,7 @@ export default function BookingManagementPage() {
                 </div>
             </div>
 
-            {/* Bids Management Modal */}
+            {/* Claims Management Modal */}
             {showBidsModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 lg:pl-80 animate-in fade-in duration-300">
                     <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setShowBidsModal(false)}></div>
@@ -643,7 +655,7 @@ export default function BookingManagementPage() {
                                     <TrendingUp className="h-5 w-5 sm:h-9 sm:w-9" />
                                 </div>
                                 <div className="space-y-0.5 sm:space-y-1">
-                                    <h2 className="text-xl sm:text-3xl font-black text-foreground uppercase tracking-tight">Marketplace Bids</h2>
+                                    <h2 className="text-xl sm:text-3xl font-black text-foreground uppercase tracking-tight">Marketplace Claims</h2>
                                     <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em]">Available reporters</p>
                                 </div>
                             </div>
@@ -668,8 +680,8 @@ export default function BookingManagementPage() {
                                     </div>
                                     <div className="flex flex-row items-center justify-between sm:justify-end gap-6 sm:gap-16 relative z-10">
                                         <div className="text-right">
-                                            <p className="text-[7px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Payoff</p>
-                                            <p className="text-xl sm:text-3xl font-black text-foreground tracking-tighter">${bid.amount}</p>
+                                            <p className="text-[7px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Status</p>
+                                            <p className="text-xl sm:text-3xl font-black text-foreground tracking-tighter">{bid.status}</p>
                                         </div>
                                         {bid.status === 'PENDING' ? (
                                             <div className="flex items-center gap-2 sm:gap-3">
@@ -868,6 +880,14 @@ export default function BookingManagementPage() {
                                 <X className="h-5 w-5" />
                             </button>
                         </div>
+                        {currentUser && (
+                            <button
+                                onClick={() => handleAssignReporter(currentUser.id)}
+                                className="w-full mb-6 p-4 rounded-2xl bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-[0.25em] hover:opacity-90 transition"
+                            >
+                                Assign Job to Myself
+                            </button>
+                        )}
                         <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                             {reporters.length === 0 ? (
                                 <p className="text-center py-10 text-muted-foreground font-black uppercase text-[10px]">No operatives found in registry</p>

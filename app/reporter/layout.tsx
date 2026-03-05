@@ -17,7 +17,7 @@ const navigation = [
     { name: 'Assignments', href: '/reporter/portal?tab=jobs', icon: Briefcase },
     { name: 'Jobs', href: '/reporter/portal?tab=market', icon: Globe },
     { name: 'Calendar', href: '/reporter/portal?tab=calendar', icon: Calendar },
-    { name: 'Financials', href: '/reporter/portal?tab=financials', icon: DollarSign },
+    { name: 'Rates', href: '/reporter/portal?tab=financials', icon: DollarSign },
     { name: 'Messages', href: '/reporter/portal?tab=messages', icon: MessageSquare },
     { name: 'Settings', href: '/reporter/portal?tab=settings', icon: Settings },
 ]

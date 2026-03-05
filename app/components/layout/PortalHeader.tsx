@@ -122,9 +122,6 @@ export default function PortalHeader({ userRole }: { userRole?: string }) {
                 <p className="text-sm font-medium text-foreground">
                     {user ? `${user.firstName} ${user.lastName}` : 'Welcome back'}
                 </p>
-                <p className="text-xs text-muted-foreground capitalize">
-                    {userRole?.toLowerCase()} portal
-                </p>
                 {userRole === 'CLIENT' && (
                     <p className="text-[11px] font-semibold text-primary mt-0.5">
                         {user?.clientType === 'AGENCY' ? 'Agency Client' : 'Private Client'}

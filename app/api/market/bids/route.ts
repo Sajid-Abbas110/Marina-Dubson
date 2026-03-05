@@ -3,10 +3,8 @@ import prisma from '@/lib/prisma'
 import { extractTokenFromHeader, verifyToken } from '@/lib/auth'
 import { z } from 'zod'
 
-const bidSchema = z.object({
+const claimSchema = z.object({
     bookingId: z.string(),
-    amount: z.number().min(0),
-    timeline: z.string().optional(),
     notes: z.string().optional(),
 })
 
@@ -16,11 +14,11 @@ export async function POST(request: NextRequest) {
         const payload = token ? verifyToken(token) : null
 
         if (!payload || payload.role !== 'REPORTER') {
-            return NextResponse.json({ error: 'Only reporters can bid on jobs' }, { status: 403 })
+            return NextResponse.json({ error: 'Only reporters can claim jobs' }, { status: 403 })
         }
 
         const body = await request.json()
-        const data = bidSchema.parse(body)
+        const data = claimSchema.parse(body)
 
         // Check if job exists and is in marketplace
         const job = await prisma.booking.findUnique({
@@ -28,27 +26,25 @@ export async function POST(request: NextRequest) {
         })
 
         if (!job || !job.isMarketplace) {
-            return NextResponse.json({ error: 'Job not available for bidding' }, { status: 400 })
+            return NextResponse.json({ error: 'Job not available for claiming' }, { status: 400 })
         }
 
-        // Check for existing bid
-        const existingBid = await prisma.bid.findFirst({
+        // Check for existing claim
+        const existingClaim = await prisma.jobClaim.findFirst({
             where: {
                 bookingId: data.bookingId,
                 reporterId: payload.userId
             }
         })
 
-        if (existingBid) {
-            return NextResponse.json({ error: 'You have already bid on this job' }, { status: 409 })
+        if (existingClaim) {
+            return NextResponse.json({ error: 'You have already claimed this job' }, { status: 409 })
         }
 
-        const bid = await prisma.bid.create({
+        const claim = await prisma.jobClaim.create({
             data: {
                 bookingId: data.bookingId,
                 reporterId: payload.userId,
-                amount: data.amount,
-                timeline: data.timeline,
                 notes: data.notes
             }
         })
@@ -68,7 +64,8 @@ export async function POST(request: NextRequest) {
                     data: {
                         senderId: reporter.id,
                         recipientId: admin.id,
-                        content: `System Alert: Reporter ${reporter.firstName} ${reporter.lastName} has claimed Job #${job.bookingNumber} (${job.proceedingType}). Please review and assign.`
+                        content: `System Alert: Reporter ${reporter.firstName} ${reporter.lastName} has claimed Job #${job.bookingNumber} (${job.proceedingType}). Please review and assign.`,
+                        claimId: claim.id
                     }
                 })
             }
@@ -77,7 +74,7 @@ export async function POST(request: NextRequest) {
             // Non-critical failure, don't block the bid creation
         }
 
-        return NextResponse.json(bid, { status: 201 })
+        return NextResponse.json(claim, { status: 201 })
     } catch (error) {
         if (error instanceof z.ZodError) {
             return NextResponse.json({ error: 'Invalid input', details: error.errors }, { status: 400 })
@@ -100,7 +97,7 @@ export async function GET(request: NextRequest) {
         const bookingId = searchParams.get('bookingId')
 
         if (payload.role === 'REPORTER') {
-            const bids = await prisma.bid.findMany({
+            const claims = await prisma.jobClaim.findMany({
                 where: {
                     reporterId: payload.userId,
                     ...(bookingId ? { bookingId } : {})
@@ -115,7 +112,7 @@ export async function GET(request: NextRequest) {
                 },
                 orderBy: { createdAt: 'desc' }
             })
-            return NextResponse.json({ bids })
+            return NextResponse.json({ claims })
         }
 
         if (payload.role !== 'ADMIN' && payload.role !== 'MANAGER') {
@@ -126,7 +123,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Booking ID required for administrative view' }, { status: 400 })
         }
 
-        const bids = await prisma.bid.findMany({
+        const claims = await prisma.jobClaim.findMany({
             where: { bookingId },
             include: {
                 reporter: {
@@ -138,10 +135,10 @@ export async function GET(request: NextRequest) {
                     }
                 }
             },
-            orderBy: { amount: 'asc' }
+            orderBy: { createdAt: 'asc' }
         })
 
-        return NextResponse.json({ bids })
+        return NextResponse.json({ claims })
     } catch (error) {
         console.error('Fetch bids error:', error)
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -157,47 +154,47 @@ export async function PATCH(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const { bidId, status } = await request.json()
+        const { claimId, status } = await request.json()
 
-        if (!bidId || !status) {
-            return NextResponse.json({ error: 'Bid ID and status required' }, { status: 400 })
+        if (!claimId || !status) {
+            return NextResponse.json({ error: 'Claim ID and status required' }, { status: 400 })
         }
 
-        const bid = await prisma.bid.findUnique({
-            where: { id: bidId },
+        const claim = await prisma.jobClaim.findUnique({
+            where: { id: claimId },
             include: { booking: true }
         })
 
-        if (!bid) {
-            return NextResponse.json({ error: 'Bid not found' }, { status: 404 })
+        if (!claim) {
+            return NextResponse.json({ error: 'Claim not found' }, { status: 404 })
         }
 
         if (status === 'ACCEPTED') {
-            // Accept this bid and decline others
+            // Accept this claim and decline others
             await prisma.$transaction([
-                prisma.bid.update({
-                    where: { id: bidId },
+                prisma.jobClaim.update({
+                    where: { id: claimId },
                     data: { status: 'ACCEPTED' }
                 }),
-                prisma.bid.updateMany({
+                prisma.jobClaim.updateMany({
                     where: {
-                        bookingId: bid.bookingId,
-                        id: { not: bidId }
+                        bookingId: claim.bookingId,
+                        id: { not: claimId }
                     },
                     data: { status: 'DECLINED' }
                 }),
                 prisma.booking.update({
-                    where: { id: bid.bookingId },
+                    where: { id: claim.bookingId },
                     data: {
-                        reporterId: bid.reporterId,
-                        bookingStatus: 'ACCEPTED',
+                        reporterId: claim.reporterId,
+                        bookingStatus: 'ASSIGNED',
                         isMarketplace: false // Close marketplace listing
                     }
                 })
             ])
         } else {
-            await prisma.bid.update({
-                where: { id: bidId },
+            await prisma.jobClaim.update({
+                where: { id: claimId },
                 data: { status }
             })
         }

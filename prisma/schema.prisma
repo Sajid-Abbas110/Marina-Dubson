@@ -33,6 +33,7 @@ model User {
   contact          Contact?  @relation(fields: [contactId], references: [id])
   blogPosts        BlogPost[] @relation("BlogPosts")
   reporterInvoices ReporterInvoice[] @relation("ReporterInvoices")
+  claims           JobClaim[] @relation("ReporterClaims")
   
   // Reporter Payout Configuration (Fixed Rates)
   basePageRate     Float?    // What admin pays this reporter per page
@@ -151,6 +152,7 @@ model Booking {
   lockedReporterAppearanceFee  Float?
   lockedReporterMinimumFee     Float?
   bids                 Bid[]
+  claims               JobClaim[]
   reporter             User?               @relation("ReporterBookings", fields: [reporterId], references: [id])
   user                 User                @relation("CreatedBookings", fields: [userId], references: [id])
   service              Service             @relation(fields: [serviceId], references: [id])
@@ -234,17 +236,20 @@ model Message {
   senderId    String
   recipientId String
   contactId   String?
+  claimId     String?
   subject     String?
   content     String
   isRead      Boolean  @default(false)
   createdAt   DateTime @default(now())
   contact     Contact? @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  claim       JobClaim? @relation(fields: [claimId], references: [id], onDelete: Cascade)
   recipient   User     @relation("ReceivedMessages", fields: [recipientId], references: [id])
   sender      User     @relation("SentMessages", fields: [senderId], references: [id])
 
   @@index([senderId])
   @@index([recipientId])
   @@index([contactId])
+  @@index([claimId])
   @@index([isRead])
 }
 
@@ -309,6 +314,25 @@ model Bid {
   reporter   User     @relation("ReporterBids", fields: [reporterId], references: [id])
   booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
+  @@index([bookingId])
+  @@index([reporterId])
+  @@index([status])
+}
+
+model JobClaim {
+  id         String   @id @default(cuid())
+  bookingId  String
+  reporterId String
+  status     String   @default("PENDING") // PENDING, ASSIGNED, DECLINED
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  reporter   User     @relation("ReporterClaims", fields: [reporterId], references: [id])
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  messages   Message[]
+
+  @@unique([bookingId, reporterId])
   @@index([bookingId])
   @@index([reporterId])
   @@index([status])

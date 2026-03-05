@@ -70,7 +70,7 @@ export default function AdaptiveContentPortal() {
                 <div className="lg:col-span-2 space-y-8">
                     <div className="flex items-center gap-4 p-2 bg-muted rounded-2xl w-fit">
                         <button className="px-6 py-2 rounded-xl bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-lg">All Assets</button>
-                        <button className="px-6 py-2 rounded-xl text-muted-foreground hover:text-primary text-[10px] font-black uppercase tracking-widest transition-all">Transcripts</button>
+                        <button className="px-6 py-2 rounded-xl text-muted-foreground hover:text-primary text-[10px] font-black uppercase tracking-widest transition-all">Documents Vault</button>
                         <button className="px-6 py-2 rounded-xl text-muted-foreground hover:text-primary text-[10px] font-black uppercase tracking-widest transition-all">Renders</button>
                     </div>
 

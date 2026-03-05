@@ -8,7 +8,7 @@ import { join } from 'path'
 const documentSchema = z.object({
     fileName: z.string().min(1),
     fileType: z.string().min(1),
-    category: z.enum(['RATE_SHEET', 'CONTRACT', 'INVOICE', 'CLIENT_UPLOAD', 'TRANSCRIPT']),
+    category: z.enum(['RATE_SHEET', 'CONTRACT', 'INVOICE', 'CLIENT_UPLOAD', 'TRANSCRIPT', 'DOCUMENT']),
     contactId: z.string().optional(),
     bookingId: z.string().optional(),
 })

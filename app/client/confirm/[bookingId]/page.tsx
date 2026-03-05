@@ -197,10 +197,10 @@ export default function BookingConfirmationPage() {
                             highlight
                         />
 
-                        {/* 3. Financial Responsibility */}
+                        {/* 3. 30 Days (default) */}
                         <TermSection
                             icon={<ShieldCheck className="h-6 w-6" />}
-                            title="3. Financial Responsibility"
+                            title="3. 30 Days (default)"
                             content={data.terms.financialTerms}
                             checked={confirmedFinancial}
                             onChange={setConfirmedFinancial}

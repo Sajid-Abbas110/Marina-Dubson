@@ -166,7 +166,7 @@ export default function ReporterPortal() {
 
             if (bidsRes.ok) {
                 const bidsData = await bidsRes.json()
-                if (bidsData.bids) setPayouts(bidsData.bids)
+                if (bidsData.claims) setPayouts(bidsData.claims)
             }
 
             if (invRes.ok) {
@@ -289,14 +289,13 @@ export default function ReporterPortal() {
                 },
                 body: JSON.stringify({
                     bookingId,
-                    amount: 0,
                     notes: "Job Claimed via Reporter Portal"
                 })
             });
 
             if (res.ok) {
                 alert("Interest signaled. Administrative team notified.");
-                window.location.reload();
+                fetchUserData(true)
             } else {
                 const err = await res.json();
                 alert(`Claim Protocol Failed: ${err.error}`);
@@ -930,14 +929,14 @@ export default function ReporterPortal() {
 
                         <div className="h-px bg-border w-full opacity-50" />
 
-                        {/* ── Section 3: Job Bids ── */}
+                        {/* ── Section 3: Job Claims ── */}
                         <section>
                             <div className="flex items-center justify-between mb-8">
                                 <div>
-                                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Job Bid Status</h3>
-                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mt-1">Your submitted bids on open jobs</p>
+                                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Job Claim Status</h3>
+                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mt-1">Your submitted claims on open jobs</p>
                                 </div>
-                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Active Bids</span>
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Active Claims</span>
                             </div>
 
                             {payouts.length > 0 ? (
@@ -955,8 +954,8 @@ export default function ReporterPortal() {
                                             </div>
                                             <div className="flex items-center gap-8">
                                                 <div className="text-right">
-                                                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1">Bid Amount</p>
-                                                    <p className="text-lg font-black text-primary tracking-tighter">${bid.amount}</p>
+                                                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1">Status</p>
+                                                    <p className="text-lg font-black text-primary tracking-tighter">{bid.status}</p>
                                                 </div>
                                                 <div className={`px-4 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest border ${bid.status === 'ACCEPTED' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                                     bid.status === 'DECLINED' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
@@ -971,7 +970,7 @@ export default function ReporterPortal() {
                             ) : (
                                 <div className="py-12 text-center border-2 border-dashed border-border rounded-[2.5rem] bg-muted/10">
                                     <Clock className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
-                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">No job bids submitted.</p>
+                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">No job claims submitted.</p>
                                 </div>
                             )}
                         </section>

@@ -422,7 +422,7 @@ export default function ClientPortal() {
                                 <div className="h-10 w-10 rounded-xl bg-violet-500/20 flex items-center justify-center text-violet-500 mb-4 shadow-lg shadow-violet-500/10">
                                     <FileText className="h-5 w-5" />
                                 </div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Documents</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Documents Vault</p>
                                 <p className="text-3xl font-black text-violet-500 tracking-tighter uppercase">{stats.files}</p>
                             </button>
                         </div>

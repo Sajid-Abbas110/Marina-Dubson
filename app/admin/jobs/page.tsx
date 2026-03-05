@@ -75,7 +75,7 @@ export default function AdministrativeJobNexus() {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const data = await res.json()
-            setSelectedBookingBids(data.bids || [])
+            setSelectedBookingBids(data.claims || data.bids || [])
             setSelectedBookingId(bookingId)
             setShowBidsModal(true)
         } catch (error) {
@@ -92,7 +92,7 @@ export default function AdministrativeJobNexus() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ bidId, status: 'ACCEPTED' })
+                body: JSON.stringify({ claimId: bidId, status: 'ACCEPTED' })
             })
             if (res.ok) {
                 viewBids(selectedBookingId!)
@@ -112,7 +112,7 @@ export default function AdministrativeJobNexus() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ bidId, status: 'DECLINED' })
+                body: JSON.stringify({ claimId: bidId, status: 'DECLINED' })
             })
             if (res.ok) {
                 viewBids(selectedBookingId!)
@@ -390,7 +390,7 @@ export default function AdministrativeJobNexus() {
                 })}
             </div>
 
-            {/* Bids Modal */}
+            {/* Claims Modal */}
             {showBidsModal && (
                 <div className="fixed inset-0 z-[250] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowBidsModal(false)} />

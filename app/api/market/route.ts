@@ -29,12 +29,6 @@ export async function GET(request: NextRequest) {
                         lastName: true
                     }
                 },
-                bids: {
-                    select: {
-                        id: true,
-                        reporterId: true
-                    }
-                }
             },
             orderBy: { createdAt: 'desc' }
         })

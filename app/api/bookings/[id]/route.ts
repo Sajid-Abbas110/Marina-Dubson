@@ -5,6 +5,9 @@ import { z } from 'zod'
 
 const updateSchema = z.object({
     specialRequirements: z.string().optional(),
+    reporterId: z.string().optional(),
+    bookingStatus: z.string().optional(),
+    isMarketplace: z.boolean().optional(),
 })
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
@@ -52,6 +55,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
             where: { id: bookingId },
             data: {
                 specialRequirements: data.specialRequirements ?? booking.specialRequirements,
+                reporterId: data.reporterId ?? booking.reporterId,
+                bookingStatus: data.bookingStatus ?? booking.bookingStatus,
+                isMarketplace: data.isMarketplace ?? booking.isMarketplace,
             },
             include: {
                 reporter: true,

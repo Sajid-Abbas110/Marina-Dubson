@@ -75,7 +75,13 @@ export default function NewBookingPage() {
                         )
                     setServices(servicesList)
                     if (servicesList.length > 0) {
-                        setFormData(prev => ({ ...prev, serviceId: servicesList[0].id }))
+                        setFormData(prev => ({
+                            ...prev,
+                            serviceId: servicesList[0].id,
+                            proceedingType: servicesList[0].serviceName === 'Premium Court Reporting'
+                                ? 'DEPOSITION'
+                                : 'OTHER'
+                        }))
                     }
                 } else {
                     console.error('Failed to fetch services:', res.statusText)
@@ -88,6 +94,19 @@ export default function NewBookingPage() {
         }
         fetchServices()
     }, [])
+
+    const selectedService = services.find(s => s.id === formData.serviceId)
+    const isCourtReporting = selectedService?.serviceName === 'Premium Court Reporting'
+
+    // Ensure proceeding type stays valid for selected service
+    useEffect(() => {
+        if (isCourtReporting && !['DEPOSITION', 'ARBITRATION_MEDIATION', 'EXAMINATION_UNDER_OATH'].includes(formData.proceedingType)) {
+            setFormData(prev => ({ ...prev, proceedingType: 'DEPOSITION', customProceeding: '' }))
+        }
+        if (!isCourtReporting && formData.proceedingType !== 'OTHER') {
+            setFormData(prev => ({ ...prev, proceedingType: 'OTHER' }))
+        }
+    }, [isCourtReporting, formData.proceedingType])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -170,7 +189,7 @@ export default function NewBookingPage() {
                     <div className={`h-0.5 w-12 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-muted'}`}></div>
                     <StepIndicator active={step >= 2} label="Details" />
                     <div className={`h-0.5 w-12 rounded-full ${step >= 3 ? 'bg-primary' : 'bg-muted'}`}></div>
-                    <StepIndicator active={step >= 3} label="Deployment" />
+                    <StepIndicator active={step >= 3} label="Review" />
                 </div>
 
                 <div className="glass-panel rounded-[3rem] p-10 md:p-16 relative overflow-hidden">
@@ -195,11 +214,36 @@ export default function NewBookingPage() {
                                         value={formData.proceedingType}
                                         onChange={(e) => setFormData({ ...formData, proceedingType: e.target.value })}
                                     >
-                                        <option value="DEPOSITION">Deposition</option>
-                                        <option value="ARBITRATION_MEDIATION">Arbitration / Mediation</option>
-                                        <option value="EXAMINATION_UNDER_OATH">Examination Under Oath</option>
+                                        {isCourtReporting ? (
+                                            <>
+                                                <option value="DEPOSITION">Deposition</option>
+                                                <option value="ARBITRATION_MEDIATION">Arbitration / Mediation</option>
+                                                <option value="EXAMINATION_UNDER_OATH">Examination Under Oath</option>
+                                            </>
+                                        ) : (
+                                            <option value="OTHER">Other</option>
+                                        )}
                                     </select>
-                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight ml-2 mt-2 italic">Select the nature of this assignment. These are the available premium options.</p>
+                                    {!isCourtReporting && formData.proceedingType === 'OTHER' && (
+                                        <div className="mt-3 space-y-2">
+                                            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Describe Proceeding</label>
+                                            <input
+                                                className="luxury-input"
+                                                placeholder="Describe the proceeding or case type"
+                                                value={formData.customProceeding}
+                                                onChange={(e) => setFormData({ ...formData, customProceeding: e.target.value })}
+                                            />
+                                        </div>
+                                    )}
+                                    {isCourtReporting ? (
+                                        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight ml-2 mt-2 italic">
+                                            If none apply, select Deposition to continue—our team will adjust after review.
+                                        </p>
+                                    ) : (
+                                        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight ml-2 mt-2 italic">
+                                            CART bookings use a custom proceeding description—enter details under “Other.”
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-end">
@@ -209,7 +253,19 @@ export default function NewBookingPage() {
                                         className="luxury-input appearance-none bg-no-repeat"
                                         style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\' /%3E%3C/svg%3E")', backgroundPosition: 'right 1.5rem center', backgroundSize: '1.25rem' }}
                                         value={formData.serviceId}
-                                        onChange={(e) => setFormData({ ...formData, serviceId: e.target.value })}
+                                        onChange={(e) => {
+                                            const nextServiceId = e.target.value
+                                            const svc = services.find(s => s.id === nextServiceId)
+                                            const nextProceeding = svc?.serviceName === 'Premium Court Reporting'
+                                                ? 'DEPOSITION'
+                                                : 'OTHER'
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                serviceId: nextServiceId,
+                                                proceedingType: nextProceeding,
+                                                customProceeding: ''
+                                            }))
+                                        }}
                                     >
                                         {services.map(s => (
                                             <option key={s.id} value={s.id}>{s.serviceName}</option>
@@ -255,7 +311,7 @@ export default function NewBookingPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Start Sequence</label>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Time</label>
                                     <div className="relative group">
                                         <button
                                             type="button"
@@ -345,9 +401,10 @@ export default function NewBookingPage() {
                                         >
                                             <option value="">Select delivery target</option>
                                             <option value="IMMEDIATE">Immediate</option>
-                                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(day => (
-                                                <option key={day} value={String(day)}>{day} business day{day === 1 ? '' : 's'}{day === 10 ? ' (regular)' : ''}</option>
+                                            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(day => (
+                                                <option key={day} value={String(day)}>{day} business day{day === 1 ? '' : 's'}</option>
                                             ))}
+                                            <option value="10">10 days (Regular delivery)</option>
                                         </select>
                                     </div>
                                     <div className="space-y-2">
@@ -364,7 +421,7 @@ export default function NewBookingPage() {
                             </div>
 
                             <div className="space-y-3">
-                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Tactical Requirements</label>
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Additional Information</label>
                                 <textarea
                                     className="luxury-input min-h-[120px] py-6 resize-none"
                                     placeholder="Provide case nuances, terminology preferences, or appearance logistics..."
@@ -386,9 +443,9 @@ export default function NewBookingPage() {
                                     className="luxury-btn py-5 px-12 shadow-2xl shadow-blue-500/30 flex items-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed group"
                                 >
                                     {loading ? (
-                                        <>Deploying Assignment... <Loader2 className="h-5 w-5 animate-spin" /></>
+                                        <>Finalizing Booking... <Loader2 className="h-5 w-5 animate-spin" /></>
                                     ) : (
-                                        <>Confirm & Deploy <Zap className="h-5 w-5 group-hover:scale-125 transition-transform" /></>
+                                        <>Confirm Booking <Zap className="h-5 w-5 group-hover:scale-125 transition-transform" /></>
                                     )}
                                 </button>
                             </div>
