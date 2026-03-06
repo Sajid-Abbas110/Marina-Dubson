@@ -146,6 +146,14 @@ export default function InvoiceDetailPage() {
         },
     ].filter(Boolean) as { label: string; detail: string; amount: number }[]
 
+    if (invoice.expediteFee && invoice.expediteFee > 0) {
+        lineItems.push({
+            label: 'Expedite Delivery',
+            detail: invoice.expediteLabel || 'Accelerated delivery window',
+            amount: invoice.expediteFee,
+        })
+    }
+
     return (
         <>
             {/* Compact Intelligence Action Bar */}

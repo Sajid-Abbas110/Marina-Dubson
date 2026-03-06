@@ -76,6 +76,12 @@ export default function ClientPortal() {
     // Edit add-ons modal state
     const [editBookingId, setEditBookingId] = useState<string | null>(null)
     const [editNotes, setEditNotes] = useState('')
+    const [editAddOns, setEditAddOns] = useState({
+        roughDraft: false,
+        videographer: false,
+        realtimeSync: false,
+        interpreter: false,
+    })
     const [editSaving, setEditSaving] = useState(false)
 
     const [scrolled, setScrolled] = useState(false)
@@ -252,7 +258,14 @@ export default function ClientPortal() {
 
     const openEditAddOns = (booking: any) => {
         setEditBookingId(booking.id)
-        setEditNotes(booking.specialRequirements || '')
+        // Show an empty field with only placeholder text (no prefill)
+        setEditNotes('')
+        setEditAddOns({
+            roughDraft: false,
+            videographer: false,
+            realtimeSync: false,
+            interpreter: false,
+        })
     }
 
     const saveEditAddOns = async () => {
@@ -260,13 +273,24 @@ export default function ClientPortal() {
         setEditSaving(true)
         try {
             const token = localStorage.getItem('token')
+            const addOnNotes: string[] = []
+            if (editAddOns.roughDraft) addOnNotes.push('Rough Draft requested')
+            if (editAddOns.videographer) addOnNotes.push('Videographer requested')
+            if (editAddOns.realtimeSync) addOnNotes.push('Realtime sync requested')
+            if (editAddOns.interpreter) addOnNotes.push('Interpreter requested')
+
+            const mergedNotes = [
+                editNotes.trim(),
+                addOnNotes.length ? `Add-Ons: ${addOnNotes.join('; ')}` : ''
+            ].filter(Boolean).join('\n')
+
             const res = await fetch(`/api/bookings/${editBookingId}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ specialRequirements: editNotes })
+                body: JSON.stringify({ specialRequirements: mergedNotes })
             })
             if (res.ok) {
                 const updated = await res.json()
@@ -1107,6 +1131,28 @@ export default function ClientPortal() {
                             </button>
                         </div>
 
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                            {[
+                                { key: 'roughDraft', label: 'Rough Draft' },
+                                { key: 'videographer', label: 'Videographer' },
+                                { key: 'realtimeSync', label: 'Realtime Sync' },
+                                { key: 'interpreter', label: 'Interpreter' },
+                            ].map(item => (
+                                <label
+                                    key={item.key}
+                                    className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/30 transition-colors cursor-pointer"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        className="h-4 w-4 accent-primary"
+                                        checked={(editAddOns as any)[item.key]}
+                                        onChange={(e) => setEditAddOns(prev => ({ ...prev, [item.key]: e.target.checked }))}
+                                    />
+                                    <span className="text-sm font-semibold text-foreground">{item.label}</span>
+                                </label>
+                            ))}
+                        </div>
+
                         <label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-2 block">Add-On Notes / Special Requirements</label>
                         <textarea
                             value={editNotes}
@@ -1128,7 +1174,7 @@ export default function ClientPortal() {
                                 disabled={editSaving}
                                 className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-lg disabled:opacity-60"
                             >
-                                {editSaving ? 'Saving...' : 'Save'}
+                                {editSaving ? 'Requesting…' : 'Request Add-On'}
                             </button>
                         </div>
                     </div>

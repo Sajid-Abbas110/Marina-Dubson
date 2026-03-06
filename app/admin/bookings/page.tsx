@@ -56,6 +56,9 @@ export default function BookingManagementPage() {
     const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [completedInvoiceId, setCompletedInvoiceId] = useState<string | null>(null)
+    const [showAddonModal, setShowAddonModal] = useState(false)
+    const [addonText, setAddonText] = useState('')
+    const [addonSaving, setAddonSaving] = useState(false)
 
     const fetchBookings = async () => {
         try {
@@ -71,6 +74,20 @@ export default function BookingManagementPage() {
             setLoading(false)
         }
     }
+
+    // Listen for add-on open events (from header bell)
+    useEffect(() => {
+        const handler = (e: any) => {
+            const detail = e.detail || {}
+            if (detail.id) {
+                setSelectedBookingId(detail.id)
+                setAddonText(detail.text || '')
+                setShowAddonModal(true)
+            }
+        }
+        window.addEventListener('admin-open-addon', handler)
+        return () => window.removeEventListener('admin-open-addon', handler)
+    }, [])
 
     const filteredBookings = useMemo(() => {
         if (filter === 'REPORTERS') return []
@@ -224,7 +241,8 @@ export default function BookingManagementPage() {
         hasInterpreter: false,
         hasExpert: false,
         afterHoursCount: 0,
-        waitTimeCount: 0
+        waitTimeCount: 0,
+        notes: ''
     })
 
     const handleComplete = async (id: string) => {
@@ -566,6 +584,14 @@ export default function BookingManagementPage() {
 
                                     {/* Action Buttons */}
                                     <div className="flex items-center gap-2 shrink-0">
+                                        {b.specialRequirements?.trim() && (
+                                            <button
+                                                onClick={() => { setSelectedBookingId(b.id); setAddonText(b.specialRequirements); setShowAddonModal(true) }}
+                                                className="px-3 py-1.5 rounded-xl bg-amber-500/15 text-amber-600 text-[8px] sm:text-[9px] font-black uppercase tracking-widest border border-amber-500/30 hover:bg-amber-500/25"
+                                            >
+                                                Add-On Note
+                                            </button>
+                                        )}
                                         {b.bookingStatus === 'SUBMITTED' && (
                                             <>
                                                 <button
@@ -604,7 +630,8 @@ export default function BookingManagementPage() {
                                                 </button>
                                             </>
                                         )}
-                                        {b.bookingStatus === 'ACCEPTED' && (
+                                        {/* Keep Complete & Bill available until admin explicitly runs it (manual only) */}
+                                        {!['COMPLETED', 'CANCELLED', 'DECLINED'].includes(b.bookingStatus) && (
                                             <button
                                                 onClick={() => {
                                                     setSelectedBookingId(b.id)
@@ -614,6 +641,15 @@ export default function BookingManagementPage() {
                                                 className="px-4 py-2 rounded-xl bg-foreground text-background text-[8px] sm:text-[9px] font-black uppercase tracking-widest shadow-xl active:scale-95"
                                             >
                                                 Complete & Bill
+                                            </button>
+                                        )}
+                                        {b.reporterId && !['COMPLETED', 'CANCELLED', 'DECLINED'].includes(b.bookingStatus) && (
+                                            <button
+                                                onClick={() => updateStatus(b.id, 'ACCEPTED')}
+                                                className="px-3 sm:px-4 py-2 rounded-xl bg-muted text-foreground text-[8px] sm:text-[9px] font-black uppercase tracking-widest border border-border hover:border-primary/40 active:scale-95"
+                                                title="Unassign reporter (returns to accepted state)"
+                                            >
+                                                Unassign
                                             </button>
                                         )}
                                         {b.bookingStatus === 'COMPLETED' && b.invoice?.id && (
@@ -909,6 +945,73 @@ export default function BookingManagementPage() {
                                     <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                                 </button>
                             ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Add-On Note Modal */}
+            {showAddonModal && (
+                <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 sm:p-6 lg:pl-80 animate-in fade-in duration-200">
+                    <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setShowAddonModal(false)} />
+                    <div className="relative w-full max-w-xl bg-card rounded-[1.75rem] p-6 sm:p-8 shadow-3xl border border-border">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 className="text-sm font-black text-foreground uppercase tracking-tight">Add-On Note</h3>
+                                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">From client request</p>
+                            </div>
+                            <button onClick={() => setShowAddonModal(false)} className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-all">
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+                        <div className="p-4 rounded-2xl bg-muted/40 border border-border text-sm whitespace-pre-wrap leading-relaxed">
+                            {addonText || 'No add-on details provided.'}
+                        </div>
+                        <div className="flex justify-end mt-4">
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setShowAddonModal(false)}
+                                    className="px-4 py-2 rounded-xl bg-muted text-foreground border border-border text-[10px] font-black uppercase tracking-widest"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    disabled={addonSaving}
+                                    onClick={async () => {
+                                        if (!selectedBookingId) return
+                                        setAddonSaving(true)
+                                        try {
+                                            const token = localStorage.getItem('token')
+                                            await fetch(`/api/bookings/${selectedBookingId}`, {
+                                                method: 'PATCH',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'Authorization': `Bearer ${token}`
+                                                },
+                                                body: JSON.stringify({ specialRequirements: addonText })
+                                            })
+                                            // Put text into billing draft and open complete modal
+                                            setBillingData(prev => ({
+                                                ...prev,
+                                                notes: addonText,
+                                            }) as any)
+                                            setShowAddonModal(false)
+                                            fetchBookings()
+                                            setCompletedInvoiceId(null)
+                                            setShowCompleteModal(true)
+                                            // Trigger header notification refresh
+                                            window.dispatchEvent(new Event('admin-notifications-refresh'))
+                                        } catch (err) {
+                                            console.error('Accept add-on failed', err)
+                                        } finally {
+                                            setAddonSaving(false)
+                                        }
+                                    }}
+                                    className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-lg disabled:opacity-60"
+                                >
+                                    {addonSaving ? 'Processing...' : 'Accept & Add to Invoice'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

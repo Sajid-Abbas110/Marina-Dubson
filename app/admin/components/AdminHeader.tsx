@@ -37,6 +37,7 @@ export default function AdminHeader({ onToggleSidebar }: { onToggleSidebar: () =
     const [isMsgOpen, setIsMsgOpen] = useState(false)
 
     const [pendingBookings, setPendingBookings] = useState<any[]>([])
+    const [addonAlerts, setAddonAlerts] = useState<any[]>([])
     const [recentMessages, setRecentMessages] = useState<any[]>([])
     const [unreadMsgCount, setUnreadMsgCount] = useState(0)
     const [searchTerm, setSearchTerm] = useState('')
@@ -89,6 +90,19 @@ export default function AdminHeader({ onToggleSidebar }: { onToggleSidebar: () =
                 setPendingBookings(data.bookings || [])
             }
 
+            // Fetch add-on alerts (bookings with special requirements)
+            const addonRes = await fetch('/api/bookings?limit=25', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            if (addonRes.ok) {
+                const data = await addonRes.json()
+                const list = (data.bookings || []).filter((b: any) =>
+                    b.specialRequirements && b.specialRequirements.trim().length > 0 &&
+                    ['SUBMITTED', 'ACCEPTED', 'CONFIRMED'].includes(b.bookingStatus)
+                )
+                setAddonAlerts(list.slice(0, 5))
+            }
+
             // Fetch Messages
             const msgRes = await fetch('/api/messages?limit=5', {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -106,6 +120,12 @@ export default function AdminHeader({ onToggleSidebar }: { onToggleSidebar: () =
         fetchData()
         const id = setInterval(fetchData, 30_000)
         return () => clearInterval(id)
+    }, [fetchData])
+
+    useEffect(() => {
+        const handler = () => fetchData()
+        window.addEventListener('admin-notifications-refresh', handler)
+        return () => window.removeEventListener('admin-notifications-refresh', handler)
     }, [fetchData])
 
     const handleLogout = () => {
@@ -256,10 +276,10 @@ export default function AdminHeader({ onToggleSidebar }: { onToggleSidebar: () =
                         className={`relative p-2 rounded-lg transition-all border ${isNotifOpen ? 'bg-muted border-border text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted border-transparent hover:border-border'}`}
                         aria-label="Notifications">
                         <Bell className="h-4 w-4" />
-                        {pendingBookings.length > 0 && (
+                        {(pendingBookings.length > 0 || addonAlerts.length > 0) && (
                             <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-0.5 text-[10px] font-bold
                                              bg-amber-500 text-white rounded-full flex items-center justify-center border border-card animate-pulse">
-                                {pendingBookings.length}
+                                {pendingBookings.length + addonAlerts.length}
                             </span>
                         )}
                     </button>
@@ -268,38 +288,62 @@ export default function AdminHeader({ onToggleSidebar }: { onToggleSidebar: () =
                         <div className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-[500]">
                             <div className="px-4 py-3 border-b border-border flex justify-between items-center bg-muted/30">
                                 <h3 className="text-xs font-black uppercase tracking-widest text-foreground">Notifications</h3>
-                                <Link href="/admin/bookings?status=SUBMITTED" onClick={() => setIsNotifOpen(false)} className="text-[10px] font-bold text-primary hover:underline">Monitor All</Link>
+                                <Link href="/admin/bookings" onClick={() => setIsNotifOpen(false)} className="text-[10px] font-bold text-primary hover:underline">Monitor All</Link>
                             </div>
                             <div className="max-h-[350px] overflow-y-auto">
-                                {pendingBookings.length > 0 ? (
-                                    pendingBookings.slice(0, 5).map((booking) => (
-                                        <button
-                                            key={booking.id}
-                                            onClick={() => {
-                                                router.push(`/admin/bookings?id=${booking.id}`);
-                                                setIsNotifOpen(false);
-                                            }}
-                                            className="w-full px-4 py-3 flex gap-3 hover:bg-muted transition-colors border-b border-border/50 text-left last:border-0 group"
-                                        >
-                                            <div className="h-8 w-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                                                <Clock className="h-4 w-4" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-xs font-bold text-foreground uppercase tracking-tight mb-0.5 truncate">{booking.proceedingType}</p>
-                                                <p className="text-[9px] font-medium text-muted-foreground uppercase">{booking.contact?.companyName || 'Private Client'}</p>
-                                                <div className="flex items-center gap-1.5 mt-1">
-                                                    <Check className="h-3 w-3 text-amber-500" />
-                                                    <span className="text-[8px] font-black text-amber-600 uppercase tracking-widest">New Booking</span>
-                                                </div>
-                                            </div>
-                                        </button>
-                                    ))
-                                ) : (
+                                {pendingBookings.length === 0 && addonAlerts.length === 0 && (
                                     <div className="py-8 text-center">
                                         <Bell className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
                                         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">All clear</p>
                                     </div>
                                 )}
+
+                                {pendingBookings.slice(0, 5).map((booking) => (
+                                    <button
+                                        key={booking.id}
+                                        onClick={() => {
+                                            router.push(`/admin/bookings?id=${booking.id}`);
+                                            setIsNotifOpen(false);
+                                        }}
+                                        className="w-full px-4 py-3 flex gap-3 hover:bg-muted transition-colors border-b border-border/50 text-left last:border-0 group"
+                                    >
+                                        <div className="h-8 w-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                            <Clock className="h-4 w-4" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs font-bold text-foreground uppercase tracking-tight mb-0.5 truncate">{booking.proceedingType}</p>
+                                            <p className="text-[9px] font-medium text-muted-foreground uppercase">{booking.contact?.companyName || 'Private Client'}</p>
+                                            <div className="flex items-center gap-1.5 mt-1">
+                                                <Check className="h-3 w-3 text-amber-500" />
+                                                <span className="text-[8px] font-black text-amber-600 uppercase tracking-widest">New Booking</span>
+                                            </div>
+                                        </div>
+                                    </button>
+                                ))}
+
+                                {addonAlerts.map((booking) => (
+                                    <button
+                                        key={`addon-${booking.id}`}
+                                        onClick={() => {
+                                            router.push(`/admin/bookings?id=${booking.id}`);
+                                            setIsNotifOpen(false);
+                                            window.dispatchEvent(new CustomEvent('admin-open-addon', { detail: { id: booking.id, text: booking.specialRequirements } }))
+                                        }}
+                                        className="w-full px-4 py-3 flex gap-3 hover:bg-primary/5 transition-colors border-b border-border/50 text-left last:border-0 group"
+                                    >
+                                        <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                            <Bell className="h-4 w-4" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs font-bold text-foreground uppercase tracking-tight mb-0.5 truncate">{booking.proceedingType}</p>
+                                            <p className="text-[9px] font-medium text-primary uppercase">Add-on request received</p>
+                                            <div className="flex items-center gap-1.5 mt-1">
+                                                <Check className="h-3 w-3 text-primary" />
+                                                <span className="text-[8px] font-black text-primary uppercase tracking-widest">Review & accept</span>
+                                            </div>
+                                        </div>
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     )}

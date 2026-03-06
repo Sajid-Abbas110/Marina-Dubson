@@ -36,6 +36,11 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
             return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
         }
 
+        // Prevent edits after payment
+        if (invoice.status?.toUpperCase() === 'PAID') {
+            return NextResponse.json({ error: 'Invoice is paid and cannot be edited.' }, { status: 403 })
+        }
+
         const updated = await prisma.invoice.update({
             where: { id: invoiceId },
             data: {
@@ -49,6 +54,34 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
             return NextResponse.json({ error: 'Invalid input', details: error.errors }, { status: 400 })
         }
         console.error('Update invoice error:', error)
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
+}
+
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+    try {
+        const token = extractTokenFromHeader(request.headers.get('Authorization'))
+        const payload = token ? verifyToken(token) : null
+
+        if (!payload) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        const invoice = await prisma.invoice.findUnique({
+            where: { id: params.id },
+            include: {
+                contact: true,
+                booking: true
+            }
+        })
+
+        if (!invoice) {
+            return NextResponse.json({ error: 'Not found' }, { status: 404 })
+        }
+
+        return NextResponse.json(invoice)
+    } catch (error) {
+        console.error('Fetch invoice error:', error)
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
