@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import prisma from '@/lib/prisma'
 import { integrationOrchestrator } from '@/lib/integration-orchestrator'
 import { extractTokenFromHeader, verifyToken } from '@/lib/auth'
 
