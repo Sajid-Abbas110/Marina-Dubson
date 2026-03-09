@@ -10,6 +10,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG DATABASE_URL="postgresql://localhost:5432/maria_dubson"
+ENV DATABASE_URL=${DATABASE_URL}
+ENV PRISMA_DATABASE_URL=${DATABASE_URL}
 RUN npm run build
 
 # --- runtime ---

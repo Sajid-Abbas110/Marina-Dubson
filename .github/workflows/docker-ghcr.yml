@@ -6,12 +6,14 @@ on:
   workflow_dispatch:
 
 permissions:
- contents: read
- packages: write
+  contents: read
+  packages: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      IMAGE: ''
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,5 +40,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          build-args: |
+            DATABASE_URL=postgresql://localhost:5432/maria_dubson
           push: true
           tags: ${{ env.IMAGE }}
