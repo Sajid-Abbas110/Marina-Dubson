@@ -1,17 +1,15 @@
-version: "3.9"
-
 services:
   db:
     image: postgres:15-alpine
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER_LOCAL}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_LOCAL}
-      POSTGRES_DB: ${POSTGRES_DB_NAME}
+      POSTGRES_USER: ${POSTGRES_USER_LOCAL:-marina}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_LOCAL:-3S!wK7zqP8^tRe5V}
+      POSTGRES_DB: ${POSTGRES_DB_NAME:-maria_dubson}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-marina} -d $${POSTGRES_DB:-maria_dubson}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,12 +22,12 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        - DATABASE_URL=${DATABASE_URL}
+        - DATABASE_URL=${DATABASE_URL:-postgresql://marina:3S!wK7zqP8^tRe5V@db:5432/maria_dubson?schema=public}
     restart: always
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://marina:3S!wK7zqP8^tRe5V@db:5432/maria_dubson?schema=public}
       - NODE_ENV=production
     env_file:
       - .env
@@ -45,8 +43,8 @@ services:
     image: dpage/pgadmin4:latest
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@marinadubson.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-MarinaAdmin123##!!}
       PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
       - "5050:80"
