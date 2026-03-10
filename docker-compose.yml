@@ -24,14 +24,8 @@ services:
       args:
         - DATABASE_URL=${DATABASE_URL:-postgresql://marina:3S!wK7zqP8^tRe5V@db:5432/maria_dubson?schema=public}
     restart: always
-    expose:
-      - "3000"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.marina-dubson.rule=Host(`app.dubverstandenservices.com`)"
-      - "traefik.http.routers.marina-dubson.entrypoints=websecure"
-      - "traefik.http.routers.marina-dubson.tls.certresolver=myresolver"
-      - "traefik.http.services.marina-dubson.loadbalancer.server.port=3000"
+    ports:
+      - "3000:3000"
     environment:
       - DATABASE_URL=${DATABASE_URL:-postgresql://marina:3S!wK7zqP8^tRe5V@db:5432/maria_dubson?schema=public}
       - NODE_ENV=production
@@ -44,7 +38,6 @@ services:
       - ./uploads:/app/uploads
     networks:
       - app-network
-      - proxy
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -63,8 +56,6 @@ services:
 networks:
   app-network:
     driver: bridge
-  proxy:
-    external: true
 
 volumes:
   postgres_data:
