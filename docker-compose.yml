@@ -25,7 +25,7 @@ services:
         - DATABASE_URL=${DATABASE_URL:-postgresql://marina:3S!wK7zqP8^tRe5V@db:5432/maria_dubson?schema=public}
     restart: always
     ports:
-      - "80:3000"
+      - "3000:3000"
     environment:
       - DATABASE_URL=${DATABASE_URL:-postgresql://marina:3S!wK7zqP8^tRe5V@db:5432/maria_dubson?schema=public}
       - NODE_ENV=production
