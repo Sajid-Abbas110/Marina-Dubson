@@ -1,10 +1,32 @@
 version: "3.9"
+
 services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER_LOCAL}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_LOCAL}
+      POSTGRES_DB: maria_dubson
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: "postgresql://localhost:5432/maria_dubson"
+      DATABASE_URL: ${LOCAL_DATABASE_URL}
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
