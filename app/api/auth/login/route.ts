@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
             },
         })
     } catch (error) {
-        console.error('Login error:', error)
+        console.error('[AUTH_LOGIN_ERROR]:', error)
         return NextResponse.json({ error: 'System busy. Please try again.' }, { status: 500 })
     }
 }
