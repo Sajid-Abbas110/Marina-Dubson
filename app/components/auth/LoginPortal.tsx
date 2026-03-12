@@ -28,19 +28,15 @@ export default function LoginPortal() {
     const [error, setError] = useState('')
     const [success, setSuccess] = useState(false)
     const [rememberMe, setRememberMe] = useState(false)
-    const [clientType, setClientType] = useState<'PRIVATE' | 'AGENCY'>('PRIVATE')
 
     // On mount: restore remembered email, check if already logged in
     useEffect(() => {
         const rememberedEmail = localStorage.getItem('rememberedEmail')
         const rememberedFlag = localStorage.getItem('rememberMe')
-        const rememberedClientType = localStorage.getItem('clientTypePreference') as 'PRIVATE' | 'AGENCY' | null
         if (rememberedEmail && rememberedFlag === 'true') {
             setEmail(rememberedEmail)
             setRememberMe(true)
         }
-        if (rememberedClientType) setClientType(rememberedClientType)
-
         // Auto-redirect if token already exists
         const token = localStorage.getItem('token')
         const userStr = localStorage.getItem('user')
@@ -66,7 +62,7 @@ export default function LoginPortal() {
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, clientType }),
+                body: JSON.stringify({ email, password }),
             })
 
             const data = await response.json()
@@ -83,10 +79,6 @@ export default function LoginPortal() {
                 } else {
                     localStorage.removeItem('rememberedEmail')
                     localStorage.setItem('rememberMe', 'false')
-                }
-
-                if (rememberMe) {
-                    localStorage.setItem('clientTypePreference', clientType)
                 }
 
                 setTimeout(() => {
@@ -108,7 +100,6 @@ export default function LoginPortal() {
     const features = [
         { icon: <FileText className="h-5 w-5" />, title: 'Booking Management', desc: 'Schedule and track all court reporting sessions in one place.' },
         { icon: <Gavel className="h-5 w-5" />, title: 'Documents Vault', desc: 'Securely access and manage all uploaded case documents and transcripts.' },
-        { icon: <Award className="h-5 w-5" />, title: 'Certified Reporters', desc: 'Access to a vetted network of professional court reporters.' },
     ]
 
     return (
@@ -206,29 +197,6 @@ export default function LoginPortal() {
                         </p>
                     </div>
 
-                    {/* Client type toggle */}
-                    <div className="mb-6">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-3">Client Type</p>
-                        <div className="grid grid-cols-2 gap-3">
-                            {[
-                                { key: 'PRIVATE', label: 'Private Client', desc: 'Solo / firm-side counsel' },
-                                { key: 'AGENCY', label: 'Agency', desc: 'Staffing or coverage agency' },
-                            ].map(option => {
-                                const active = clientType === option.key
-                                return (
-                                    <button
-                                        key={option.key}
-                                        type="button"
-                                        onClick={() => setClientType(option.key as any)}
-                                        className={`p-4 rounded-2xl border text-left transition-all ${active ? 'border-primary bg-primary/10 text-foreground shadow-lg shadow-primary/10' : 'border-border hover:border-primary/40 text-muted-foreground'}`}
-                                    >
-                                        <p className="text-sm font-semibold">{option.label}</p>
-                                        <p className="text-[11px] text-muted-foreground mt-1">{option.desc}</p>
-                                    </button>
-                                )
-                            })}
-                        </div>
-                    </div>
 
                     {/* Error alert */}
                     {error && (
@@ -263,7 +231,7 @@ export default function LoginPortal() {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         className="form-input pl-10"
-                                        placeholder={clientType === 'AGENCY' ? 'agency@marinadubson.com' : 'client@marinadubson.com'}
+                                        placeholder="email@marinadubson.com"
                                         autoComplete="email"
                                     />
                                 </div>

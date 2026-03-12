@@ -10,9 +10,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-ARG DATABASE_URL="postgresql://localhost:5432/maria_dubson"
+ARG DATABASE_URL
 ENV DATABASE_URL=${DATABASE_URL}
-ENV PRISMA_DATABASE_URL=${DATABASE_URL}
 RUN npm run build
 
 # --- runtime ---
@@ -20,11 +19,16 @@ FROM node:20-bookworm AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
-# Prisma client & schema
-COPY --from=builder /app/prisma ./prisma
-# Standalone Next output
+
+# Copy necessary files
+COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/scripts/entrypoint.sh ./scripts/entrypoint.sh
+
+# Ensure the entrypoint script is executable
+RUN chmod +x ./scripts/entrypoint.sh
+
 EXPOSE 3000
-CMD ["node", "server.js"]
+ENTRYPOINT ["./scripts/entrypoint.sh"]

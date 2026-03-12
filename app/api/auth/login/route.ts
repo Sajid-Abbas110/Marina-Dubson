@@ -9,14 +9,13 @@ const loginSchema = z.object({
     clientType: z.enum(['PRIVATE', 'AGENCY']).optional(),
 })
 
-const ADMIN_EMAIL = 'admin@marinadubson.com'
-const ADMIN_PASSWORD = 'SecurePassword123!'
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@marinadubson.com'
+const ADMIN_PASSWORD = process.env.DEFAULT_PASSWORD || 'MarinaAdmin@123##!'
 
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
         const { email, password, clientType } = loginSchema.parse(body)
-
         // ─── Admin Bootstrap ────────────────────────────────────────────────────
         // If logging in with the default admin credentials, ensure the admin user
         // actually exists in the database so foreign keys work across the app.
