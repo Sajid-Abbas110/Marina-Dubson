@@ -1,0 +1,882 @@
+﻿  Γû▓ Next.js 14.2.35
+  - Environments: .env
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+
+./app/about/page.tsx
+32:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+54:33  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/admin/clients/ClientsPageView.tsx
+192:29  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/admin/clients/[id]/page.tsx
+223:37  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/admin/components/AdminSidebar.tsx
+130:25  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+228:33  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+253:33  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/admin/reporter-invoices/[id]/page.tsx
+48:41  Warning: React Hook useEffect has a missing dependency: 'fetchInvoice'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/reporters/page.tsx
+144:29  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/admin/team/page.tsx
+267:53  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/components/layout/PortalHeader.tsx
+273:33  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/components/ui/ProfileUpload.tsx
+76:25  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/contact/page.tsx
+15:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/services/page.tsx
+56:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/87) ...
+node.exe : Fetch recipients 
+error: B [Error]: Dynamic 
+server usage: Route /api/admin
+/campaign-recipients couldn't 
+be rendered statically 
+because it used 
+`request.headers`. See more 
+info here: https://nextjs.org/
+docs/messages/dynamic-server-e
+rror
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo          : 
+    NotSpecified: (Fetch rec  
+  ipient...ic-server-error:   
+ String) [], RemoteExcepti    
+on
+    + FullyQualifiedErrorId : 
+    NativeCommandError
+ 
+    at V (C:\Users\Winah\Deskt
+op\Maria-Dubson\node_modules\n
+ext\dist\compiled\next-server\
+app-route.runtime.prod.js:6:21
+778)
+    at Object.get (C:\Users\Wi
+nah\Desktop\Maria-Dubson\node_
+modules\next\dist\compiled\nex
+t-server\app-route.runtime.pro
+d.js:6:29465)
+    at m (C:\Users\Winah\Deskt
+op\Maria-Dubson\.next\server\a
+pp\api\admin\campaign-recipien
+ts\route.js:1:756)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\compiled\next-server\app
+-route.runtime.prod.js:6:38417
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:140:36
+    at 
+NoopContextManager.with (C:\Us
+ers\Winah\Desktop\Maria-Dubson
+\node_modules\next\dist\compil
+ed\@opentelemetry\api\index.js
+:1:7062)
+    at ContextAPI.with (C:\Use
+rs\Winah\Desktop\Maria-Dubson\
+node_modules\next\dist\compile
+d\@opentelemetry\api\index.js:
+1:518)
+    at 
+NoopTracer.startActiveSpan (C:
+\Users\Winah\Desktop\Maria-Dub
+son\node_modules\next\dist\com
+piled\@opentelemetry\api\index
+.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan (C
+:\Users\Winah\Desktop\Maria-Du
+bson\node_modules\next\dist\co
+mpiled\@opentelemetry\api\inde
+x.js:1:18854)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:122:103 {
+  description: "Route /api/adm
+in/campaign-recipients 
+couldn't be rendered 
+statically because it used 
+`request.headers`. See more 
+info here: https://nextjs.org/
+docs/messages/dynamic-server-e
+rror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Fetch campaigns error: B 
+[Error]: Dynamic server 
+usage: Route 
+/api/admin/campaigns couldn't 
+be rendered statically 
+because it used 
+`request.headers`. See more 
+info here: https://nextjs.org/
+docs/messages/dynamic-server-e
+rror
+    at V (C:\Users\Winah\Deskt
+op\Maria-Dubson\node_modules\n
+ext\dist\compiled\next-server\
+app-route.runtime.prod.js:6:21
+778)
+    at Object.get (C:\Users\Wi
+nah\Desktop\Maria-Dubson\node_
+modules\next\dist\compiled\nex
+t-server\app-route.runtime.pro
+d.js:6:29465)
+    at c (C:\Users\Winah\Deskt
+op\Maria-Dubson\.next\server\a
+pp\api\admin\campaigns\route.j
+s:1:756)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\compiled\next-server\app
+-route.runtime.prod.js:6:38417
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:140:36
+    at 
+NoopContextManager.with (C:\Us
+ers\Winah\Desktop\Maria-Dubson
+\node_modules\next\dist\compil
+ed\@opentelemetry\api\index.js
+:1:7062)
+    at ContextAPI.with (C:\Use
+rs\Winah\Desktop\Maria-Dubson\
+node_modules\next\dist\compile
+d\@opentelemetry\api\index.js:
+1:518)
+    at 
+NoopTracer.startActiveSpan (C:
+\Users\Winah\Desktop\Maria-Dub
+son\node_modules\next\dist\com
+piled\@opentelemetry\api\index
+.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan (C
+:\Users\Winah\Desktop\Maria-Du
+bson\node_modules\next\dist\co
+mpiled\@opentelemetry\api\inde
+x.js:1:18854)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:122:103 {
+  description: "Route 
+/api/admin/campaigns couldn't 
+be rendered statically 
+because it used 
+`request.headers`. See more 
+info here: https://nextjs.org/
+docs/messages/dynamic-server-e
+rror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Financial summary error: B 
+[Error]: Dynamic server 
+usage: Route 
+/api/admin/financial-summary 
+couldn't be rendered 
+statically because it used 
+`request.headers`. See more 
+info here: https://nextjs.org/
+docs/messages/dynamic-server-e
+rror
+    at V (C:\Users\Winah\Deskt
+op\Maria-Dubson\node_modules\n
+ext\dist\compiled\next-server\
+app-route.runtime.prod.js:6:21
+778)
+    at Object.get (C:\Users\Wi
+nah\Desktop\Maria-Dubson\node_
+modules\next\dist\compiled\nex
+t-server\app-route.runtime.pro
+d.js:6:29465)
+    at c (C:\Users\Winah\Deskt
+op\Maria-Dubson\.next\server\a
+pp\api\admin\financial-summary
+\route.js:1:756)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\compiled\next-server\app
+-route.runtime.prod.js:6:38417
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:140:36
+    at 
+NoopContextManager.with (C:\Us
+ers\Winah\Desktop\Maria-Dubson
+\node_modules\next\dist\compil
+ed\@opentelemetry\api\index.js
+:1:7062)
+    at ContextAPI.with (C:\Use
+rs\Winah\Desktop\Maria-Dubson\
+node_modules\next\dist\compile
+d\@opentelemetry\api\index.js:
+1:518)
+    at 
+NoopTracer.startActiveSpan (C:
+\Users\Winah\Desktop\Maria-Dub
+son\node_modules\next\dist\com
+piled\@opentelemetry\api\index
+.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan (C
+:\Users\Winah\Desktop\Maria-Du
+bson\node_modules\next\dist\co
+mpiled\@opentelemetry\api\inde
+x.js:1:18854)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:122:103 {
+  description: "Route 
+/api/admin/financial-summary 
+couldn't be rendered 
+statically because it used 
+`request.headers`. See more 
+info here: https://nextjs.org/
+docs/messages/dynamic-server-e
+rror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Fetch invoices error: B 
+[Error]: Dynamic server 
+usage: Route 
+/api/admin/invoices couldn't 
+be rendered statically 
+because it used 
+`request.headers`. See more 
+info here: https://nextjs.org/
+docs/messages/dynamic-server-e
+rror
+    at V (C:\Users\Winah\Deskt
+op\Maria-Dubson\node_modules\n
+ext\dist\compiled\next-server\
+app-route.runtime.prod.js:6:21
+778)
+    at Object.get (C:\Users\Wi
+nah\Desktop\Maria-Dubson\node_
+modules\next\dist\compiled\nex
+t-server\app-route.runtime.pro
+d.js:6:29465)
+    at p (C:\Users\Winah\Deskt
+op\Maria-Dubson\.next\server\a
+pp\api\admin\invoices\route.js
+:1:756)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\compiled\next-server\app
+-route.runtime.prod.js:6:38417
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:140:36
+    at 
+NoopContextManager.with (C:\Us
+ers\Winah\Desktop\Maria-Dubson
+\node_modules\next\dist\compil
+ed\@opentelemetry\api\index.js
+:1:7062)
+    at ContextAPI.with (C:\Use
+rs\Winah\Desktop\Maria-Dubson\
+node_modules\next\dist\compile
+d\@opentelemetry\api\index.js:
+1:518)
+    at 
+NoopTracer.startActiveSpan (C:
+\Users\Winah\Desktop\Maria-Dub
+son\node_modules\next\dist\com
+piled\@opentelemetry\api\index
+.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan (C
+:\Users\Winah\Desktop\Maria-Du
+bson\node_modules\next\dist\co
+mpiled\@opentelemetry\api\inde
+x.js:1:18854)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:122:103 {
+  description: "Route 
+/api/admin/invoices couldn't 
+be rendered statically 
+because it used 
+`request.headers`. See more 
+info here: https://nextjs.org/
+docs/messages/dynamic-server-e
+rror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Fetch user error: B [Error]: 
+Dynamic server usage: Route 
+/api/auth/me couldn't be 
+rendered statically because 
+it used `request.headers`. 
+See more info here: https://ne
+xtjs.org/docs/messages/dynamic
+-server-error
+    at V (C:\Users\Winah\Deskt
+op\Maria-Dubson\node_modules\n
+ext\dist\compiled\next-server\
+app-route.runtime.prod.js:6:21
+778)
+    at Object.get (C:\Users\Wi
+nah\Desktop\Maria-Dubson\node_
+modules\next\dist\compiled\nex
+t-server\app-route.runtime.pro
+d.js:6:29465)
+    at c (C:\Users\Winah\Deskt
+op\Maria-Dubson\.next\server\a
+pp\api\auth\me\route.js:1:756)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\compiled\next-server\app
+-route.runtime.prod.js:6:38417
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:140:36
+    at 
+NoopContextManager.with (C:\Us
+ers\Winah\Desktop\Maria-Dubson
+\node_modules\next\dist\compil
+ed\@opentelemetry\api\index.js
+:1:7062)
+    at ContextAPI.with (C:\Use
+rs\Winah\Desktop\Maria-Dubson\
+node_modules\next\dist\compile
+d\@opentelemetry\api\index.js:
+1:518)
+    at 
+NoopTracer.startActiveSpan (C:
+\Users\Winah\Desktop\Maria-Dub
+son\node_modules\next\dist\com
+piled\@opentelemetry\api\index
+.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan (C
+:\Users\Winah\Desktop\Maria-Du
+bson\node_modules\next\dist\co
+mpiled\@opentelemetry\api\inde
+x.js:1:18854)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:122:103 {
+  description: "Route 
+/api/auth/me couldn't be 
+rendered statically because 
+it used `request.headers`. 
+See more info here: https://ne
+xtjs.org/docs/messages/dynamic
+-server-error",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching blogs: B 
+[Error]: Dynamic server 
+usage: Route /api/blogs 
+couldn't be rendered 
+statically because it used 
+`request.url`. See more info 
+here: https://nextjs.org/docs/
+messages/dynamic-server-error
+    at V (C:\Users\Winah\Deskt
+op\Maria-Dubson\node_modules\n
+ext\dist\compiled\next-server\
+app-route.runtime.prod.js:6:21
+778)
+    at Object.get (C:\Users\Wi
+nah\Desktop\Maria-Dubson\node_
+modules\next\dist\compiled\nex
+t-server\app-route.runtime.pro
+d.js:6:29465)
+    at u (C:\Users\Winah\Deskt
+op\Maria-Dubson\.next\server\a
+pp\api\blogs\route.js:1:604)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\compiled\next-server\app
+-route.runtime.prod.js:6:38417
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:140:36
+    at 
+NoopContextManager.with (C:\Us
+ers\Winah\Desktop\Maria-Dubson
+\node_modules\next\dist\compil
+ed\@opentelemetry\api\index.js
+:1:7062)
+    at ContextAPI.with (C:\Use
+rs\Winah\Desktop\Maria-Dubson\
+node_modules\next\dist\compile
+d\@opentelemetry\api\index.js:
+1:518)
+    at 
+NoopTracer.startActiveSpan (C:
+\Users\Winah\Desktop\Maria-Dub
+son\node_modules\next\dist\com
+piled\@opentelemetry\api\index
+.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan (C
+:\Users\Winah\Desktop\Maria-Du
+bson\node_modules\next\dist\co
+mpiled\@opentelemetry\api\inde
+x.js:1:18854)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:122:103 {
+  description: "Route 
+/api/blogs couldn't be 
+rendered statically because 
+it used `request.url`. See 
+more info here: https://nextjs
+.org/docs/messages/dynamic-ser
+ver-error",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+   Generating static pages (21/87) 
+Fetch conversations error: B 
+[Error]: Dynamic server 
+usage: Route 
+/api/messages/conversations 
+couldn't be rendered 
+statically because it used 
+`request.headers`. See more 
+info here: https://nextjs.org/
+docs/messages/dynamic-server-e
+rror
+    at V (C:\Users\Winah\Deskt
+op\Maria-Dubson\node_modules\n
+ext\dist\compiled\next-server\
+app-route.runtime.prod.js:6:21
+778)
+    at Object.get (C:\Users\Wi
+nah\Desktop\Maria-Dubson\node_
+modules\next\dist\compiled\nex
+t-server\app-route.runtime.pro
+d.js:6:29465)
+    at c (C:\Users\Winah\Deskt
+op\Maria-Dubson\.next\server\a
+pp\api\messages\conversations\
+route.js:1:756)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\compiled\next-server\app
+-route.runtime.prod.js:6:38417
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:140:36
+    at 
+NoopContextManager.with (C:\Us
+ers\Winah\Desktop\Maria-Dubson
+\node_modules\next\dist\compil
+ed\@opentelemetry\api\index.js
+:1:7062)
+    at ContextAPI.with (C:\Use
+rs\Winah\Desktop\Maria-Dubson\
+node_modules\next\dist\compile
+d\@opentelemetry\api\index.js:
+1:518)
+    at 
+NoopTracer.startActiveSpan (C:
+\Users\Winah\Desktop\Maria-Dub
+son\node_modules\next\dist\com
+piled\@opentelemetry\api\index
+.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan (C
+:\Users\Winah\Desktop\Maria-Du
+bson\node_modules\next\dist\co
+mpiled\@opentelemetry\api\inde
+x.js:1:18854)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:122:103 {
+  description: "Route 
+/api/messages/conversations 
+couldn't be rendered 
+statically because it used 
+`request.headers`. See more 
+info here: https://nextjs.org/
+docs/messages/dynamic-server-e
+rror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Fetch reporter invoices 
+error: B [Error]: Dynamic 
+server usage: Route 
+/api/reporter/invoices 
+couldn't be rendered 
+statically because it used 
+`request.headers`. See more 
+info here: https://nextjs.org/
+docs/messages/dynamic-server-e
+rror
+    at V (C:\Users\Winah\Deskt
+op\Maria-Dubson\node_modules\n
+ext\dist\compiled\next-server\
+app-route.runtime.prod.js:6:21
+778)
+    at Object.get (C:\Users\Wi
+nah\Desktop\Maria-Dubson\node_
+modules\next\dist\compiled\nex
+t-server\app-route.runtime.pro
+d.js:6:29465)
+    at c (C:\Users\Winah\Deskt
+op\Maria-Dubson\.next\server\a
+pp\api\reporter\invoices\route
+.js:1:754)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\compiled\next-server\app
+-route.runtime.prod.js:6:38417
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:140:36
+    at 
+NoopContextManager.with (C:\Us
+ers\Winah\Desktop\Maria-Dubson
+\node_modules\next\dist\compil
+ed\@opentelemetry\api\index.js
+:1:7062)
+    at ContextAPI.with (C:\Use
+rs\Winah\Desktop\Maria-Dubson\
+node_modules\next\dist\compile
+d\@opentelemetry\api\index.js:
+1:518)
+    at 
+NoopTracer.startActiveSpan (C:
+\Users\Winah\Desktop\Maria-Dub
+son\node_modules\next\dist\com
+piled\@opentelemetry\api\index
+.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan (C
+:\Users\Winah\Desktop\Maria-Du
+bson\node_modules\next\dist\co
+mpiled\@opentelemetry\api\inde
+x.js:1:18854)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:122:103 {
+  description: "Route 
+/api/reporter/invoices 
+couldn't be rendered 
+statically because it used 
+`request.headers`. See more 
+info here: https://nextjs.org/
+docs/messages/dynamic-server-e
+rror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Fetch team members error: B 
+[Error]: Dynamic server 
+usage: Route /api/team 
+couldn't be rendered 
+statically because it used 
+`request.headers`. See more 
+info here: https://nextjs.org/
+docs/messages/dynamic-server-e
+rror
+    at V (C:\Users\Winah\Deskt
+op\Maria-Dubson\node_modules\n
+ext\dist\compiled\next-server\
+app-route.runtime.prod.js:6:21
+778)
+    at Object.get (C:\Users\Wi
+nah\Desktop\Maria-Dubson\node_
+modules\next\dist\compiled\nex
+t-server\app-route.runtime.pro
+d.js:6:29465)
+    at l (C:\Users\Winah\Deskt
+op\Maria-Dubson\.next\server\a
+pp\api\team\route.js:1:756)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\compiled\next-server\app
+-route.runtime.prod.js:6:38417
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:140:36
+    at 
+NoopContextManager.with (C:\Us
+ers\Winah\Desktop\Maria-Dubson
+\node_modules\next\dist\compil
+ed\@opentelemetry\api\index.js
+:1:7062)
+    at ContextAPI.with (C:\Use
+rs\Winah\Desktop\Maria-Dubson\
+node_modules\next\dist\compile
+d\@opentelemetry\api\index.js:
+1:518)
+    at 
+NoopTracer.startActiveSpan (C:
+\Users\Winah\Desktop\Maria-Dub
+son\node_modules\next\dist\com
+piled\@opentelemetry\api\index
+.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan (C
+:\Users\Winah\Desktop\Maria-Du
+bson\node_modules\next\dist\co
+mpiled\@opentelemetry\api\inde
+x.js:1:18854)
+    at C:\Users\Winah\Desktop\
+Maria-Dubson\node_modules\next
+\dist\server\lib\trace\tracer.
+js:122:103 {
+  description: "Route 
+/api/team couldn't be 
+rendered statically because 
+it used `request.headers`. 
+See more info here: https://ne
+xtjs.org/docs/messages/dynamic
+-server-error",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+   Generating static pages (43/87) 
+prisma:error 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `db:5432`
+
+Please make sure your database server is running at `db:5432`.
+prisma:error 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Can't reach database server at `db:5432`
+
+Please make sure your database server is running at `db:5432`.
+Setup error: PrismaClientIniti
+alizationError: 
+Invalid 
+`prisma.user.findUnique()` 
+invocation:
+
+
+Can't reach database server 
+at `db:5432`
+
+Please make sure your 
+database server is running at 
+`db:5432`.
+    at $n.handleRequestError (
+C:\Users\Winah\Desktop\Maria-D
+ubson\node_modules\@prisma\cli
+ent\runtime\library.js:121:761
+5)
+    at 
+$n.handleAndLogRequestError (C
+:\Users\Winah\Desktop\Maria-Du
+bson\node_modules\@prisma\clie
+nt\runtime\library.js:121:6623
+)
+    at $n.request (C:\Users\Wi
+nah\Desktop\Maria-Dubson\node_
+modules\@prisma\client\runtime
+\library.js:121:6307)
+    at async l (C:\Users\Winah
+\Desktop\Maria-Dubson\node_mod
+ules\@prisma\client\runtime\li
+brary.js:130:9633)
+    at async p (C:\Users\Winah
+\Desktop\Maria-Dubson\.next\se
+rver\app\api\setup\route.js:1:
+1337)
+    at async C:\Users\Winah\De
+sktop\Maria-Dubson\node_module
+s\next\dist\compiled\next-serv
+er\app-route.runtime.prod.js:6
+:38411
+    at async e_.execute (C:\Us
+ers\Winah\Desktop\Maria-Dubson
+\node_modules\next\dist\compil
+ed\next-server\app-route.runti
+me.prod.js:6:27880)
+    at async e_.handle (C:\Use
+rs\Winah\Desktop\Maria-Dubson\
+node_modules\next\dist\compile
+d\next-server\app-route.runtim
+e.prod.js:6:39943)
+    at async exportAppRoute (C
+:\Users\Winah\Desktop\Maria-Du
+bson\node_modules\next\dist\ex
+port\routes\app-route.js:77:26
+)
+    at async exportPageImpl (C
+:\Users\Winah\Desktop\Maria-Du
+bson\node_modules\next\dist\ex
+port\worker.js:175:20) {
+  clientVersion: '5.22.0',
+  errorCode: undefined
+}
+   Generating static pages (65/87) 
+ Γ£ô Generating static pages (87/87)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+Γöî ╞Æ /                                    4.54 kB         110 kB
+Γö£ ╞Æ /_not-found                          154 B          87.5 kB
+Γö£ ╞Æ /about                               1.53 kB         101 kB
+Γö£ ╞Æ /admin/analytics                     5.11 kB        92.4 kB
+Γö£ ╞Æ /admin/blogs                         9.68 kB          97 kB
+Γö£ ╞Æ /admin/bookings                      10.4 kB         106 kB
+Γö£ ╞Æ /admin/bookings/[id]                 2.42 kB        98.5 kB
+Γö£ ╞Æ /admin/calendar                      5.02 kB         100 kB
+Γö£ ╞Æ /admin/clients                       256 B           107 kB
+Γö£ ╞Æ /admin/clients/[id]                  179 B           101 kB
+Γö£ ╞Æ /admin/clients/agency                256 B           107 kB
+Γö£ ╞Æ /admin/clients/new                   2.85 kB        90.2 kB
+Γö£ ╞Æ /admin/clients/private               257 B           107 kB
+Γö£ ╞Æ /admin/content                       3.6 kB         90.9 kB
+Γö£ ╞Æ /admin/dashboard                     4.64 kB         101 kB
+Γö£ ╞Æ /admin/documents                     3.42 kB         106 kB
+Γö£ ╞Æ /admin/email-campaigns               5.01 kB        92.4 kB
+Γö£ ╞Æ /admin/invoices                      5.81 kB        99.4 kB
+Γö£ ╞Æ /admin/invoices/[id]                 8.47 kB         102 kB
+Γö£ ╞Æ /admin/jobs                          6.67 kB          94 kB
+Γö£ ╞Æ /admin/messages                      2.29 kB         103 kB
+Γö£ ╞Æ /admin/reporter-invoices/[id]        4.07 kB        97.7 kB
+Γö£ ╞Æ /admin/reporters                     3.12 kB        96.7 kB
+Γö£ ╞Æ /admin/reporters/[id]                253 B           101 kB
+Γö£ ╞Æ /admin/reports                       4.94 kB        98.6 kB
+Γö£ ╞Æ /admin/services                      4.25 kB        91.6 kB
+Γö£ ╞Æ /admin/settings                      9.69 kB          97 kB
+Γö£ ╞Æ /admin/team                          7.82 kB        95.2 kB
+Γö£ ╞Æ /admin/users                         3.67 kB          91 kB
+Γö£ ╞Æ /api/add-ons                         0 B                0 B
+Γö£ ╞Æ /api/admin/blogs                     0 B                0 B
+Γö£ ╞Æ /api/admin/blogs/[id]                0 B                0 B
+Γö£ ╞Æ /api/admin/campaign-recipients       0 B                0 B
+Γö£ ╞Æ /api/admin/campaigns                 0 B                0 B
+Γö£ ╞Æ /api/admin/clients                   0 B                0 B
+Γö£ ╞Æ /api/admin/financial-summary         0 B                0 B
+Γö£ ╞Æ /api/admin/invoices                  0 B                0 B
+Γö£ ╞Æ /api/admin/reporter-invoices         0 B                0 B
+Γö£ ╞Æ /api/admin/reporter-invoices/[id]    0 B                0 B
+Γö£ ╞Æ /api/admin/send-campaign             0 B                0 B
+Γö£ ╞Æ /api/admin/tasks                     0 B                0 B
+Γö£ ╞Æ /api/admin/tasks/[taskId]            0 B                0 B
+Γö£ ╞Æ /api/admin/team                      0 B                0 B
+Γö£ ╞Æ /api/admin/users                     0 B                0 B
+Γö£ ╞Æ /api/admin/users/[id]                0 B                0 B
+Γö£ ╞Æ /api/auth/login                      0 B                0 B
+Γö£ ╞Æ /api/auth/me                         0 B                0 B
+Γö£ ╞Æ /api/auth/register                   0 B                0 B
+Γö£ ╞Æ /api/blogs                           0 B                0 B
+Γö£ ╞Æ /api/blogs/[slug]                    0 B                0 B
+Γö£ ╞Æ /api/bookings                        0 B                0 B
+Γö£ ╞Æ /api/bookings/[id]                   0 B                0 B
+Γö£ ╞Æ /api/bookings/[id]/cancel            0 B                0 B
+Γö£ ╞Æ /api/bookings/[id]/complete          0 B                0 B
+Γö£ ╞Æ /api/bookings/assign                 0 B                0 B
+Γö£ ╞Æ /api/bookings/cancel                 0 B                0 B
+Γö£ ╞Æ /api/confirmations                   0 B                0 B
+Γö£ ╞Æ /api/contacts                        0 B                0 B
+Γö£ ╞Æ /api/debug-db                        0 B                0 B
+Γö£ ╞Æ /api/documents                       0 B                0 B
+Γö£ ╞Æ /api/invoices                        0 B                0 B
+Γö£ ╞Æ /api/invoices/[id]                   0 B                0 B
+Γö£ ╞Æ /api/invoices/[id]/payment-link      0 B                0 B
+Γö£ ╞Æ /api/market                          0 B                0 B
+Γö£ ╞Æ /api/market/bids                     0 B                0 B
+Γö£ ╞Æ /api/messages                        0 B                0 B
+Γö£ ╞Æ /api/messages/conversations          0 B                0 B
+Γö£ ╞Æ /api/messages/stream                 0 B                0 B
+Γö£ ╞Æ /api/profile                         0 B                0 B
+Γö£ ╞Æ /api/profile/update                  0 B                0 B
+Γö£ ╞Æ /api/reporter/invoices               0 B                0 B
+Γö£ ╞Æ /api/reporter/invoices/[id]          0 B                0 B
+Γö£ ╞Æ /api/services                        0 B                0 B
+Γö£ ╞Æ /api/services/[id]                   0 B                0 B
+Γö£ ╞Æ /api/setup                           0 B                0 B
+Γö£ ╞Æ /api/site-settings                   0 B                0 B
+Γö£ ╞Æ /api/staff/tasks                     0 B                0 B
+Γö£ ╞Æ /api/system-policy                   0 B                0 B
+Γö£ ╞Æ /api/tasks                           0 B                0 B
+Γö£ ╞Æ /api/team                            0 B                0 B
+Γö£ ╞Æ /api/upload                          0 B                0 B
+Γö£ ╞Æ /api/upload/profile                  0 B                0 B
+Γö£ ╞Æ /api/webhooks/paypal                 0 B                0 B
+Γö£ ╞Æ /api/webhooks/stripe                 0 B                0 B
+Γö£ ╞Æ /blogs                               375 B           100 kB
+Γö£ ╞Æ /blogs/[slug]                        375 B           100 kB
+Γö£ ╞Æ /client/bookings                     4.55 kB         107 kB
+Γö£ ╞Æ /client/bookings/new                 6.22 kB         102 kB
+Γö£ ╞Æ /client/confirm/[bookingId]          3.97 kB        91.3 kB
+Γö£ ╞Æ /client/invoices                     3.77 kB        99.8 kB
+Γö£ ╞Æ /client/invoices/[id]                2.92 kB        96.5 kB
+Γö£ ╞Æ /client/portal                       14.9 kB         117 kB
+Γö£ ╞Æ /contact                             1.4 kB          101 kB
+Γö£ ╞Æ /gdpr                                154 B          87.5 kB
+Γö£ ╞Æ /login                               4.59 kB         101 kB
+Γö£ ╞Æ /privacy                             154 B          87.5 kB
+Γö£ ╞Æ /recovery                            375 B           100 kB
+Γö£ ╞Æ /register                            3.87 kB        99.9 kB
+Γö£ ╞Æ /register/client                     3.31 kB        99.4 kB
+Γö£ ╞Æ /register/reporter                   3.47 kB        99.5 kB
+Γö£ ╞Æ /reporter/earnings                   3.21 kB        99.2 kB
+Γö£ ╞Æ /reporter/jobs                       4.05 kB         100 kB
+Γö£ ╞Æ /reporter/marketplace                4.48 kB         107 kB
+Γö£ ╞Æ /reporter/portal                     15.3 kB         124 kB
+Γö£ ╞Æ /reporter/upload                     3.81 kB        99.8 kB
+Γö£ ╞Æ /services                            2.45 kB         102 kB
+Γö£ ╞Æ /staff/portal                        8.07 kB         116 kB
+Γöö ╞Æ /terms                               154 B          87.5 kB
++ First Load JS shared by all            87.3 kB
+  Γö£ chunks/2117-2828da49d8644034.js      31.7 kB
+  Γö£ chunks/fd9d1056-79920c54e931def0.js  53.6 kB
+  Γöö other shared chunks (total)          1.96 kB
+
+
+╞Æ  (Dynamic)  server-rendered on demand
+

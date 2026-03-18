@@ -9,13 +9,14 @@ export function HomepageHero() {
     return (
         <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
             <div className="absolute inset-0 z-0">
-                <Image
-                    src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1920&q=80"
-                    alt="Courthouse Hero"
-                    fill
-                    className="object-cover brightness-[0.4]"
-                    priority
-                />
+                    <Image
+                        src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1920&q=80"
+                        alt="Courthouse Hero"
+                        fill
+                        sizes="100vw"
+                        className="object-cover brightness-[0.4]"
+                        priority
+                    />
             </div>
 
             <div className="relative z-10 max-w-5xl mx-auto px-4 text-center text-white space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
@@ -68,6 +69,7 @@ export function WhoWeAre() {
                                     src={card.img}
                                     alt={card.title}
                                     fill
+                                    sizes="(min-width: 768px) 33vw, 100vw"
                                     className="object-cover group-hover:scale-110 transition-transform duration-700"
                                 />
                             </div>
@@ -92,6 +94,7 @@ export function SolutionsSection() {
                     src="https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?auto=format&fit=crop&w=1920&q=80"
                     alt="Solutions BG"
                     fill
+                    sizes="100vw"
                     className="object-cover brightness-[0.3]"
                 />
             </div>
@@ -121,14 +124,14 @@ export function ServiceGrid() {
             desc: 'Elite reporters supported by production teams that verify transcripts and deliver secure files for depositions, arbitrations, and examinations.',
             bullets: ['Depositions', 'Arbitrations & Mediations', 'Examinations Under Oath', 'Mark “Other” for bespoke or multi-day matters'],
             note: 'Select “Other” when your proceeding is custom—our concierge clarifies the scope before the calendar locks.',
-            img: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80'
+            img: 'https://images.unsplash.com/photo-1521790945508-bf2a36314e85?auto=format&fit=crop&w=900&q=80'
         },
         {
             title: 'CART & Live Captioning',
             desc: 'Communication Access Real-Time Translation engineered for ADA compliance with glossary-backed captioners and secure viewer portals.',
             bullets: ['Remote / On-site CART', 'Secure viewer links & transcripts', 'Speaker ID + glossary prep'],
             note: 'Always choose “Other” for CART and describe the hearing or meeting context so the right captioner and tech are staged.',
-            img: 'https://images.unsplash.com/photo-1580894894513-541e068a3e2c?auto=format&fit=crop&w=900&q=80'
+            img: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1920&q=80'
         }
     ]
 
@@ -157,6 +160,7 @@ export function ServiceGrid() {
                                 src={s.img}
                                 alt={s.title}
                                 fill
+                                sizes="100vw"
                                 className="object-cover group-hover:scale-105 transition-transform duration-700"
                             />
                         </div>
@@ -191,12 +195,12 @@ export function ServiceGrid() {
                     <div className="flex items-center gap-3">
                         <FileText className="h-5 w-5 text-primary" />
                         <div>
-                            <p className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground">Documents Vault</p>
+                            <p className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground">Document Storage</p>
                             <p className="text-sm font-black text-foreground uppercase tracking-tight">PDF / DOC / TXT support</p>
                         </div>
                     </div>
                     <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                        Every transcript or exhibit you upload forwards to the Documents Vault, organized by booking so your team can download securely later.
+                        Every transcript or exhibit you upload is stored securely, organized by booking so your team can download files later.
                     </p>
                     <div className="space-y-2 text-[10px] uppercase tracking-[0.2em] text-gray-500">
                         {addOns.map((addon) => (
@@ -240,6 +244,7 @@ export function BlogTeaser() {
                             className="object-cover"
                             alt="Main Article"
                             fill
+                            sizes="(min-width: 1024px) 50vw, 100vw"
                         />
                     </div>
                     <h3 className="text-3xl font-black text-[#1a1a1a] uppercase italic leading-tight">
@@ -264,6 +269,7 @@ export function BlogTeaser() {
                                 <Image
                                     src={`https://images.unsplash.com/photo-${i === 0 ? '1589829545856-d10d557cf95f' : i === 1 ? '1505664194779-8beaceb93744' : '1450101499163-c8848c66ca85'}?auto=format&fit=crop&w=300&q=80`}
                                     fill
+                                    sizes="(min-width: 1024px) 25vw, 33vw"
                                     className="object-cover group-hover:scale-110 transition-all duration-500"
                                     alt="Side Article"
                                 />
@@ -301,6 +307,7 @@ export function ContactSection() {
                         <Image
                             src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80"
                             fill
+                            sizes="(min-width: 1024px) 48vw, 100vw"
                             className="object-cover"
                             alt="Contact"
                         />

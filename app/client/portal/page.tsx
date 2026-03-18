@@ -543,7 +543,7 @@ export default function ClientPortal() {
                                 <div className="h-10 w-10 rounded-xl bg-violet-500/20 flex items-center justify-center text-violet-500 mb-4 shadow-lg shadow-violet-500/10">
                                     <FileText className="h-5 w-5" />
                                 </div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Documents Vault</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">My Documents</p>
                                 <p className="text-3xl font-black text-violet-500 tracking-tighter uppercase">{stats.files}</p>
                             </button>
                         </div>
@@ -689,14 +689,14 @@ export default function ClientPortal() {
                     activeTab === 'documents' && (
                         <div className="glass-panel rounded-[2.5rem] p-5 md:p-10">
                             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 mb-6">
-                                <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Documents Vault</h3>
+                                <h3 className="text-xl font-black text-foreground uppercase tracking-tight">My Documents</h3>
                                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center w-full sm:w-auto">
                                     <div className="flex flex-wrap items-center gap-3">
                                         <div className="relative flex-1 min-w-[220px]">
                                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                             <input
                                                 className="w-full pl-11 pr-4 py-3 rounded-xl bg-muted/50 border border-border text-[10px] font-black uppercase outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
-                                                placeholder="Search Vault..."
+                                                placeholder="Search Documents..."
                                                 value={docSearchQuery}
                                                 onChange={(e) => setDocSearchQuery(e.target.value)}
                                             />
@@ -789,7 +789,7 @@ export default function ClientPortal() {
                                 )) : (
                                     <div className="md:col-span-2 py-20 text-center border-2 border-dashed border-border rounded-[2rem]">
                                         <FileText className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-                                        <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">Vault is currently empty.</p>
+                                        <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">No documents yet.</p>
                                     </div>
                                 )}
                             </div>

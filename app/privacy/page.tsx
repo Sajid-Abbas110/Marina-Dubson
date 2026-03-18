@@ -22,7 +22,7 @@ export default function PrivacyPolicy() {
                         <p>
                             All data transmitted through the Marina Dubson global network is protected by RSA-4096
                             encryption. We do not sell your signal to third-party data harvesters. Your case
-                            transcripts are sequestered in dedicated air-gapped vaults.
+                            transcripts are stored in dedicated air-gapped repositories.
                         </p>
                     </section>
 

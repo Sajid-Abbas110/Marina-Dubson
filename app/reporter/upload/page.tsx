@@ -173,7 +173,7 @@ export default function ReporterUploadPage() {
                                 <div className="absolute inset-0 bg-primary rounded-[3rem] animate-ping opacity-20 pointer-events-none"></div>
                             </div>
                             <h2 className="text-4xl font-black text-foreground uppercase tracking-tighter mb-4">Transmission Successful</h2>
-                            <p className="text-muted-foreground font-medium max-w-sm mx-auto leading-relaxed mb-12">The digital asset has been vaulted. The legal firm associated with <strong>{activeAssignment?.id}</strong> has been notified via secure channel.</p>
+                            <p className="text-muted-foreground font-medium max-w-sm mx-auto leading-relaxed mb-12">The digital asset has been stored securely. The legal firm associated with <strong>{activeAssignment?.id}</strong> has been notified via secure channel.</p>
                             <div className="flex items-center justify-center gap-8">
                                 <Link
                                     href="/reporter/portal"

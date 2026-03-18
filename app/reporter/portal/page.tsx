@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -1033,7 +1033,7 @@ export default function ReporterPortal() {
                                                 headers: { 'Authorization': `Bearer ${token}` },
                                                 body: formData
                                             });
-                                            if (res.ok) alert('Asset Transmitted Successfully to Client Vault');
+                                            if (res.ok) alert('Asset Transmitted Successfully to Client Portal');
                                             else alert('Transmission Refused by Server');
                                         }}
                                     />

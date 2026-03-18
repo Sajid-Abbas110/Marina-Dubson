@@ -43,9 +43,9 @@ export default function RootLayout({
                 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
                 <link rel="apple-touch-icon" href="/favicon.svg" />
             </head>
-            <body className="font-poppins">
+            <body className="font-poppins bg-white min-h-screen flex flex-col">
                 <ThemeProvider>
-                    <main className="min-h-screen">
+                    <main className="flex-1 flex flex-col">
                         {children}
                     </main>
                     {/* <PWAInstallPrompt /> */}

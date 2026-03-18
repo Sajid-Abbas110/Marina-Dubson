@@ -216,7 +216,7 @@ export default function NewBookingPage() {
                         <div className="h-10 w-10 rounded-xl bg-foreground text-background flex items-center justify-center font-black group-hover:bg-primary transition-colors">
                             MD
                         </div>
-                        <span className="text-xs font-black uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">Return to Vault</span>
+                        <span className="text-xs font-black uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">Return to Dashboard</span>
                     </Link>
                     <div className="flex items-center gap-6">
                         <div className="flex items-center gap-2">
@@ -514,7 +514,7 @@ export default function NewBookingPage() {
                                 href="/client/portal"
                                 className="inline-flex items-center gap-4 py-5 px-12 rounded-2xl bg-foreground text-background font-black text-[10px] uppercase tracking-[0.3em] hover:bg-primary hover:text-primary-foreground transition-all shadow-xl"
                             >
-                                Track Assignment in Vault <LayoutDashboard className="h-4 w-4" />
+                                Track Assignment in Dashboard <LayoutDashboard className="h-4 w-4" />
                             </Link>
                         </div>
                     )}

@@ -99,7 +99,7 @@ export default function LoginPortal() {
 
     const features = [
         { icon: <FileText className="h-5 w-5" />, title: 'Booking Management', desc: 'Schedule and track all court reporting sessions in one place.' },
-        { icon: <Gavel className="h-5 w-5" />, title: 'Documents Vault', desc: 'Securely access and manage all uploaded case documents and transcripts.' },
+        { icon: <Gavel className="h-5 w-5" />, title: 'My Documents', desc: 'Securely access and manage all uploaded case documents and transcripts.' },
     ]
 
     return (

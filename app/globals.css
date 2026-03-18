@@ -504,10 +504,7 @@
     @apply overflow-x-hidden w-full;
   }
 
-  /* Safe area padding for the content to not be hidden by the bottom nav */
-  main {
-    @apply pb-28 pt-2;
-  }
+  /* Note: Portal layouts handle their own bottom padding (pb-20 lg:pb-0) internally */
 
   /* Fixed headers for mobile */
   .mobile-header {

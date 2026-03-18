@@ -24,7 +24,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const ALLOWED_FILE_TYPES = '.pdf,.doc,.docx,.txt'
 
-export default function AdminDocumentVaultPage() {
+export default function AdminDocumentArchivePage() {
     const [documents, setDocuments] = useState<any[]>([])
     const [bookings, setBookings] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
@@ -54,7 +54,7 @@ export default function AdminDocumentVaultPage() {
             setDocuments(Array.isArray(data.documents) ? data.documents : [])
         } catch (err) {
             console.error('Fetch documents failed:', err)
-            setStatusMessage({ type: 'error', text: 'Failed to load document vault.' })
+            setStatusMessage({ type: 'error', text: 'Failed to load document archive.' })
         } finally {
             setLoading(false)
         }
@@ -134,7 +134,7 @@ export default function AdminDocumentVaultPage() {
     return (
         <div className="max-w-6xl mx-auto px-4 py-10 space-y-8">
             <header className="space-y-2">
-                <p className="text-[10px] uppercase tracking-[0.5em] text-muted-foreground font-black">Vault Operations</p>
+                <p className="text-[10px] uppercase tracking-[0.5em] text-muted-foreground font-black">Archive Operations</p>
                 <h1 className="text-3xl font-black text-foreground uppercase tracking-tight flex items-center gap-3">
                     <FolderOpen className="h-6 w-6 text-primary" /> Document Management
                 </h1>
@@ -235,7 +235,7 @@ export default function AdminDocumentVaultPage() {
             <section className="glass-panel rounded-[2.5rem] p-6 border border-border space-y-6">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h2 className="text-xl font-black text-foreground uppercase tracking-tight">Document Vault</h2>
+                        <h2 className="text-xl font-black text-foreground uppercase tracking-tight">Document Archive</h2>
                         <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground">Search, filter, and download portal assets</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">

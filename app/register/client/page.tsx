@@ -176,7 +176,7 @@ export default function ClientRegisterPage() {
                                         placeholder="CREATE SECURE PASSWORD"
                                     />
                                 </div>
-                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-tight text-right">AES-256 Vaulted Protection Active</p>
+                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-tight text-right">AES-256 Encrypted Protection Active</p>
                             </div>
 
                             <button

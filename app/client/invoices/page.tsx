@@ -177,7 +177,7 @@ export default function ClientInvoicesPage() {
 
                 <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 opacity-60">
                     <FeatureNode title="Auto-Pay Ready" desc="Automate high-volume legal billing cycles." icon={<Zap />} />
-                    <FeatureNode title="Digital Archiving" desc="Invoices vaulted with SOC-2 compliance." icon={<ShieldCheck />} />
+                    <FeatureNode title="Digital Archiving" desc="Invoices secured with SOC-2 compliant document protections." icon={<ShieldCheck />} />
                     <FeatureNode title="Direct Support" desc="Immediate billing escalations available." icon={<Building2 />} />
                 </div>
             </main>

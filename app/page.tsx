@@ -6,11 +6,11 @@ import { HomepageHero, WhoWeAre, SolutionsSection, ServiceGrid, BlogTeaser, Cont
 
 export default function HomePage() {
     return (
-        <div className="bg-white min-h-screen">
+        <div className="bg-white min-h-screen flex flex-col">
             <PublicTopBar />
             <PublicHeader />
 
-            <main>
+            <main className="flex-1">
                 <HomepageHero />
                 <WhoWeAre />
                 <SolutionsSection />

@@ -31,9 +31,9 @@ export default function AdaptiveContentPortal() {
     const [activeSource, setActiveSource] = useState('ALL')
 
     const globalAssets = [
-        { id: 'REC-X-2026', title: 'Smith vs. Jones Full Render', size: '2.4 GB', location: 'VAULT_01', type: 'VIDEO/4K', status: 'SYNCHRONIZED', date: 'FEB 16' },
-        { id: 'REC-Y-2026', title: 'Holographic ASCII Index', size: '14 KB', location: 'VAULT_04', type: 'DATA/VND', status: 'ENCRYPTED', date: 'FEB 15' },
-        { id: 'REC-Z-2026', title: 'Global Settlement Archive', size: '412 MB', location: 'VAULT_09', type: 'DOC/PDF', status: 'VERIFIED', date: 'FEB 14' }
+        { id: 'REC-X-2026', title: 'Smith vs. Jones Full Render', size: '2.4 GB', location: 'STORAGE_01', type: 'VIDEO/4K', status: 'SYNCHRONIZED', date: 'FEB 16' },
+        { id: 'REC-Y-2026', title: 'Holographic ASCII Index', size: '14 KB', location: 'STORAGE_04', type: 'DATA/VND', status: 'ENCRYPTED', date: 'FEB 15' },
+        { id: 'REC-Z-2026', title: 'Global Settlement Archive', size: '412 MB', location: 'STORAGE_09', type: 'DOC/PDF', status: 'VERIFIED', date: 'FEB 14' }
     ]
 
     return (
@@ -70,7 +70,7 @@ export default function AdaptiveContentPortal() {
                 <div className="lg:col-span-2 space-y-8">
                     <div className="flex items-center gap-4 p-2 bg-muted rounded-2xl w-fit">
                         <button className="px-6 py-2 rounded-xl bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-lg">All Assets</button>
-                        <button className="px-6 py-2 rounded-xl text-muted-foreground hover:text-primary text-[10px] font-black uppercase tracking-widest transition-all">Documents Vault</button>
+                        <button className="px-6 py-2 rounded-xl text-muted-foreground hover:text-primary text-[10px] font-black uppercase tracking-widest transition-all">Documents</button>
                         <button className="px-6 py-2 rounded-xl text-muted-foreground hover:text-primary text-[10px] font-black uppercase tracking-widest transition-all">Renders</button>
                     </div>
 
