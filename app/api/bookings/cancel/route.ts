@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth'
-import BookingRulesService from '@/lib/booking-rules'
+import BookingRulesService, { MINIMUM_BOOKING_FEE } from '@/lib/booking-rules'
 import prisma from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {

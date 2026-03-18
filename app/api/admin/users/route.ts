@@ -6,7 +6,11 @@ import { extractTokenFromHeader, hashPassword, TokenPayload, verifyToken } from 
 import { sendEmail, emailTemplates } from '@/lib/email'
 
 const ADMIN_ROLES = ['ADMIN', 'SUPER_ADMIN']
-const CLIENT_ROLES = ['CLIENT', 'AGENCY']
+const CLIENT_ROLES = ['CLIENT', 'AGENCY'] as const
+type ClientRole = (typeof CLIENT_ROLES)[number]
+type ClientType = 'PRIVATE' | 'AGENCY'
+
+const isClientRole = (role: string): role is ClientRole => CLIENT_ROLES.includes(role as ClientRole)
 const PASSWORD_LENGTH = 10
 
 const createUserSchema = z.object({
@@ -31,10 +35,9 @@ const requireAdmin = (request: NextRequest): TokenPayload | null => {
 
 const buildTemporaryPassword = () => crypto.randomBytes(Math.ceil(PASSWORD_LENGTH / 2)).toString('hex').slice(0, PASSWORD_LENGTH)
 
-const mapRoleToClientType = (role: string, provided?: string) => {
+const mapRoleToClientType = (role: ClientRole, provided?: ClientType): ClientType => {
     if (role === 'AGENCY') return 'AGENCY'
-    if (role === 'CLIENT') return provided || 'PRIVATE'
-    return undefined
+    return provided ?? 'PRIVATE'
 }
 
 export async function GET(request: NextRequest) {
@@ -133,7 +136,7 @@ export async function POST(request: NextRequest) {
             }
         })
 
-        if (CLIENT_ROLES.includes(data.role)) {
+        if (isClientRole(data.role)) {
             const contactType = mapRoleToClientType(data.role, data.clientType)
             try {
                 const existingContact = await prisma.contact.findUnique({
@@ -146,7 +149,7 @@ export async function POST(request: NextRequest) {
                         lastName: data.lastName,
                         email: data.email,
                         companyName: data.company,
-                        clientType: contactType,
+                        clientType: contactType || 'PRIVATE',
                         status: 'Active'
                     }
                 })
@@ -161,7 +164,7 @@ export async function POST(request: NextRequest) {
         }
 
         try {
-            const loginLink = `${process.env.NEXT_PUBLIC_APP_URL || 'https://marina-dubson.vercel.app'}/login`
+            const loginLink = `${process.env.NEXT_PUBLIC_APP_URL || 'https://dubsonstenoservices.com'}/login`
             const emailTemplate = emailTemplates.welcomeEmail(user.firstName, user.role, loginLink)
 
             await sendEmail({
