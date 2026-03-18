@@ -33,6 +33,10 @@ export default function ClientBookingsPage() {
     const [cancelInfo, setCancelInfo] = useState<{ canCancel: boolean; deadline: string; hoursRemaining?: number; message: string } | null>(null)
     const [cancelLoading, setCancelLoading] = useState(false)
 
+    const lateFeeAmountValue = cancelInfo?.lateFeeAmount ?? 400
+    const lateFeeLabel = cancelInfo?.lateFeeLabel ?? `Late Cancellation — $${lateFeeAmountValue.toFixed(0)} Fee`
+    const lateFeeButtonLabel = `Cancel — $${lateFeeAmountValue.toFixed(2)} Fee`
+
     useEffect(() => {
         const fetchBookings = async () => {
             try {
@@ -141,7 +145,7 @@ export default function ClientBookingsPage() {
                         <h2 className="text-5xl font-black text-foreground tracking-tighter uppercase leading-none">
                             Assignment <span className="text-primary">Matrix</span>
                         </h2>
-                        <p className="text-muted-foreground font-medium max-w-lg leading-relaxed uppercase tracking-widest text-[10px]">Monitoring verified stenographic deployments across the global infrastructure.</p>
+                        <p className="text-muted-foreground font-medium max-w-lg leading-relaxed uppercase tracking-widest text-[10px]">Monitoring verified stenographic bookings across the global infrastructure.</p>
                     </div>
                     <div className="flex items-center gap-6">
                         <div className="p-8 rounded-[2.5rem] bg-card border border-border shadow-xl shadow-primary/5 min-w-[240px]">
@@ -300,13 +304,13 @@ export default function ClientBookingsPage() {
                                         <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20">
                                             <div className="flex items-center gap-2 mb-1">
                                                 <AlertTriangle className="h-4 w-4 text-rose-500" />
-                                                <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest">Late Cancellation — $400 Fee</p>
+                                        <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest">{lateFeeLabel}</p>
                                             </div>
-                                            <p className="text-xs text-rose-700 leading-relaxed">{cancelInfo.message}</p>
+                                            <p className="text-xs text-rose-700 leading-relaxed">{cancelInfo.lateFeePolicy ?? cancelInfo.message}</p>
                                         </div>
                                         <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20">
                                             <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest mb-1">Auto-Invoice Notice</p>
-                                            <p className="text-xs text-amber-800 leading-relaxed">A <strong>$400.00 cancellation invoice</strong> will be automatically generated and emailed to you upon cancellation. Payment is due within 14 days.</p>
+                                            <p className="text-xs text-amber-800 leading-relaxed">A <strong>${lateFeeAmountValue.toFixed(2)} cancellation invoice</strong> will be automatically generated and emailed to you upon cancellation. Payment is due within 14 days.</p>
                                         </div>
                                     </div>
                                 )}
@@ -316,7 +320,7 @@ export default function ClientBookingsPage() {
                                         onClick={confirmCancelBooking}
                                         className={`flex-1 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-lg ${cancelInfo.canCancel ? 'bg-rose-500 text-white hover:bg-rose-600 shadow-rose-500/20' : 'bg-rose-600 text-white hover:bg-rose-700 shadow-rose-600/20'}`}
                                     >
-                                        {cancelInfo.canCancel ? 'Cancel — Free' : 'Cancel — $400 Fee'}
+                                        {cancelInfo.canCancel ? 'Cancel — Free' : lateFeeButtonLabel}
                                     </button>
                                 </div>
                             </>

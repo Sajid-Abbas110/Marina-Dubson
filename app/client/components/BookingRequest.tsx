@@ -234,7 +234,7 @@ export default function BookingRequest({ services, onBookingCreated }: BookingRe
                     >
                         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                         {saving ? 'Transmitting...' : (
-                            <><span className="hidden sm:inline">Authorize Deployment</span><span className="sm:hidden">Confirm Booking</span> <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" /></>
+                            <><span className="hidden sm:inline">Authorize Booking</span><span className="sm:hidden">Confirm Booking</span> <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" /></>
                         )}
                     </button>
                 </div>

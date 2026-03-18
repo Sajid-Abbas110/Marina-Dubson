@@ -6,6 +6,11 @@
 import prisma from './prisma'
 
 export const MINIMUM_BOOKING_FEE = 400.00
+const PRIVATE_LOWER_CANCELLATION_FEE = 300.0
+const PRIVATE_UPPER_CANCELLATION_FEE = 400.0
+const AGENCY_HIGH_CANCELLATION_FEE = 400.0
+const AGENCY_OTHER_CANCELLATION_FEE = 300.0
+const CANCELLATION_LOWER_WINDOW_END_HOUR = 18
 
 export class BookingRulesService {
     /**
@@ -53,7 +58,7 @@ export class BookingRulesService {
      * 4.2 Auto-Generate Cancellation Invoice
      * Creates $400 minimum invoice for late cancellations
      */
-    static async generateCancellationInvoice(bookingId: string): Promise<any> {
+    static async generateCancellationInvoice(bookingId: string, options?: { feeAmount?: number }): Promise<any> {
         const booking = await prisma.booking.findUnique({
             where: { id: bookingId },
             include: {
@@ -76,12 +81,13 @@ export class BookingRulesService {
             throw new Error('Cancellation is within allowed timeframe - no fee applies')
         }
 
+        const calculatedFee = this.determineLateCancellationFee(booking)
         // Generate invoice number
         const invoiceCount = await prisma.invoice.count()
         const invoiceNumber = `INV-${new Date().getFullYear()}-${String(invoiceCount + 1).padStart(5, '0')}`
 
         // Create cancellation invoice
-        const minFee = booking.lockedMinimumFee || MINIMUM_BOOKING_FEE
+        const minFee = options?.feeAmount ?? calculatedFee.amount ?? booking.lockedMinimumFee ?? MINIMUM_BOOKING_FEE
 
         const invoice = await (prisma.invoice as any).create({
             data: {
@@ -104,7 +110,7 @@ export class BookingRulesService {
                 tax: 0,
                 total: minFee,
 
-                notes: `CANCELLATION FEE - Booking cancelled after deadline.\n\nOriginal Booking: ${booking.bookingNumber}\nBooking Date: ${booking.bookingDate.toLocaleDateString()}\nCancellation Deadline: ${this.calculateCancellationDeadline(new Date(booking.bookingDate)).toLocaleString()}\nCancelled: ${new Date().toLocaleString()}\n\nPer our cancellation policy, cancellations made after 3 PM on the previous business day are subject to the $400 minimum booking fee.`
+                notes: `CANCELLATION FEE - Booking cancelled after deadline.\n\nOriginal Booking: ${booking.bookingNumber}\nBooking Date: ${booking.bookingDate.toLocaleDateString()}\nCancellation Deadline: ${this.calculateCancellationDeadline(new Date(booking.bookingDate)).toLocaleString()}\nCancelled: ${new Date().toLocaleString()}\n\nPer our cancellation policy, a $${minFee.toFixed(2)} minimum booking fee applies once the deadline passes.`
             }
         })
 
@@ -269,9 +275,16 @@ I understand that this confirmation creates a legally binding agreement between 
         deadline: Date
         hoursRemaining?: number
         message: string
+        lateFeeAmount?: number
+        lateFeeLabel?: string
+        lateFeePolicy?: string
     }> {
         const booking = await prisma.booking.findUnique({
-            where: { id: bookingId }
+            where: { id: bookingId },
+            include: {
+                contact: true,
+                service: true
+            }
         })
 
         if (!booking) {
@@ -286,14 +299,56 @@ I understand that this confirmation creates a legally binding agreement between 
             ? Math.floor((deadline.getTime() - now.getTime()) / (1000 * 60 * 60))
             : undefined
 
-        return {
+        const result: {
+            canCancel: boolean
+            deadline: Date
+            hoursRemaining?: number
+            message: string
+            lateFeeAmount?: number
+            lateFeeLabel?: string
+            lateFeePolicy?: string
+        } = {
             canCancel,
             deadline,
             hoursRemaining,
             message: canCancel
                 ? `You can cancel without fee until ${deadline.toLocaleString()}. ${hoursRemaining} hours remaining.`
-                : `Cancellation deadline has passed. A $${MINIMUM_BOOKING_FEE} cancellation fee will apply.`
+                : 'Cancellation deadline has passed.'
         }
+
+        if (!canCancel) {
+            const fee = this.determineLateCancellationFee(booking, now)
+            result.lateFeeAmount = fee.amount
+            result.lateFeeLabel = fee.label
+            result.lateFeePolicy = fee.policy
+            result.message = fee.policy
+        }
+
+        return result
+    }
+
+    private static determineLateCancellationFee(booking: any, now = new Date()) {
+        const clientType = booking.contact?.clientType?.toUpperCase() || 'PRIVATE'
+        if (clientType === 'AGENCY') {
+            const keywordTarget = `${booking.proceedingType ?? ''} ${booking.service?.serviceName ?? ''}`.toUpperCase()
+            const isHighTier = /(ARBITRATION|HEARING|REALTIME)/.test(keywordTarget)
+            const amount = isHighTier ? AGENCY_HIGH_CANCELLATION_FEE : AGENCY_OTHER_CANCELLATION_FEE
+            const label = `$${amount.toFixed(0)} Cancellation Minimum`
+            const policy = isHighTier
+                ? 'Arbitrations, hearings, and realtime proceedings carry a $400 minimum cancellation fee after the deadline.'
+                : 'Other proceedings carry a $300 minimum cancellation fee after the deadline.'
+            return { amount, label, policy }
+        }
+
+        const deadline = this.calculateCancellationDeadline(new Date(booking.bookingDate))
+        const lowerWindowEnd = new Date(deadline)
+        lowerWindowEnd.setHours(CANCELLATION_LOWER_WINDOW_END_HOUR, 0, 0, 0)
+        const amount = now <= lowerWindowEnd ? PRIVATE_LOWER_CANCELLATION_FEE : PRIVATE_UPPER_CANCELLATION_FEE
+        const label = `$${amount.toFixed(0)} Cancellation Minimum`
+        const policy = now <= lowerWindowEnd
+            ? 'Cancellations submitted between 3:00 PM and 6:00 PM on the previous business day incur a $300 cancellation fee.'
+            : 'Cancellations submitted after 6:00 PM on the previous business day through the scheduled day incur a $400 cancellation fee.'
+        return { amount, label, policy }
     }
 }
 

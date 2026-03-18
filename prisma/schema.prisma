@@ -269,6 +269,26 @@ model Document {
   @@index([category])
 }
 
+enum AddOnCategory {
+  ADD_ON
+  EXPEDITE
+}
+
+model AddOnOption {
+  id          String        @id @default(cuid())
+  label       String
+  value       String        @unique
+  category    AddOnCategory @default(ADD_ON)
+  description String?
+  allowCustom Boolean       @default(false)
+  active      Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([category])
+  @@index([active])
+}
+
 model EmailLog {
   id        String   @id @default(cuid())
   recipient String
@@ -435,4 +455,16 @@ model BlogPost {
   @@index([authorId])
   @@index([published])
   @@index([slug])
+}
+
+model SystemPolicy {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  label       String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
 }

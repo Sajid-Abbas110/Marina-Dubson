@@ -25,15 +25,16 @@ import {
 } from 'lucide-react'
 
 const navigation = [
-    {
-        section: 'Operations',
-        items: [
-            { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'STAFF', 'REPORTER'] },
-            { name: 'Calendar', href: '/admin/calendar', icon: Calendar, roles: ['ADMIN', 'MANAGER', 'STAFF', 'REPORTER'] },
-            { name: 'Bookings', href: '/admin/bookings', icon: Calendar, roles: ['ADMIN', 'MANAGER', 'STAFF', 'REPORTER'] },
-            { name: 'Jobs', href: '/admin/jobs', icon: Briefcase, roles: ['ADMIN', 'MANAGER', 'STAFF', 'REPORTER'] },
-        ]
-    },
+        {
+            section: 'Operations',
+            items: [
+                { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'STAFF', 'REPORTER'] },
+                { name: 'Calendar', href: '/admin/calendar', icon: Calendar, roles: ['ADMIN', 'MANAGER', 'STAFF', 'REPORTER'] },
+                { name: 'Bookings', href: '/admin/bookings', icon: Calendar, roles: ['ADMIN', 'MANAGER', 'STAFF', 'REPORTER'] },
+                { name: 'Documents', href: '/admin/documents', icon: FileText, roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+                { name: 'Jobs', href: '/admin/jobs', icon: Briefcase, roles: ['ADMIN', 'MANAGER', 'STAFF', 'REPORTER'] },
+            ]
+        },
     {
         section: 'Finance',
         items: [
@@ -41,13 +42,14 @@ const navigation = [
             { name: 'Reports', href: '/admin/reports', icon: BarChart3, roles: ['ADMIN', 'MANAGER'] },
         ]
     },
-    {
-        section: 'Personnel Registry',
-        items: [
-            { name: 'Team', href: '/admin/team', icon: Users, roles: ['ADMIN', 'MANAGER', 'REPORTER'] },
-            { name: 'Private Clients', href: '/admin/clients/private', icon: UserCheck, roles: ['ADMIN'] },
-            { name: 'Agency Clients', href: '/admin/clients/agency', icon: UserCheck, roles: ['ADMIN'] },
-            { name: 'Reporters', href: '/admin/reporters', icon: UserCog, roles: ['ADMIN'] },
+        {
+            section: 'Personnel Registry',
+            items: [
+                { name: 'Team', href: '/admin/team', icon: Users, roles: ['ADMIN', 'MANAGER', 'REPORTER'] },
+                { name: 'User Accounts', href: '/admin/users', icon: Users, roles: ['ADMIN'] },
+                { name: 'Private Clients', href: '/admin/clients/private', icon: UserCheck, roles: ['ADMIN'] },
+                { name: 'Agency Clients', href: '/admin/clients/agency', icon: UserCheck, roles: ['ADMIN'] },
+                { name: 'Reporters', href: '/admin/reporters', icon: UserCog, roles: ['ADMIN'] },
             { name: 'Messages', href: '/admin/messages', icon: MessageSquare, roles: ['ADMIN', 'MANAGER', 'STAFF', 'REPORTER'] },
         ]
     },

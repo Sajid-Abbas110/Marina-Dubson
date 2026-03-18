@@ -468,7 +468,7 @@ export default function ReporterPortal() {
                         </div>
                         <div className="glass-panel bg-card rounded-[3rem] p-6 md:p-10 shadow-xl border border-border">
                             <div className="flex items-center justify-between mb-10">
-                                <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Active Deployments</h3>
+                                <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Active Assignments</h3>
                                 <button onClick={() => navigateTab('jobs')} className="text-[10px] font-black text-primary uppercase tracking-widest px-4 py-2 bg-primary/5 rounded-xl">View Schedule</button>
                             </div>
                             <div className="space-y-3">
@@ -627,7 +627,7 @@ export default function ReporterPortal() {
                     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-700">
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                             <div>
-                                <h3 className="text-2xl font-black text-foreground uppercase tracking-tight">Deployment Matrix</h3>
+                                <h3 className="text-2xl font-black text-foreground uppercase tracking-tight">Assignment Matrix</h3>
                                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">Operational calendar and availability protocol</p>
                             </div>
                             <div className="flex items-center gap-4">
@@ -785,7 +785,7 @@ export default function ReporterPortal() {
                                                 ))
                                             ) : (
                                                 <div className="py-8 text-center border border-dashed border-border rounded-2xl">
-                                                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">No deployments scheduled</p>
+                                                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">No assignments scheduled</p>
                                                 </div>
                                             )}
                                         </div>
@@ -796,7 +796,7 @@ export default function ReporterPortal() {
                     </div>
                 )}
 
-                {activeTab === 'financials' && (
+                {activeTab === 'rates' && (
                     <div className="space-y-12 animate-in fade-in slide-in-from-right-4 duration-700">
 
                         {/* ── Section 1: Pending Payout Offers ── */}
@@ -1160,7 +1160,7 @@ export default function ReporterPortal() {
                             {/* Profile Pic Upload */}
                             <div className="mb-8">
                                 <ProfileUpload
-                                    label="Your Digital Avatar"
+                                    label="Your Remote / On-Site Profile"
                                     currentImage={user.avatar}
                                     onUploadComplete={handleAvatarUpdate}
                                 />

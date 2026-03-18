@@ -63,27 +63,29 @@ export default function AdministrativeJobNexus() {
     const [editFormData, setEditFormData] = useState<any>(null)
     const [saving, setSaving] = useState(false)
 
-    // Bids states
-    const [showBidsModal, setShowBidsModal] = useState(false)
-    const [selectedBookingBids, setSelectedBookingBids] = useState<any[]>([])
+    // Claims states
+    const [showClaimsModal, setShowClaimsModal] = useState(false)
+    const [selectedBookingClaims, setSelectedBookingClaims] = useState<any[]>([])
     const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null)
+    const [assigningJobId, setAssigningJobId] = useState<string | null>(null)
+    const [assignStatus, setAssignStatus] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
-    const viewBids = async (bookingId: string) => {
+    const viewClaims = async (bookingId: string) => {
         try {
             const token = localStorage.getItem('token')
             const res = await fetch(`/api/market/bids?bookingId=${bookingId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const data = await res.json()
-            setSelectedBookingBids(data.claims || data.bids || [])
+            setSelectedBookingClaims(data.claims || data.bids || [])
             setSelectedBookingId(bookingId)
-            setShowBidsModal(true)
+            setShowClaimsModal(true)
         } catch (error) {
-            console.error('Failed to fetch bids:', error)
+            console.error('Failed to fetch claims:', error)
         }
     }
 
-    const acceptBid = async (bidId: string) => {
+    const acceptClaim = async (claimId: string) => {
         try {
             const token = localStorage.getItem('token')
             const res = await fetch('/api/market/bids', {
@@ -92,18 +94,18 @@ export default function AdministrativeJobNexus() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ claimId: bidId, status: 'ACCEPTED' })
+                body: JSON.stringify({ claimId, status: 'ACCEPTED' })
             })
             if (res.ok) {
-                viewBids(selectedBookingId!)
+                viewClaims(selectedBookingId!)
                 fetchInitialData()
             }
         } catch (error) {
-            console.error('Failed to accept bid:', error)
+            console.error('Failed to accept claim:', error)
         }
     }
 
-    const declineBid = async (bidId: string) => {
+    const declineClaim = async (claimId: string) => {
         try {
             const token = localStorage.getItem('token')
             const res = await fetch('/api/market/bids', {
@@ -112,13 +114,13 @@ export default function AdministrativeJobNexus() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ claimId: bidId, status: 'DECLINED' })
+                body: JSON.stringify({ claimId, status: 'DECLINED' })
             })
             if (res.ok) {
-                viewBids(selectedBookingId!)
+                viewClaims(selectedBookingId!)
             }
         } catch (error) {
-            console.error('Failed to decline bid:', error)
+            console.error('Failed to decline claim:', error)
         }
     }
 
@@ -313,6 +315,34 @@ export default function AdministrativeJobNexus() {
         }
     }
 
+    const handleAssignToMyself = async (jobId: string) => {
+        if (!confirm('Assign this job to yourself and remove it from the marketplace?')) return
+        setAssignStatus(null)
+        setAssigningJobId(jobId)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/bookings/assign', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ bookingId: jobId })
+            })
+            if (!res.ok) {
+                const data = await res.json().catch(() => null)
+                throw new Error(data?.error || 'Assignment failed')
+            }
+            setAssignStatus({ type: 'success', text: 'Job assigned to you and removed from the marketplace.' })
+            fetchInitialData()
+        } catch (error: any) {
+            console.error('Assign job failed:', error)
+            setAssignStatus({ type: 'error', text: error.message || 'Unable to assign job.' })
+        } finally {
+            setAssigningJobId(null)
+        }
+    }
+
     const sectors = [
         { title: 'Pending Intake', status: ['SUBMITTED', 'PENDING'], colorClass: 'text-amber-600 bg-amber-50 border-amber-200' },
         { title: 'Confirmed / Active', status: ['ACCEPTED', 'CONFIRMED'], colorClass: 'text-blue-600 bg-blue-50 border-blue-200' },
@@ -348,6 +378,12 @@ export default function AdministrativeJobNexus() {
                 </div>
             </div>
 
+            {assignStatus && (
+                <div className={`max-w-7xl mx-auto px-6 ${assignStatus.type === 'success' ? 'text-emerald-600' : 'text-rose-600'} text-xs font-black uppercase tracking-[0.3em]`}>
+                    {assignStatus.text}
+                </div>
+            )}
+
             {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <JobStat label="Total Jobs" value={bookings.length.toString()} trend="Global Pool" icon={<Briefcase />} color="text-blue-600" />
@@ -377,10 +413,12 @@ export default function AdministrativeJobNexus() {
                                             key={job.id}
                                             job={job}
                                             isPublishing={publishingJobId === job.id}
+                                            isAssigning={assigningJobId === job.id}
                                             onToggleMarket={() => toggleMarketplace(job)}
                                             onDelete={() => handleDeleteJob(job.id)}
                                             onEdit={() => openEditModal(job)}
-                                            onViewClaims={() => viewBids(job.id)}
+                                            onViewClaims={() => viewClaims(job.id)}
+                                            onAssignToSelf={() => handleAssignToMyself(job.id)}
                                         />
                                     ))
                                 )}
@@ -391,37 +429,37 @@ export default function AdministrativeJobNexus() {
             </div>
 
             {/* Claims Modal */}
-            {showBidsModal && (
+            {showClaimsModal && (
                 <div className="fixed inset-0 z-[250] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowBidsModal(false)} />
+                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowClaimsModal(false)} />
                     <div className="relative w-full max-w-2xl bg-white rounded-3xl p-8 shadow-2xl flex flex-col max-h-[80vh]">
                         <div className="flex items-center justify-between mb-8">
                             <h2 className="text-2xl font-bold text-slate-900 uppercase">Marketplace Claims</h2>
-                            <button onClick={() => setShowBidsModal(false)} className="p-2 rounded-xl bg-slate-100 text-slate-500"><X /></button>
+                            <button onClick={() => setShowClaimsModal(false)} className="p-2 rounded-xl bg-slate-100 text-slate-500"><X /></button>
                         </div>
                         <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-                            {selectedBookingBids.length === 0 ? (
+                            {selectedBookingClaims.length === 0 ? (
                                 <div className="py-12 text-center text-slate-400 font-bold uppercase text-xs tracking-widest">No claims received yet</div>
                             ) : (
-                                selectedBookingBids.map((bid) => (
-                                    <div key={bid.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
+                                selectedBookingClaims.map((claim) => (
+                                    <div key={claim.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
                                         <div className="flex items-center gap-4">
                                             <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
-                                                {bid.reporter.firstName[0]}{bid.reporter.lastName[0]}
+                                                {claim.reporter.firstName[0]}{claim.reporter.lastName[0]}
                                             </div>
                                             <div>
-                                                <p className="font-bold text-slate-900">{bid.reporter.firstName} {bid.reporter.lastName}</p>
+                                                <p className="font-bold text-slate-900">{claim.reporter.firstName} {claim.reporter.lastName}</p>
                                                 <p className="text-xs font-bold text-blue-600 uppercase tracking-widest italic">Reporter Interested</p>
                                             </div>
                                         </div>
-                                        {bid.status === 'PENDING' ? (
+                                        {claim.status === 'PENDING' ? (
                                             <div className="flex gap-2">
-                                                <button onClick={() => declineBid(bid.id)} className="px-4 py-2 rounded-lg bg-white border border-slate-200 text-red-600 text-[10px] font-bold uppercase tracking-widest hover:bg-red-50">Decline</button>
-                                                <button onClick={() => acceptBid(bid.id)} className="px-4 py-2 rounded-lg bg-blue-600 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-blue-700">Accept</button>
+                                                <button onClick={() => declineClaim(claim.id)} className="px-4 py-2 rounded-lg bg-white border border-slate-200 text-red-600 text-[10px] font-bold uppercase tracking-widest hover:bg-red-50">Decline</button>
+                                                <button onClick={() => acceptClaim(claim.id)} className="px-4 py-2 rounded-lg bg-blue-600 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-blue-700">Accept</button>
                                             </div>
                                         ) : (
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${bid.status === 'ACCEPTED' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
-                                                {bid.status}
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${claim.status === 'ACCEPTED' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
+                                                {claim.status}
                                             </span>
                                         )}
                                     </div>
@@ -439,15 +477,24 @@ export default function AdministrativeJobNexus() {
     )
 }
 
-function JobOperationalCard({ job, onDelete, onEdit, onToggleMarket, isPublishing, onViewClaims }: any) {
+function JobOperationalCard({ job, onDelete, onEdit, onToggleMarket, isPublishing, onViewClaims, onAssignToSelf, isAssigning }: any) {
     return (
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
             <div className="flex justify-between items-start mb-4">
                 <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{job.bookingNumber}</span>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                     {job.isMarketplace && (
                         <button onClick={onViewClaims} className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="View Claims">
                             <TrendingUp className="h-4 w-4" />
+                        </button>
+                    )}
+                    {!job.reporterId && onAssignToSelf && (
+                        <button
+                            onClick={onAssignToSelf}
+                            disabled={isAssigning}
+                            className="px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all bg-foreground/5 text-foreground hover:bg-foreground hover:text-white disabled:opacity-50"
+                        >
+                            {isAssigning ? 'Assigning…' : 'Assign Job to Myself'}
                         </button>
                     )}
                     <button onClick={onEdit} className="p-1.5 rounded-lg bg-slate-100 text-slate-500 hover:text-blue-600 transition-colors">

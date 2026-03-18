@@ -48,43 +48,17 @@ export async function POST(
             )
         }
 
-        // Check if cancellation fee applies (after 3 PM previous business day)
-        const now = new Date()
-        const deadline = BookingRulesService.calculateCancellationDeadline(new Date(booking.bookingDate))
-        const feeApplies = now > deadline
+        const cancellationInfo = await BookingRulesService.canCancelWithoutFee(bookingId)
+        const feeApplies = !cancellationInfo.canCancel
+        const feeAmount = cancellationInfo.lateFeeAmount ?? ((booking as any).lockedMinimumFee || MINIMUM_BOOKING_FEE)
 
         let cancellationInvoice = null
 
         if (feeApplies) {
-            // Generate $400 auto-invoice for late cancellation
-            const invoiceCount = await prisma.invoice.count()
-            const invoiceNumber = `INV-CANCEL-${new Date().getFullYear()}-${String(invoiceCount + 1).padStart(5, '0')}`
-            const minFee = (booking as any).lockedMinimumFee || MINIMUM_BOOKING_FEE
-
-            cancellationInvoice = await (prisma.invoice as any).create({
-                data: {
-                    invoiceNumber,
-                    bookingId: booking.id,
-                    contactId: booking.contactId,
-                    jobNumber: booking.bookingNumber,
-                    invoiceDate: new Date(),
-                    dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // Net 14
-                    status: 'SENT',
-                    pages: 0,
-                    pageRate: 0,
-                    appearanceFee: 0,
-                    minimumFee: minFee,
-                    cancellationFee: minFee,
-                    subtotal: minFee,
-                    tax: 0,
-                    total: minFee,
-                    notes: `LATE CANCELLATION FEE\n\nBooking: ${booking.bookingNumber}\nBooking Date: ${new Date(booking.bookingDate).toLocaleDateString()}\nCancellation Deadline: ${deadline.toLocaleString()}\nCancelled At: ${now.toLocaleString()}\n\nPer the cancellation policy, cancellations made after 3:00 PM on the previous business day are subject to the $${minFee.toFixed(2)} minimum booking fee.`,
-                },
-            })
-
-            // Send cancellation fee invoice email to client
+            cancellationInvoice = await BookingRulesService.generateCancellationInvoice(bookingId, { feeAmount })
             try {
                 const clientName = `${booking.contact.firstName} ${booking.contact.lastName}`
+                const invoiceNumber = cancellationInvoice?.invoiceNumber || 'N/A'
                 await sendEmail({
                     to: booking.contact.email,
                     subject: `Booking Cancelled — Cancellation Fee Invoice #${invoiceNumber}`,
@@ -101,14 +75,14 @@ export async function POST(
                                 <div style="background: #fee2e2; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc2626;">
                                     <p style="margin: 0; font-weight: bold; color: #991b1b;">⚠️ Late Cancellation Fee Applied</p>
                                     <p style="margin: 10px 0 0 0; color: #991b1b;">
-                                        The cancellation deadline for this booking was <strong>${deadline.toLocaleString()}</strong>.
-                                        Since the booking was cancelled after this deadline, a cancellation fee has been applied.
+                                        The cancellation deadline for this booking was <strong>${cancellationInfo.deadline.toLocaleString()}</strong>.
+                                        Since the booking was cancelled after this deadline, a cancellation fee of $${feeAmount.toFixed(2)} has been applied.
                                     </p>
                                 </div>
                                 <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
                                     <p style="margin: 0; color: #6b7280; font-size: 14px;">Invoice Number</p>
                                     <p style="margin: 5px 0; font-size: 20px; font-weight: bold; color: #1f2937;">#${invoiceNumber}</p>
-                                    <p style="margin: 15px 0 0 0; font-size: 28px; font-weight: bold; color: #dc2626;">$${minFee.toFixed(2)}</p>
+                                    <p style="margin: 15px 0 0 0; font-size: 28px; font-weight: bold; color: #dc2626;">$${feeAmount.toFixed(2)}</p>
                                     <p style="margin: 5px 0; color: #6b7280; font-size: 13px;">Due within 14 days</p>
                                 </div>
                                 <p style="margin-top: 30px;">
@@ -129,7 +103,6 @@ export async function POST(
                 console.error('Failed to send cancellation fee email:', emailErr)
             }
         } else {
-            // Free cancellation — send simple confirmation email
             try {
                 const clientName = `${booking.contact.firstName} ${booking.contact.lastName}`
                 await sendEmail({
@@ -146,7 +119,7 @@ export async function POST(
                                 <p>Dear ${clientName},</p>
                                 <p>Your booking <strong>#${booking.bookingNumber}</strong> has been successfully cancelled.</p>
                                 <div style="background: #d1fae5; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #059669;">
-                                    <p style="margin: 0; color: #065f46;">No cancellation fee has been applied. The cancellation was made before the deadline of <strong>${deadline.toLocaleString()}</strong>.</p>
+                                    <p style="margin: 0; color: #065f46;">No cancellation fee has been applied. The cancellation was made before the deadline of <strong>${cancellationInfo.deadline.toLocaleString()}</strong>.</p>
                                 </div>
                                 <p>We hope to work with you in the future. Please contact us anytime to schedule a new booking.</p>
                                 <p style="margin-top: 30px;">
@@ -167,7 +140,6 @@ export async function POST(
                 console.error('Failed to send free cancellation email:', emailErr)
             }
         }
-
         // Update booking status to CANCELLED
         await prisma.booking.update({
             where: { id: bookingId },
@@ -180,12 +152,12 @@ export async function POST(
         return NextResponse.json({
             success: true,
             feeApplied: feeApplies,
-            feeAmount: feeApplies ? (booking as any).lockedMinimumFee || MINIMUM_BOOKING_FEE : 0,
-            deadline: deadline.toISOString(),
+            feeAmount: feeApplies ? feeAmount : 0,
             message: feeApplies
-                ? `Booking cancelled. A $${((booking as any).lockedMinimumFee || MINIMUM_BOOKING_FEE).toFixed(2)} cancellation fee has been applied and invoiced.`
+                ? `Booking cancelled. A $${feeAmount.toFixed(2)} cancellation fee has been applied and invoiced.`
                 : 'Booking cancelled successfully. No cancellation fee applied.',
             invoice: cancellationInvoice,
+            cancellationInfo
         })
     } catch (error: any) {
         console.error('Cancel booking error:', error)

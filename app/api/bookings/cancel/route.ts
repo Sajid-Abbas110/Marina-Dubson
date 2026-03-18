@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
 
         // Check cancellation deadline
         const cancellationInfo = await BookingRulesService.canCancelWithoutFee(bookingId)
+        const feeAmount = cancellationInfo.lateFeeAmount ?? ((booking as any).lockedMinimumFee || MINIMUM_BOOKING_FEE)
 
         let invoice = null
         let feeApplied = false
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
         // If past deadline and booking was confirmed, generate cancellation invoice
         if (!cancellationInfo.canCancel && booking.bookingStatus === 'CONFIRMED') {
             try {
-                invoice = await BookingRulesService.generateCancellationInvoice(bookingId)
+                invoice = await BookingRulesService.generateCancellationInvoice(bookingId, { feeAmount })
                 feeApplied = true
             } catch (error: any) {
                 console.error('Failed to generate cancellation invoice:', error)
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             success: true,
             message: feeApplied
-                ? 'Booking cancelled. Cancellation fee of $400 has been applied and invoice generated.'
+                ? `Booking cancelled. Cancellation fee of $${feeAmount.toFixed(2)} has been applied and invoice generated.`
                 : 'Booking cancelled successfully. No cancellation fee applied.',
             booking: updatedBooking,
             feeApplied,

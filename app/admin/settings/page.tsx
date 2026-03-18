@@ -23,7 +23,8 @@ import {
     CheckCircle2,
     MessageSquare,
     Loader2,
-    BadgeCheck
+    BadgeCheck,
+    FileText,
 } from 'lucide-react'
 import ProfileUpload from '@/app/components/ui/ProfileUpload'
 
@@ -32,6 +33,10 @@ export default function AdministrativeSettingsPage() {
     const [user, setUser] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
+    const [addOnOptions, setAddOnOptions] = useState<any[]>([])
+    const [addOnSaving, setAddOnSaving] = useState(false)
+    const [newAddOn, setNewAddOn] = useState({ label: '', value: '', category: 'ADD_ON', description: '' })
+    const [editingOption, setEditingOption] = useState<any>(null)
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -48,6 +53,34 @@ export default function AdministrativeSettingsPage() {
         autoLinking: true,
         directMessaging: true,
         directoryVisibility: false
+    })
+    const DEFAULT_CANCELLATION_TEXT = 'Cancellations must be made before 3:00 PM on the previous business day. Late cancellations incur the minimum booking fee noted per proceeding.'
+    const DEFAULT_PAYMENT_TERMS_DESCRIPTION = 'Payment is due within 30 days of invoice issuance.'
+    const getDefaultPolicyForm = () => ({
+        cancellationPolicyText: DEFAULT_CANCELLATION_TEXT,
+        financialResponsibilityPrivate: '30',
+        financialResponsibilityAgency: '45',
+        paymentTermsChoice: '30',
+        paymentTermsCustom: '',
+        paymentTermsDescription: DEFAULT_PAYMENT_TERMS_DESCRIPTION,
+        latePaymentInterestEnabled: false,
+        latePaymentInterestRate: '1.5',
+        marketplaceShowClaimCounts: true
+    })
+    const [policyForm, setPolicyForm] = useState(getDefaultPolicyForm())
+    const [policyLoading, setPolicyLoading] = useState(true)
+    const [policySaving, setPolicySaving] = useState(false)
+    const [policyStatus, setPolicyStatus] = useState('')
+    const mapPoliciesToForm = (policies: Record<string, string>) => ({
+        cancellationPolicyText: policies.cancellation_policy_text ?? DEFAULT_CANCELLATION_TEXT,
+        financialResponsibilityPrivate: policies.financial_responsibility_private ?? '30',
+        financialResponsibilityAgency: policies.financial_responsibility_agency ?? '45',
+        paymentTermsChoice: policies.payment_terms_choice ?? '30',
+        paymentTermsCustom: policies.payment_terms_custom ?? '',
+        paymentTermsDescription: policies.payment_terms_description ?? DEFAULT_PAYMENT_TERMS_DESCRIPTION,
+        latePaymentInterestEnabled: (policies.late_payment_interest_enabled ?? 'false') === 'true',
+        latePaymentInterestRate: policies.late_payment_interest_rate ?? '1.5',
+        marketplaceShowClaimCounts: (policies.marketplace_show_claim_counts ?? 'true') === 'true'
     })
 
     useEffect(() => {
@@ -79,6 +112,52 @@ export default function AdministrativeSettingsPage() {
             }
         }
         fetchProfile()
+    }, [])
+
+    useEffect(() => {
+        const fetchPolicies = async () => {
+            setPolicyLoading(true)
+            try {
+                const token = localStorage.getItem('token')
+                if (!token) {
+                    return
+                }
+                const res = await fetch('/api/system-policy', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                })
+                if (res.ok) {
+                    const data = await res.json()
+                    if (data.policies) {
+                        setPolicyForm(mapPoliciesToForm(data.policies))
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load policies:', error)
+            } finally {
+                setPolicyLoading(false)
+            }
+        }
+        fetchPolicies()
+    }, [])
+
+    useEffect(() => {
+        const fetchAddOns = async () => {
+            try {
+                const token = localStorage.getItem('token')
+                const res = await fetch('/api/add-ons', {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                })
+                if (res.ok) {
+                    const data = await res.json()
+                    setAddOnOptions(Array.isArray(data.options) ? data.options : [])
+                }
+            } catch (error) {
+                console.error('Failed to load add-on options:', error)
+            }
+        }
+        fetchAddOns()
     }, [])
 
     const handleAvatarUpdate = async (url: string) => {
@@ -133,6 +212,123 @@ export default function AdministrativeSettingsPage() {
         }
     }
 
+    const refreshAddOns = async () => {
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/add-ons', {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            })
+            if (res.ok) {
+                const data = await res.json()
+                setAddOnOptions(Array.isArray(data.options) ? data.options : [])
+            }
+        } catch (error) {
+            console.error('Failed to refresh add-on options:', error)
+        }
+    }
+
+    const handleAddOnSubmit = async () => {
+        if (!newAddOn.label.trim() || !newAddOn.value.trim()) {
+            alert('Label and value required')
+            return
+        }
+        setAddOnSaving(true)
+        try {
+            const token = localStorage.getItem('token')
+            const payload = {
+                label: newAddOn.label.trim(),
+                value: newAddOn.value.trim(),
+                category: newAddOn.category,
+                description: newAddOn.description
+            }
+            const method = editingOption ? 'PATCH' : 'POST'
+            const res = await fetch('/api/add-ons', {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(editingOption ? { ...payload, id: editingOption.id } : payload)
+            })
+            if (res.ok) {
+                await refreshAddOns()
+                setNewAddOn({ label: '', value: '', category: 'ADD_ON', description: '' })
+                setEditingOption(null)
+            } else {
+                const err = await res.json()
+                alert(err.error || 'Add-on save failed')
+            }
+        } catch (error) {
+            console.error('Add-on save failed:', error)
+            alert('Unable to save add-on option')
+        } finally {
+            setAddOnSaving(false)
+        }
+    }
+
+    const handlePolicySave = async () => {
+        setPolicySaving(true)
+        setPolicyStatus('')
+        try {
+            const token = localStorage.getItem('token')
+            if (!token) {
+                throw new Error('Authentication required')
+            }
+
+            const updates = {
+                cancellation_policy_text: policyForm.cancellationPolicyText,
+                financial_responsibility_private: policyForm.financialResponsibilityPrivate,
+                financial_responsibility_agency: policyForm.financialResponsibilityAgency,
+                payment_terms_choice: policyForm.paymentTermsChoice,
+                payment_terms_custom: policyForm.paymentTermsCustom,
+                payment_terms_description: policyForm.paymentTermsDescription,
+                late_payment_interest_enabled: policyForm.latePaymentInterestEnabled ? 'true' : 'false',
+                late_payment_interest_rate: policyForm.latePaymentInterestRate,
+                marketplace_show_claim_counts: policyForm.marketplaceShowClaimCounts ? 'true' : 'false'
+            }
+
+            const res = await fetch('/api/system-policy', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ updates })
+            })
+
+            if (!res.ok) {
+                const body = await res.json().catch(() => null)
+                throw new Error(body?.error || 'Failed to update policies.')
+            }
+
+            const data = await res.json()
+            if (data.policies) {
+                setPolicyForm(mapPoliciesToForm(data.policies))
+            }
+            setPolicyStatus('Policies updated successfully.')
+        } catch (error: any) {
+            console.error('Policy save failed:', error)
+            setPolicyStatus(error.message || 'Unable to save policies.')
+        } finally {
+            setPolicySaving(false)
+        }
+    }
+
+    const handleDeleteAddOn = async (id: string) => {
+        if (!confirm('Remove this add-on option?')) return
+        try {
+            const token = localStorage.getItem('token')
+            await fetch(`/api/add-ons?id=${id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            await refreshAddOns()
+        } catch (error) {
+            console.error('Delete add-on failed:', error)
+            alert('Failed to remove add-on option')
+        }
+    }
+
     return (
         <div className="max-w-[1600px] mx-auto px-4 py-8 lg:p-12 space-y-12 animate-in fade-in duration-700">
             {/* Sticky Settings Header */}
@@ -167,7 +363,9 @@ export default function AdministrativeSettingsPage() {
                             <SettingsTab active={activeTab === 'SECURITY'} onClick={() => setActiveTab('SECURITY')} icon={<Shield />} label="Security" />
                             <SettingsTab active={activeTab === 'NETWORK'} onClick={() => setActiveTab('NETWORK')} icon={<Globe />} label="Network Grid" />
                             <SettingsTab active={activeTab === 'SYSTEM'} onClick={() => setActiveTab('SYSTEM')} icon={<Terminal />} label="Core Engine" />
+                            <SettingsTab active={activeTab === 'POLICIES'} onClick={() => setActiveTab('POLICIES')} icon={<FileText />} label="Policies" />
                             <SettingsTab active={activeTab === 'NOTIFICATIONS'} onClick={() => setActiveTab('NOTIFICATIONS')} icon={<Bell />} label="Notifications" />
+                            <SettingsTab active={activeTab === 'ADDONS'} onClick={() => setActiveTab('ADDONS')} icon={<BadgeCheck />} label="Add-Ons" />
                         </nav>
                     </div>
 
@@ -309,6 +507,260 @@ export default function AdministrativeSettingsPage() {
                             <InfrastructureCard label="Cloud Asset Storage (AWS)" status="Syncing" icon={<Cloud className="text-primary" />} load="44%" />
                             <InfrastructureCard label="Real-time Stream Relay" status="Online" icon={<Zap className="text-amber-400" />} load="08%" />
                             <InfrastructureCard label="Auth0 Identity Provider" status="Verified" icon={<Fingerprint className="text-rose-400" />} load="02%" />
+                        </div>
+                    )}
+
+                    {activeTab === 'POLICIES' && (
+                        <div className="glass-panel rounded-[2.5rem] p-10 space-y-8 animate-in slide-in-from-right-8 duration-500">
+                            <div className="flex items-start justify-between gap-6">
+                                <div>
+                                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Policy Controls</h3>
+                                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.4em] mt-1">Manage cancellation, financial responsibility, payment terms, and optional interest.</p>
+                                </div>
+                                {policyLoading && (
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        Loading policies...
+                                    </div>
+                                )}
+                            </div>
+
+                            {policyLoading ? (
+                                <div className="py-20 text-center text-muted-foreground uppercase tracking-[0.3em] font-black">Synchronizing policies...</div>
+                            ) : (
+                                <div className="space-y-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Cancellation Policy</label>
+                                        <textarea
+                                            className="luxury-input min-h-[140px] resize-none"
+                                            value={policyForm.cancellationPolicyText}
+                                            onChange={(e) => setPolicyForm({ ...policyForm, cancellationPolicyText: e.target.value })}
+                                            placeholder="Describe the cancellation expectations..."
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Financial Responsibility • Private</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                className="luxury-input"
+                                                value={policyForm.financialResponsibilityPrivate}
+                                                onChange={(e) => setPolicyForm({ ...policyForm, financialResponsibilityPrivate: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Financial Responsibility • Agency</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                className="luxury-input"
+                                                value={policyForm.financialResponsibilityAgency}
+                                                onChange={(e) => setPolicyForm({ ...policyForm, financialResponsibilityAgency: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Payment Terms</label>
+                                        <select
+                                            className="luxury-input"
+                                            value={policyForm.paymentTermsChoice}
+                                            onChange={(e) => setPolicyForm({ ...policyForm, paymentTermsChoice: e.target.value })}
+                                        >
+                                            <option value="30">30 Days</option>
+                                            <option value="45">45 Days</option>
+                                            <option value="CUSTOM">Custom Agreement</option>
+                                        </select>
+                                    </div>
+
+                                    {policyForm.paymentTermsChoice === 'CUSTOM' && (
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Custom Terms</label>
+                                            <textarea
+                                                className="luxury-input min-h-[120px] resize-none"
+                                                value={policyForm.paymentTermsCustom}
+                                                onChange={(e) => setPolicyForm({ ...policyForm, paymentTermsCustom: e.target.value })}
+                                                placeholder="Describe the custom payment agreement."
+                                            />
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Payment Terms Description</label>
+                                        <textarea
+                                            className="luxury-input min-h-[100px] resize-none"
+                                            value={policyForm.paymentTermsDescription}
+                                            onChange={(e) => setPolicyForm({ ...policyForm, paymentTermsDescription: e.target.value })}
+                                            placeholder="Support copy displayed in the client portal."
+                                        />
+                                    </div>
+
+                                    <div className="space-y-3 p-4 rounded-2xl bg-muted/40 border border-border">
+                                        <label className="flex items-center gap-3">
+                                            <input
+                                                type="checkbox"
+                                                checked={policyForm.latePaymentInterestEnabled}
+                                                onChange={(e) => setPolicyForm({ ...policyForm, latePaymentInterestEnabled: e.target.checked })}
+                                            />
+                                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Automatically apply late payment interest</span>
+                                        </label>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.1"
+                                                className="luxury-input"
+                                                value={policyForm.latePaymentInterestRate}
+                                                onChange={(e) => setPolicyForm({ ...policyForm, latePaymentInterestRate: e.target.value })}
+                                            />
+                                            <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em]">Monthly interest (%) applied when enabled.</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3 p-4 rounded-2xl bg-muted/40 border border-border">
+                                        <label className="flex items-center gap-3">
+                                            <input
+                                                type="checkbox"
+                                                checked={policyForm.marketplaceShowClaimCounts}
+                                                onChange={(e) => setPolicyForm({ ...policyForm, marketplaceShowClaimCounts: e.target.checked })}
+                                            />
+                                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Record and display marketplace claim counts</span>
+                                        </label>
+                                        <p className="text-[9px] text-muted-foreground uppercase tracking-[0.3em]">
+                                            When disabled, pending and accepted claim totals stay hidden from reporter dashboards and marketplace headlines.
+                                        </p>
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex justify-end gap-3">
+                                            <button
+                                                disabled={policySaving}
+                                                onClick={handlePolicySave}
+                                                className="luxury-button py-3 px-6 disabled:opacity-50"
+                                            >
+                                                {policySaving ? 'Saving...' : 'Save Policy Updates'}
+                                            </button>
+                                        </div>
+                                        {policyStatus && (
+                                            <p className="text-xs text-emerald-500 uppercase tracking-[0.3em]">{policyStatus}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'ADDONS' && (
+                        <div className="glass-panel rounded-[2rem] p-8 space-y-6 animate-in slide-in-from-right-8 duration-500">
+                            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                                <div>
+                                    <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">Add-On Services</h3>
+                                    <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-1.5">Create, edit, or remove add-on services and expedite tiers.</p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => {
+                                            setNewAddOn({ label: '', value: '', category: 'ADD_ON', description: '' })
+                                            setEditingOption(null)
+                                        }}
+                                        className="px-4 py-2 rounded-full bg-white border border-border text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary/5 transition"
+                                    >
+                                        Reset Form
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input
+                                    placeholder="Label (e.g., Rough Draft)"
+                                    value={newAddOn.label}
+                                    onChange={(e) => setNewAddOn(prev => ({ ...prev, label: e.target.value }))}
+                                    className="luxury-input"
+                                />
+                                <input
+                                    placeholder="Value (unique, e.g., ROUGH_DRAFT)"
+                                    value={newAddOn.value}
+                                    onChange={(e) => setNewAddOn(prev => ({ ...prev, value: e.target.value.toUpperCase().replace(/\\s+/g, '_') }))}
+                                    className="luxury-input"
+                                />
+                                <select
+                                    value={newAddOn.category}
+                                    onChange={(e) => setNewAddOn(prev => ({ ...prev, category: e.target.value }))}
+                                    className="luxury-input"
+                                >
+                                    <option value="ADD_ON">Add-On Service</option>
+                                    <option value="EXPEDITE">Expedite Schedule</option>
+                                </select>
+                                <input
+                                    placeholder="Optional description"
+                                    value={newAddOn.description}
+                                    onChange={(e) => setNewAddOn(prev => ({ ...prev, description: e.target.value }))}
+                                    className="luxury-input"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between gap-4">
+                                <button
+                                    onClick={handleAddOnSubmit}
+                                    disabled={addOnSaving}
+                                    className="luxury-btn py-3 px-6 disabled:opacity-50"
+                                >
+                                    {addOnSaving ? 'Saving...' : editingOption ? 'Update Add-On' : 'Add New Add-On'}
+                                </button>
+                                {editingOption && (
+                                    <button
+                                        onClick={() => {
+                                            setEditingOption(null)
+                                            setNewAddOn({ label: '', value: '', category: 'ADD_ON', description: '' })
+                                        }}
+                                        className="px-4 py-2 rounded-full border border-border text-[10px] font-black uppercase tracking-[0.3em]"
+                                    >
+                                        Cancel Edit
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {['ADD_ON', 'EXPEDITE'].map(category => (
+                                    <div key={category} className="space-y-4 bg-muted/20 p-4 rounded-2xl border border-border">
+                                        <h4 className="text-sm font-black uppercase tracking-[0.3em] text-muted-foreground">
+                                            {category === 'ADD_ON' ? 'Add-On Services' : 'Expedite Options'}
+                                        </h4>
+                                        {addOnOptions.filter(opt => opt.category === category).map(opt => (
+                                            <div key={opt.id} className="flex items-center justify-between gap-2 border border-border/50 rounded-xl px-4 py-2">
+                                                <div>
+                                                    <p className="text-sm font-black uppercase tracking-tight">{opt.label}</p>
+                                                    {opt.description && <p className="text-[9px] text-muted-foreground uppercase tracking-[0.3em]">{opt.description}</p>}
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditingOption(opt)
+                                                            setNewAddOn({
+                                                                label: opt.label,
+                                                                value: opt.value,
+                                                                category: opt.category,
+                                                                description: opt.description || ''
+                                                            })
+                                                        }}
+                                                        className="px-3 py-1 rounded-full border border-primary text-[9px] font-black uppercase tracking-[0.3em]"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteAddOn(opt.id)}
+                                                        className="px-3 py-1 rounded-full border border-red-500 text-[9px] font-black uppercase tracking-[0.3em] text-red-500"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>

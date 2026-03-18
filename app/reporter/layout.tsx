@@ -9,15 +9,17 @@ import {
     DollarSign,
     MessageSquare,
     Settings,
-    Globe
+    Globe,
+    Target
 } from 'lucide-react'
 
 const navigation = [
     { name: 'Dashboard', href: '/reporter/portal?tab=overview', icon: LayoutDashboard },
     { name: 'Assignments', href: '/reporter/portal?tab=jobs', icon: Briefcase },
-    { name: 'Jobs', href: '/reporter/portal?tab=market', icon: Globe },
+    { name: 'Marketplace', href: '/reporter/marketplace', icon: Globe },
+    { name: 'Jobs', href: '/reporter/portal?tab=market', icon: Target },
     { name: 'Calendar', href: '/reporter/portal?tab=calendar', icon: Calendar },
-    { name: 'Rates', href: '/reporter/portal?tab=financials', icon: DollarSign },
+    { name: 'Rates', href: '/reporter/portal?tab=rates', icon: DollarSign },
     { name: 'Messages', href: '/reporter/portal?tab=messages', icon: MessageSquare },
     { name: 'Settings', href: '/reporter/portal?tab=settings', icon: Settings },
 ]

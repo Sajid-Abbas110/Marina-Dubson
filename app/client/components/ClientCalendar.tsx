@@ -266,7 +266,7 @@ export default function ClientCalendar({ bookings, onBookingCreated, services }:
                             {selectedDayBookings.length === 0 && (
                                 <div className="py-12 text-center">
                                     <CalendarIcon className="h-8 w-8 text-gray-100 mx-auto mb-3" />
-                                    <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">No deployments scheduled.</p>
+                            <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">No bookings scheduled.</p>
                                 </div>
                             )}
                         </div>
@@ -289,7 +289,7 @@ export default function ClientCalendar({ bookings, onBookingCreated, services }:
                     <div className="relative w-full max-w-lg bg-white dark:bg-[#001a12] rounded-[2.5rem] shadow-2xl border border-white/10 overflow-hidden animate-in zoom-in-95 duration-300">
                         <div className="px-8 py-6 bg-primary text-white flex justify-between items-center">
                             <div>
-                                <h3 className="text-lg font-black uppercase tracking-tight">Case Deployment Request</h3>
+                                <h3 className="text-lg font-black uppercase tracking-tight">Case Booking Request</h3>
                                 <p className="text-[9px] uppercase font-black tracking-widest opacity-60">Initializing schedule for {format(selectedDate, 'MMM dd, yyyy')}</p>
                             </div>
                             <button onClick={() => setIsModalOpen(false)} className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all text-white">
@@ -337,7 +337,7 @@ export default function ClientCalendar({ bookings, onBookingCreated, services }:
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Deployment Location</label>
+                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Booking Location</label>
                                     <input
                                         className="w-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl px-5 py-3.5 text-xs font-black uppercase text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/20"
                                         placeholder="STREET ADDRESS OR ZOOM/WEBEX"

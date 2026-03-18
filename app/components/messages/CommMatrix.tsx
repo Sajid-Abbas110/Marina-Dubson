@@ -175,6 +175,8 @@ export default function TacticalCommMatrix() {
     const [searchDropdownPos, setSearchDropdownPos] = useState<{ top: number; left: number; width: number } | null>(null)
     const searchBoxRef = useRef<HTMLInputElement>(null)
     const [activeChat, setActiveChat] = useState<string | null>(null)
+    const [activeClaimId, setActiveClaimId] = useState<string | null>(null)
+    const [activeRecipientId, setActiveRecipientId] = useState<string | null>(null)
     const [conversations, setConversations] = useState<any[]>([])
     const [messages, setMessages] = useState<any[]>([])
     const [newMessage, setNewMessage] = useState('')
@@ -202,6 +204,19 @@ export default function TacticalCommMatrix() {
     const audioChunksRef = useRef<Blob[]>([])
     const recordTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
     const inputRef = useRef<HTMLInputElement>(null)
+
+    const activateConversation = (id: string | null, meta?: any) => {
+        setActiveChat(id)
+        if (!id) {
+            setActiveClaimId(null)
+            setActiveRecipientId(null)
+            return
+        }
+        const claimId = meta?.type === 'claim' ? meta.claimId : null
+        const recipientId = meta?.recipientId ?? id
+        setActiveClaimId(claimId)
+        setActiveRecipientId(recipientId)
+    }
 
     // Auth
     useEffect(() => {
@@ -250,7 +265,9 @@ export default function TacticalCommMatrix() {
                         role: u.role,
                         lastMsg: 'Ready to connect',
                         time: null,
-                        isTemp: true
+                        isTemp: true,
+                        type: 'user',
+                        recipientId: u.id
                     }))
                     return [...prev, ...newOnes]
                 })
@@ -259,13 +276,21 @@ export default function TacticalCommMatrix() {
         if (currentUser) loadAllUsers()
     }, [currentUser])
 
+    const parseClaimThreadId = (value: string | null) => {
+        if (!value) return null
+        if (value.startsWith('claim:')) return value.split(':')[1]
+        return null
+    }
+
     // Initial messages
     const loadMessages = useCallback(async (rid: string) => {
         setLoadingChat(true)
         setMessages([]) // Clear immediately to prevent mixing
         const token = localStorage.getItem('token')
+        const claimThreadId = parseClaimThreadId(rid)
+        const queryParam = claimThreadId ? `claimId=${claimThreadId}` : `recipientId=${rid}`
         try {
-            const res = await fetch(`/api/messages?recipientId=${rid}`, { headers: { 'Authorization': `Bearer ${token}` } })
+            const res = await fetch(`/api/messages?${queryParam}`, { headers: { 'Authorization': `Bearer ${token}` } })
             if (res.ok) {
                 const data = await res.json()
                 const msgs = data.messages || []
@@ -281,7 +306,14 @@ export default function TacticalCommMatrix() {
         sseRef.current?.close()
         loadMessages(activeChat)
         const token = localStorage.getItem('token')
-        const sse = new EventSource(`/api/messages/stream?recipientId=${activeChat}&token=${token}`)
+        const claimThreadId = activeClaimId ?? parseClaimThreadId(activeChat)
+        const recipientParam = activeRecipientId ?? (claimThreadId ? null : activeChat)
+        const queryParts = []
+        if (claimThreadId) queryParts.push(`claimId=${claimThreadId}`)
+        if (recipientParam) queryParts.push(`recipientId=${recipientParam}`)
+        const queryString = queryParts.join('&')
+        const querySuffix = queryString ? `${queryString}&` : ''
+        const sse = new EventSource(`/api/messages/stream?${querySuffix}token=${token}`)
         sseRef.current = sse
         sse.onopen = () => setSseConnected(true)
         sse.onmessage = (ev) => {
@@ -311,7 +343,7 @@ export default function TacticalCommMatrix() {
         }
         sse.onerror = () => setSseConnected(false)
         return () => { sse.close(); setSseConnected(false) }
-    }, [activeChat, loadMessages])
+    }, [activeChat, loadMessages, activeClaimId, activeRecipientId])
 
     useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight }, [messages])
 
@@ -331,10 +363,10 @@ export default function TacticalCommMatrix() {
 
     const startConversation = (user: any) => {
         const ex = conversations.find(c => c.id === user.id)
-        if (ex) { setActiveChat(ex.id) }
+        if (ex) { activateConversation(ex.id, ex) }
         else {
-            setConversations(prev => [{ id: user.id, name: `${user.firstName} ${user.lastName}`, role: user.role, lastMsg: 'Initializing...', time: null, isTemp: true }, ...prev])
-            setActiveChat(user.id)
+            setConversations(prev => [{ id: user.id, name: `${user.firstName} ${user.lastName}`, role: user.role, lastMsg: 'Initializing...', time: null, isTemp: true, type: 'user', recipientId: user.id }, ...prev])
+            activateConversation(user.id, { type: 'user', recipientId: user.id })
         }
         setSearchQuery(''); setSearchResults([])
     }
@@ -351,7 +383,7 @@ export default function TacticalCommMatrix() {
             const network = (data.users || []).filter((u: any) => ['CLIENT', 'REPORTER'].includes(u.role) && u.id !== currentUser?.userId)
             setConversations(prev => {
                 const ids = new Set(prev.map(c => c.id))
-                const newOnes = network.filter((u: any) => !ids.has(u.id)).map((u: any) => ({ id: u.id, name: `${u.firstName} ${u.lastName}`, role: u.role, lastMsg: 'Ready to connect', time: null, isTemp: true }))
+                const newOnes = network.filter((u: any) => !ids.has(u.id)).map((u: any) => ({ id: u.id, name: `${u.firstName} ${u.lastName}`, role: u.role, lastMsg: 'Ready to connect', time: null, isTemp: true, type: 'user', recipientId: u.id }))
                 return [...prev, ...newOnes]
             })
         } catch { } finally { setIsScanning(false) }
@@ -366,7 +398,10 @@ export default function TacticalCommMatrix() {
         setMessages(prev => [...prev, tempMsg])
         try {
             const token = localStorage.getItem('token')
-            const res = await fetch('/api/messages', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ content, recipientId: activeChat }) })
+            const payload: any = { content }
+            if (activeClaimId) payload.claimId = activeClaimId
+            payload.recipientId = activeRecipientId ?? activeChat
+            const res = await fetch('/api/messages', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) })
             if (res.ok) {
                 const msg = await res.json()
                 msgIdsRef.current.add(msg.id)
@@ -526,16 +561,23 @@ export default function TacticalCommMatrix() {
                                     </div>
                                 )}
                                 {conversations.map(c => (
-                                    <button key={c.id} onClick={() => setActiveChat(c.id)} className={`w-full p-4 rounded-2xl text-left transition-all flex items-start gap-3 ${activeChat === c.id ? 'bg-primary shadow-lg shadow-primary/20' : 'hover:bg-muted'}`}>
+                                    <button key={c.id} onClick={() => activateConversation(c.id, c)} className={`w-full p-4 rounded-2xl text-left transition-all flex items-start gap-3 ${activeChat === c.id ? 'bg-primary shadow-lg shadow-primary/20' : 'hover:bg-muted'}`}>
                                         <div className="relative flex-shrink-0">
                                             <div className={`h-9 w-9 rounded-xl flex items-center justify-center text-sm font-black shadow-md ${activeChat === c.id ? 'bg-white/20 text-white' : 'bg-primary/10 text-primary'}`}>{c.name.split(' ').slice(0, 2).map((n: string) => n[0]).join('')}</div>
                                             <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background ${c.isTemp ? 'bg-amber-400' : 'bg-emerald-500'}`} />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-center">
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-2">
                                                 <h4 className={`text-[10px] font-black uppercase truncate ${activeChat === c.id ? 'text-white' : 'text-foreground'}`}>{c.name}</h4>
-                                                <span className={`text-[7px] font-bold ${activeChat === c.id ? 'text-white/60' : 'text-muted-foreground'}`}>{c.time ? new Date(c.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                                                {c.type === 'claim' && (
+                                                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.3em] ${c.status === 'ACCEPTED' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-primary/10 text-primary border border-primary/20'}`}>
+                                                        {c.status || 'Claim'}
+                                                    </span>
+                                                )}
                                             </div>
+                                            <span className={`text-[7px] font-bold ${activeChat === c.id ? 'text-white/60' : 'text-muted-foreground'}`}>{c.time ? new Date(c.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                                        </div>
                                             <p className={`text-[9px] truncate opacity-60 ${activeChat === c.id ? 'text-white' : 'text-muted-foreground'}`}>{c.lastMsg}</p>
                                         </div>
                                     </button>
@@ -553,7 +595,7 @@ export default function TacticalCommMatrix() {
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-border bg-background/50 flex items-center justify-between backdrop-blur-3xl flex-shrink-0">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => setActiveChat(null)} className="xl:hidden h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-all">
+                        <button onClick={() => activateConversation(null)} className="xl:hidden h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-all">
                             <ChevronDown className="h-5 w-5 rotate-90" />
                         </button>
                         {activeConv ? (

@@ -23,6 +23,22 @@ import {
     Loader2
 } from 'lucide-react'
 
+const defaultAddOnOptions = [
+    { label: 'Rough Draft', value: 'ROUGH_DRAFT' },
+    { label: 'Videographer', value: 'VIDEOGRAPHER' },
+    { label: 'Realtime Sync', value: 'REALTIME_SYNC' },
+    { label: 'Interpreter', value: 'INTERPRETER' }
+]
+
+const defaultExpediteOptions = [
+    { label: 'Immediate', value: 'IMMEDIATE' },
+    ...Array.from({ length: 9 }, (_, i) => ({
+        label: `${i + 1} business day${i === 0 ? '' : 's'}`,
+        value: `${i + 1}`
+    })),
+    { label: '10 days (Regular delivery)', value: '10' }
+]
+
 export default function NewBookingPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -32,6 +48,7 @@ export default function NewBookingPage() {
     const timeInputRef = useRef<HTMLInputElement>(null)
     const [services, setServices] = useState<any[]>([])
     const [loading, setLoading] = useState(false)
+    const [addOnOptions, setAddOnOptions] = useState<any[]>([])
     const [formData, setFormData] = useState({
         serviceId: '',
         proceedingType: 'DEPOSITION',
@@ -43,13 +60,10 @@ export default function NewBookingPage() {
         jurisdiction: '',
         specialRequirements: '',
         addOns: {
-            roughDraft: false,
             expedite: '',
-            videographer: false,
-            realtimeSync: false,
-            interpreter: false,
-            other: '',
-        }
+        },
+        selectedAddOns: [] as string[],
+        otherAddOnNotes: ''
     })
 
     useEffect(() => {
@@ -98,8 +112,38 @@ export default function NewBookingPage() {
         fetchServices()
     }, [requestedServiceId])
 
+    useEffect(() => {
+        const fetchOptions = async () => {
+            try {
+                const token = localStorage.getItem('token')
+                const res = await fetch('/api/add-ons', {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                })
+                if (res.ok) {
+                    const data = await res.json()
+                    setAddOnOptions(Array.isArray(data.options) ? data.options : [])
+                }
+            } catch (error) {
+                console.error('Failed to load add-on options:', error)
+            }
+        }
+        fetchOptions()
+    }, [])
+
     const selectedService = services.find(s => s.id === formData.serviceId)
     const isCourtReporting = selectedService?.serviceName === 'Premium Court Reporting'
+    const addOnCheckboxOptions = addOnOptions.filter(o => o.category === 'ADD_ON' && o.active)
+    const expediteOptions = addOnOptions.filter(o => o.category === 'EXPEDITE' && o.active)
+    const effectiveAddOnOptions = addOnCheckboxOptions.length ? addOnCheckboxOptions : defaultAddOnOptions
+    const effectiveExpediteOptions = expediteOptions.length ? expediteOptions : defaultExpediteOptions
+    const isAddOnSelected = (value: string) => formData.selectedAddOns.includes(value)
+    const toggleAddOnOption = (value: string) => {
+        setFormData(prev => {
+            const exists = prev.selectedAddOns.includes(value)
+            const selected = exists ? prev.selectedAddOns.filter(v => v !== value) : [...prev.selectedAddOns, value]
+            return { ...prev, selectedAddOns: selected }
+        })
+    }
 
     // Ensure proceeding type stays valid for selected service
     useEffect(() => {
@@ -120,16 +164,21 @@ export default function NewBookingPage() {
                 ? (formData.customProceeding.trim() || 'OTHER')
                 : formData.proceedingType
 
-            const { customProceeding, addOns, specialRequirements, ...rest } = formData
+            const { customProceeding, addOns, specialRequirements, selectedAddOns, otherAddOnNotes, ...rest } = formData
 
             // Fold add-on selections into special requirements to avoid backend schema changes
             const addOnNotes: string[] = []
-            if (addOns.roughDraft) addOnNotes.push('Rough Draft requested')
-            if (addOns.expedite) addOnNotes.push(`Expedite delivery: ${addOns.expedite} business day(s)`)
-            if (addOns.videographer) addOnNotes.push('Videographer requested')
-            if (addOns.realtimeSync) addOnNotes.push('Realtime sync requested')
-            if (addOns.interpreter) addOnNotes.push('Interpreter requested')
-            if (addOns.other?.trim()) addOnNotes.push(`Other add-ons: ${addOns.other.trim()}`)
+            formData.selectedAddOns.forEach(value => {
+                const option = effectiveAddOnOptions.find(o => o.value === value)
+                if (option) addOnNotes.push(`${option.label} requested`)
+            })
+            const expediteOption = effectiveExpediteOptions.find(opt => opt.value === formData.addOns.expedite)
+            if (expediteOption && formData.addOns.expedite) {
+                addOnNotes.push(`Expedite delivery: ${expediteOption.label}`)
+            }
+            if (formData.otherAddOnNotes?.trim()) {
+                addOnNotes.push(`Other add-ons: ${formData.otherAddOnNotes.trim()}`)
+            }
 
             const mergedSpecialRequirements = [
                 specialRequirements?.trim(),
@@ -362,7 +411,7 @@ export default function NewBookingPage() {
                                         onClick={() => setFormData({ ...formData, appearanceType: 'IN_PERSON' })}
                                         icon={<Briefcase className="h-6 w-6" />}
                                         title="On-Site Presence"
-                                        desc="Stenographer deployed to law firm or neutral venue."
+                                    desc="Stenographer assigned to law firm or neutral venue."
                                     />
                                 </div>
                             </div>
@@ -373,23 +422,18 @@ export default function NewBookingPage() {
                                     <span className="text-[9px] font-bold text-primary uppercase tracking-widest">Optional</span>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {[
-                                        { key: 'roughDraft', label: 'Rough Draft' },
-                                        { key: 'videographer', label: 'Videographer' },
-                                        { key: 'realtimeSync', label: 'Realtime Sync' },
-                                        { key: 'interpreter', label: 'Interpreter' },
-                                    ].map(item => (
-                                        <label key={item.key} className="flex items-center gap-3 p-4 border border-border rounded-2xl cursor-pointer hover:border-primary/40 transition-colors">
+                                    {effectiveAddOnOptions.map(option => (
+                                        <label
+                                            key={option.value}
+                                            className="flex items-center gap-3 p-4 border border-border rounded-2xl cursor-pointer hover:border-primary/40 transition-colors"
+                                        >
                                             <input
                                                 type="checkbox"
                                                 className="h-4 w-4 accent-primary"
-                                                checked={(formData.addOns as any)[item.key]}
-                                                onChange={(e) => setFormData({
-                                                    ...formData,
-                                                    addOns: { ...formData.addOns, [item.key]: e.target.checked }
-                                                })}
+                                                checked={isAddOnSelected(option.value)}
+                                                onChange={() => toggleAddOnOption(option.value)}
                                             />
-                                            <span className="text-sm font-bold text-muted-foreground">{item.label}</span>
+                                            <span className="text-sm font-bold text-muted-foreground">{option.label}</span>
                                         </label>
                                     ))}
                                 </div>
@@ -397,27 +441,25 @@ export default function NewBookingPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Expedite Delivery</label>
-                                        <select
-                                            className="luxury-input"
-                                            value={formData.addOns.expedite}
-                                            onChange={(e) => setFormData({ ...formData, addOns: { ...formData.addOns, expedite: e.target.value } })}
-                                        >
-                                            <option value="">Select delivery target</option>
-                                            <option value="IMMEDIATE">Immediate</option>
-                                            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(day => (
-                                                <option key={day} value={String(day)}>{day} business day{day === 1 ? '' : 's'}</option>
-                                            ))}
-                                            <option value="10">10 days (Regular delivery)</option>
-                                        </select>
+                                    <select
+                                        className="luxury-input"
+                                        value={formData.addOns.expedite}
+                                        onChange={(e) => setFormData({ ...formData, addOns: { ...formData.addOns, expedite: e.target.value } })}
+                                    >
+                                        <option value="">Select delivery target</option>
+                                        {effectiveExpediteOptions.map(option => (
+                                            <option key={option.value} value={option.value}>{option.label}</option>
+                                        ))}
+                                    </select>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Other Add-On Services</label>
-                                        <input
-                                            className="luxury-input"
-                                            placeholder="Enter other add-on requests"
-                                            value={formData.addOns.other}
-                                            onChange={(e) => setFormData({ ...formData, addOns: { ...formData.addOns, other: e.target.value } })}
-                                        />
+                                    <input
+                                        className="luxury-input"
+                                        placeholder="Enter other add-on requests"
+                                        value={formData.otherAddOnNotes}
+                                        onChange={(e) => setFormData({ ...formData, otherAddOnNotes: e.target.value })}
+                                    />
                                         <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight ml-2">Leave blank if none. Admin will review.</p>
                                     </div>
                                 </div>

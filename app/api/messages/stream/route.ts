@@ -23,7 +23,8 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = payload.userId || (payload as any).id
-    const recipientId = searchParams.get('recipientId')
+    const claimId = searchParams.get('claimId')
+    const recipientId = claimId ? null : searchParams.get('recipientId')
 
     if (!userId) {
         return new Response('data: {"type":"error","message":"Invalid token"}\n\n', {
@@ -38,6 +39,8 @@ export async function GET(request: NextRequest) {
         start(controller) {
             let closed = false
             let lastChecked = Date.now() - 500 // small overlap on connect
+            let pollInterval: ReturnType<typeof setInterval>
+            let heartbeatInterval: ReturnType<typeof setInterval>
 
             const send = (data: string) => {
                 if (closed) return
@@ -57,21 +60,43 @@ export async function GET(request: NextRequest) {
                     const since = new Date(lastChecked)
                     lastChecked = Date.now()
 
-                    const where: any = recipientId
-                        ? {
-                            OR: [
-                                { senderId: userId, recipientId },
-                                { senderId: recipientId, recipientId: userId },
-                            ],
-                            createdAt: { gte: since }
+                    let where: any
+                    if (claimId) {
+                        const claim = await prisma.jobClaim.findUnique({ where: { id: claimId } })
+                        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'MANAGER'].includes((payload.role || '').toUpperCase())
+                        if (!claim || (!isAdmin && claim.reporterId !== userId)) {
+                            send('data: {"type":"error","message":"Unauthorized"}\n\n')
+                            closed = true
+                            clearInterval(pollInterval)
+                            clearInterval(heartbeatInterval)
+                            try { controller.close() } catch {}
+                            return
                         }
-                        : {
+                        where = {
+                            claimId,
                             OR: [
                                 { senderId: userId },
                                 { recipientId: userId }
                             ],
                             createdAt: { gte: since }
                         }
+                    } else {
+                        where = recipientId
+                            ? {
+                                OR: [
+                                    { senderId: userId, recipientId },
+                                    { senderId: recipientId, recipientId: userId },
+                                ],
+                                createdAt: { gte: since }
+                            }
+                            : {
+                                OR: [
+                                    { senderId: userId },
+                                    { recipientId: userId }
+                                ],
+                                createdAt: { gte: since }
+                            }
+                    }
 
                     const newMessages = await prisma.message.findMany({
                         where,
@@ -91,10 +116,10 @@ export async function GET(request: NextRequest) {
             }
 
             // Poll every 1.5 seconds - fast enough to feel instant, light on DB
-            const pollInterval = setInterval(poll, 1500)
-
+            pollInterval = setInterval(poll, 1500)
+            
             // Keep-alive heartbeat every 20 seconds
-            const heartbeatInterval = setInterval(() => {
+            heartbeatInterval = setInterval(() => {
                 send(': heartbeat\n\n')
             }, 20000)
 

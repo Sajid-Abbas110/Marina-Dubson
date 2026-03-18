@@ -6,6 +6,7 @@ import { z } from 'zod'
 const claimSchema = z.object({
     bookingId: z.string(),
     notes: z.string().optional(),
+    notInterested: z.boolean().optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -45,7 +46,8 @@ export async function POST(request: NextRequest) {
             data: {
                 bookingId: data.bookingId,
                 reporterId: payload.userId,
-                notes: data.notes
+                notes: data.notes,
+                status: data.notInterested ? 'DECLINED' : 'PENDING'
             }
         })
 
@@ -60,11 +62,14 @@ export async function POST(request: NextRequest) {
             })
 
             if (admin && reporter) {
+                const content = data.notInterested
+                    ? `System Alert: Reporter ${reporter.firstName} ${reporter.lastName} marked Job #${job.bookingNumber} (${job.proceedingType}) as not interested.`
+                    : `System Alert: Reporter ${reporter.firstName} ${reporter.lastName} has claimed Job #${job.bookingNumber} (${job.proceedingType}). Please review and assign.`
                 await prisma.message.create({
                     data: {
                         senderId: reporter.id,
                         recipientId: admin.id,
-                        content: `System Alert: Reporter ${reporter.firstName} ${reporter.lastName} has claimed Job #${job.bookingNumber} (${job.proceedingType}). Please review and assign.`,
+                        content,
                         claimId: claim.id
                     }
                 })

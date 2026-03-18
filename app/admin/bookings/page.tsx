@@ -50,9 +50,12 @@ export default function BookingManagementPage() {
     const [currentUser, setCurrentUser] = useState<any>(null)
     const [showAssignModal, setShowAssignModal] = useState(false)
     const [assigningBookingId, setAssigningBookingId] = useState<string | null>(null)
+    const [reviewBooking, setReviewBooking] = useState<any>(null)
+    const [showReviewModal, setShowReviewModal] = useState(false)
+    const [reviewLoading, setReviewLoading] = useState(false)
 
-    const [showBidsModal, setShowBidsModal] = useState(false)
-    const [selectedBookingBids, setSelectedBookingBids] = useState<any[]>([])
+    const [showClaimsModal, setShowClaimsModal] = useState(false)
+    const [selectedBookingClaims, setSelectedBookingClaims] = useState<any[]>([])
     const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [completedInvoiceId, setCompletedInvoiceId] = useState<string | null>(null)
@@ -74,6 +77,24 @@ export default function BookingManagementPage() {
             setLoading(false)
         }
     }
+
+    useEffect(() => {
+        const fetchCurrentUser = async () => {
+            try {
+                const token = localStorage.getItem('token')
+                const res = await fetch('/api/auth/me', {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                })
+                if (res.ok) {
+                    const data = await res.json()
+                    setCurrentUser(data.user)
+                }
+            } catch (error) {
+                console.error('Failed to fetch current user:', error)
+            }
+        }
+        fetchCurrentUser()
+    }, [])
 
     // Listen for add-on open events (from header bell)
     useEffect(() => {
@@ -173,22 +194,22 @@ export default function BookingManagementPage() {
         }
     }
 
-    const viewBids = async (bookingId: string) => {
+    const viewClaims = async (bookingId: string) => {
         try {
             const token = localStorage.getItem('token')
             const res = await fetch(`/api/market/bids?bookingId=${bookingId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const data = await res.json()
-            setSelectedBookingBids(data.claims || data.bids || [])
+            setSelectedBookingClaims(data.claims || data.bids || [])
             setSelectedBookingId(bookingId)
-            setShowBidsModal(true)
+            setShowClaimsModal(true)
         } catch (error) {
-            console.error('Failed to fetch bids:', error)
+            console.error('Failed to fetch claims:', error)
         }
     }
 
-    const acceptBid = async (bidId: string) => {
+    const acceptClaim = async (claimId: string) => {
         setIsPending(true)
         try {
             const token = localStorage.getItem('token')
@@ -198,20 +219,20 @@ export default function BookingManagementPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ claimId: bidId, status: 'ACCEPTED' })
+                body: JSON.stringify({ claimId, status: 'ACCEPTED' })
             })
             if (res.ok) {
-                viewBids(selectedBookingId!)
+                viewClaims(selectedBookingId!)
                 fetchBookings()
             }
         } catch (error) {
-            console.error('Failed to accept bid:', error)
+            console.error('Failed to accept claim:', error)
         } finally {
             setIsPending(false)
         }
     }
 
-    const declineBid = async (bidId: string) => {
+    const declineClaim = async (claimId: string) => {
         try {
             const token = localStorage.getItem('token')
             const res = await fetch('/api/market/bids', {
@@ -220,13 +241,13 @@ export default function BookingManagementPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ claimId: bidId, status: 'DECLINED' })
+                body: JSON.stringify({ claimId, status: 'DECLINED' })
             })
             if (res.ok) {
-                viewBids(selectedBookingId!)
+                viewClaims(selectedBookingId!)
             }
         } catch (error) {
-            console.error('Failed to decline bid:', error)
+            console.error('Failed to decline claim:', error)
         }
     }
 
@@ -397,6 +418,23 @@ export default function BookingManagementPage() {
             console.error('Failed to assign reporter:', error)
         } finally {
             setIsPending(false)
+        }
+    }
+
+    const openReviewModal = (booking: any) => {
+        setReviewBooking(booking)
+        setShowReviewModal(true)
+    }
+
+    const confirmReviewApproval = async () => {
+        if (!reviewBooking) return
+        setReviewLoading(true)
+        try {
+            await updateStatus(reviewBooking.id, 'ACCEPTED')
+            setShowReviewModal(false)
+            setReviewBooking(null)
+        } finally {
+            setReviewLoading(false)
         }
     }
 
@@ -595,7 +633,7 @@ export default function BookingManagementPage() {
                                         {b.bookingStatus === 'SUBMITTED' && (
                                             <>
                                                 <button
-                                                    onClick={() => updateStatus(b.id, 'ACCEPTED')}
+                                                    onClick={() => openReviewModal(b)}
                                                     className="px-3 sm:px-4 py-2 rounded-xl bg-primary text-primary-foreground text-[8px] sm:text-[9px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95"
                                                 >
                                                     Approve
@@ -617,7 +655,7 @@ export default function BookingManagementPage() {
                                         {b.bookingStatus === 'MAYBE' && (
                                             <>
                                                 <button
-                                                    onClick={() => updateStatus(b.id, 'ACCEPTED')}
+                                                    onClick={() => openReviewModal(b)}
                                                     className="px-3 sm:px-4 py-2 rounded-xl bg-primary text-primary-foreground text-[8px] sm:text-[9px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95"
                                                 >
                                                     Approve
@@ -681,9 +719,9 @@ export default function BookingManagementPage() {
             </div>
 
             {/* Claims Management Modal */}
-            {showBidsModal && (
+            {showClaimsModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 lg:pl-80 animate-in fade-in duration-300">
-                    <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setShowBidsModal(false)}></div>
+                    <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setShowClaimsModal(false)}></div>
                     <div className="relative w-full max-w-4xl bg-card rounded-[2rem] sm:rounded-[3.5rem] p-6 sm:p-12 shadow-3xl border border-border overflow-hidden">
                         <div className="flex items-center justify-between mb-8 sm:mb-12">
                             <div className="flex items-center gap-4 sm:gap-8">
@@ -695,51 +733,51 @@ export default function BookingManagementPage() {
                                     <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em]">Available reporters</p>
                                 </div>
                             </div>
-                            <button onClick={() => setShowBidsModal(false)} className="h-10 w-10 sm:h-14 sm:w-14 rounded-xl bg-muted border border-border text-muted-foreground hover:text-foreground transition-all flex items-center justify-center">
+                            <button onClick={() => setShowClaimsModal(false)} className="h-10 w-10 sm:h-14 sm:w-14 rounded-xl bg-muted border border-border text-muted-foreground hover:text-foreground transition-all flex items-center justify-center">
                                 <X className="h-5 w-5 sm:h-7 sm:w-7" />
                             </button>
                         </div>
 
                         <div className="space-y-5 max-h-[500px] overflow-y-auto pr-4 custom-scrollbar">
-                            {selectedBookingBids.length === 0 ? (
+                            {selectedBookingClaims.length === 0 ? (
                                 <div className="py-24 text-center font-black text-[10px] uppercase tracking-[0.5em] text-muted-foreground animate-pulse">No signals detected...</div>
-                            ) : selectedBookingBids.map(bid => (
-                                <div key={bid.id} className="p-4 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] bg-muted/30 border border-border flex flex-col sm:flex-row items-stretch sm:items-center justify-between hover:border-primary/20 transition-all group relative overflow-hidden gap-6">
+                            ) : selectedBookingClaims.map(claim => (
+                                <div key={claim.id} className="p-4 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] bg-muted/30 border border-border flex flex-col sm:flex-row items-stretch sm:items-center justify-between hover:border-primary/20 transition-all group relative overflow-hidden gap-6">
                                     <div className="flex items-center gap-4 sm:gap-8 relative z-10">
                                         <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl bg-card border border-border flex items-center justify-center text-lg font-black text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500">
-                                            {bid.reporter.firstName[0]}
+                                            {claim.reporter.firstName[0]}
                                         </div>
                                         <div>
-                                            <h4 className="text-base sm:text-lg font-black text-foreground uppercase tracking-tight mb-1 sm:mb-2 group-hover:text-primary transition-colors">{bid.reporter.firstName} {bid.reporter.lastName}</h4>
-                                            <span className="text-[7px] sm:text-[9px] font-black text-primary bg-primary/10 px-2.5 py-1 rounded-lg uppercase border border-primary/20 tracking-widest leading-none">{bid.reporter.certification || 'Verified'}</span>
+                                            <h4 className="text-base sm:text-lg font-black text-foreground uppercase tracking-tight mb-1 sm:mb-2 group-hover:text-primary transition-colors">{claim.reporter.firstName} {claim.reporter.lastName}</h4>
+                                            <span className="text-[7px] sm:text-[9px] font-black text-primary bg-primary/10 px-2.5 py-1 rounded-lg uppercase border border-primary/20 tracking-widest leading-none">{claim.reporter.certification || 'Verified'}</span>
                                         </div>
                                     </div>
                                     <div className="flex flex-row items-center justify-between sm:justify-end gap-6 sm:gap-16 relative z-10">
                                         <div className="text-right">
                                             <p className="text-[7px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Status</p>
-                                            <p className="text-xl sm:text-3xl font-black text-foreground tracking-tighter">{bid.status}</p>
+                                            <p className="text-xl sm:text-3xl font-black text-foreground tracking-tighter">{claim.status}</p>
                                         </div>
-                                        {bid.status === 'PENDING' ? (
+                                        {claim.status === 'PENDING' ? (
                                             <div className="flex items-center gap-2 sm:gap-3">
                                                 <button
-                                                    onClick={() => declineBid(bid.id)}
+                                                    onClick={() => declineClaim(claim.id)}
                                                     className="h-10 sm:h-12 px-4 sm:px-6 rounded-xl sm:rounded-2xl bg-muted border border-border text-muted-foreground hover:text-rose-500 hover:border-rose-500/20 text-[8px] sm:text-[10px] font-black uppercase tracking-widest transition-all"
                                                 >
                                                     Decline
                                                 </button>
                                                 <button
-                                                    onClick={() => acceptBid(bid.id)}
+                                                    onClick={() => acceptClaim(claim.id)}
                                                     className="h-10 sm:h-12 px-6 sm:px-8 rounded-xl sm:rounded-2xl bg-foreground text-background text-[8px] sm:text-[10px] font-black uppercase tracking-widest shadow-xl transition-all active:scale-95"
                                                 >
                                                     Accept
                                                 </button>
                                             </div>
                                         ) : (
-                                            <div className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-[8px] sm:text-[10px] font-black uppercase tracking-widest border ${bid.status === 'ACCEPTED'
+                                            <div className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-[8px] sm:text-[10px] font-black uppercase tracking-widest border ${claim.status === 'ACCEPTED'
                                                 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
                                                 : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
                                                 }`}>
-                                                {bid.status}
+                                                {claim.status}
                                             </div>
                                         )}
                                     </div>
@@ -748,6 +786,84 @@ export default function BookingManagementPage() {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showReviewModal && reviewBooking && (
+                <div className="fixed inset-0 z-[260] flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="absolute inset-0 bg-background/80 backdrop-blur-lg" onClick={() => setShowReviewModal(false)} />
+                    <div className="relative w-full max-w-3xl bg-card rounded-[2rem] border border-border shadow-3xl p-8 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Review Booking</h2>
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mt-1">Confirm the details before approving assignment</p>
+                            </div>
+                            <button onClick={() => setShowReviewModal(false)} className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-[10px] font-black uppercase tracking-[0.25em]">
+                            <div>
+                                <p className="text-muted-foreground">Booking #</p>
+                                <p className="text-lg text-foreground">{reviewBooking.bookingNumber}</p>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground">Client</p>
+                                <p className="text-lg text-foreground">{reviewBooking.contact.companyName || `${reviewBooking.contact.firstName} ${reviewBooking.contact.lastName}`}</p>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground">Service</p>
+                                <p className="text-lg text-foreground">{reviewBooking.service?.serviceName || 'Premium Reporting'}</p>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground">Proceeding</p>
+                                <p className="text-lg text-foreground">{reviewBooking.proceedingType}</p>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground">Date / Time</p>
+                                <p className="text-lg text-foreground">{new Date(reviewBooking.bookingDate).toLocaleDateString()} • {reviewBooking.bookingTime}</p>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground">Location</p>
+                                <p className="text-lg text-foreground">{reviewBooking.location || 'Remote'}</p>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground">Appearance</p>
+                                <p className="text-lg text-foreground">{reviewBooking.appearanceType === 'IN_PERSON' ? 'On-Site' : 'Remote'}</p>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground">Marketplace</p>
+                                <p className="text-lg text-foreground">
+                                    {reviewBooking.isMarketplace ? 'Published • Claims expected' : 'Unpublished • Direct assignment only'}
+                                </p>
+                            </div>
+                        </div>
+                        {reviewBooking.specialRequirements && (
+                            <div className="p-4 rounded-2xl bg-muted/40 border border-border text-sm leading-snug">
+                                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">Add-On Notes / Requirements</p>
+                                <p className="text-sm text-foreground">{reviewBooking.specialRequirements}</p>
+                            </div>
+                        )}
+                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+                            <span>You may still assign directly / publish to marketplace from the main dashboard controls.</span>
+                            <span>Once approved, the job is ready for assignments.</span>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <button
+                                onClick={confirmReviewApproval}
+                                disabled={reviewLoading}
+                                className="flex-1 py-3 rounded-2xl bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-[0.3em] shadow-lg shadow-primary/20 disabled:opacity-60"
+                            >
+                                {reviewLoading ? 'Approving…' : 'Confirm & Approve Booking'}
+                            </button>
+                            <button
+                                onClick={() => setShowReviewModal(false)}
+                                className="flex-1 py-3 rounded-2xl border border-border text-[10px] font-black uppercase tracking-[0.3em]"
+                            >
+                                Cancel
+                            </button>
                         </div>
                     </div>
                 </div>

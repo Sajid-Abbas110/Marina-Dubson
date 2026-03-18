@@ -8,6 +8,7 @@ const messageSchema = z.object({
     recipientId: z.string().optional(),
     bookingId: z.string().optional(),
     contactId: z.string().optional(),
+    claimId: z.string().optional()
 })
 
 export async function GET(request: NextRequest) {
@@ -31,24 +32,46 @@ export async function GET(request: NextRequest) {
         }
 
         const { searchParams } = new URL(request.url)
-        const recipientId = searchParams.get('recipientId')
+        const claimId = searchParams.get('claimId')
+        const recipientId = claimId ? null : searchParams.get('recipientId')
         const limit = parseInt(searchParams.get('limit') || '50')
         const offset = parseInt(searchParams.get('offset') || '0')
 
-        // Build the where clause: get the conversation thread between two users
-        const where: any = recipientId
-            ? {
-                OR: [
-                    { senderId: userId, recipientId: recipientId },
-                    { senderId: recipientId, recipientId: userId },
-                ]
+        let where: any
+        if (claimId) {
+            const claim = await prisma.jobClaim.findUnique({ where: { id: claimId } })
+            if (!claim) {
+                return NextResponse.json({ error: 'Claim not found' }, { status: 404 })
             }
-            : {
+
+            const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'MANAGER'].includes((payload.role || '').toUpperCase())
+            if (!isAdmin && claim.reporterId !== userId) {
+                return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            }
+
+            where = {
+                claimId,
                 OR: [
                     { senderId: userId },
                     { recipientId: userId }
                 ]
             }
+        } else {
+            // Build the where clause: get the conversation thread between two users
+            where = recipientId
+                ? {
+                    OR: [
+                        { senderId: userId, recipientId: recipientId },
+                        { senderId: recipientId, recipientId: userId },
+                    ]
+                }
+                : {
+                    OR: [
+                        { senderId: userId },
+                        { recipientId: userId }
+                    ]
+                }
+        }
 
         const messages = await prisma.message.findMany({
             where,
@@ -103,14 +126,34 @@ export async function POST(request: NextRequest) {
 
         // Find recipient: use provided ID or default to an admin node for client/reporter/staff.
         let recipientId = data.recipientId
+        let claimRecord = null
+        const defaultAdmin = await prisma.user.findFirst({
+            where: {
+                role: { in: ['ADMIN', 'SUPER_ADMIN', 'MANAGER', 'STAFF'] }
+            },
+            orderBy: { createdAt: 'asc' }
+        })
+
+        if (data.claimId) {
+            claimRecord = await prisma.jobClaim.findUnique({ where: { id: data.claimId } })
+            if (!claimRecord) {
+                return NextResponse.json({ error: 'Claim not found' }, { status: 404 })
+            }
+
+            const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'MANAGER'].includes(userRole)
+            if (!isAdmin && claimRecord.reporterId !== senderUser.id) {
+                return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            }
+        }
 
         if (!recipientId && (userRole === 'CLIENT' || userRole === 'REPORTER' || userRole === 'STAFF')) {
-            const admin = await prisma.user.findFirst({
-                where: {
-                    role: { in: ['ADMIN', 'SUPER_ADMIN', 'MANAGER', 'STAFF'] }
-                }
-            })
-            recipientId = admin?.id
+            recipientId = defaultAdmin?.id
+        }
+
+        if (claimRecord) {
+            const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'MANAGER'].includes(userRole)
+            const targetId = isAdmin ? claimRecord.reporterId : (defaultAdmin?.id ?? claimRecord.reporterId)
+            recipientId = targetId
         }
 
         if (!recipientId) {
@@ -130,6 +173,7 @@ export async function POST(request: NextRequest) {
                 recipientId: recipientUser.id,  // Use verified DB id
                 content: data.content,
                 contactId: data.contactId ?? null,
+                claimId: claimRecord?.id ?? null,
             },
             include: {
                 sender: {

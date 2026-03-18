@@ -65,7 +65,11 @@ export default function ClientPortal() {
     const [loading, setLoading] = useState(true)
     const [messageContent, setMessageContent] = useState('')
     const [sendingMessage, setSendingMessage] = useState(false)
+    const [systemPolicy, setSystemPolicy] = useState<Record<string, string>>({})
     const [docSearchQuery, setDocSearchQuery] = useState('')
+    const [documentBookingFilter, setDocumentBookingFilter] = useState('')
+    const [uploadBookingId, setUploadBookingId] = useState('')
+    const [uploadingDocument, setUploadingDocument] = useState(false)
 
     // Cancel booking modal state
     const [showCancelModal, setShowCancelModal] = useState(false)
@@ -73,15 +77,30 @@ export default function ClientPortal() {
     const [cancelInfo, setCancelInfo] = useState<{ canCancel: boolean; deadline: string; hoursRemaining?: number; message: string } | null>(null)
     const [cancelLoading, setCancelLoading] = useState(false)
 
+    const lateFeeAmountValue = cancelInfo?.lateFeeAmount ?? 400
+    const lateFeeLabel = cancelInfo?.lateFeeLabel ?? `Late Cancellation — $${lateFeeAmountValue.toFixed(0)} Fee`
+    const lateFeeButtonLabel = `Cancel — $${lateFeeAmountValue.toFixed(2)} Fee`
+
+    const userClientType = user?.contact?.clientType?.toUpperCase() || 'PRIVATE'
+    const isAgencyClient = userClientType === 'AGENCY'
+    const financialKey = isAgencyClient ? 'financial_responsibility_agency' : 'financial_responsibility_private'
+    const defaultFinancial = isAgencyClient ? 45 : 30
+    const financialResponsibilityDays = Number(systemPolicy[financialKey]) || defaultFinancial
+    const defaultSummary = isAgencyClient
+        ? 'Arbitrations, hearings, and realtime proceedings carry a $400 cancellation minimum after the deadline; other proceedings carry a $300 minimum.'
+        : 'Cancellations between 3:00 PM and 6:00 PM on the previous business day incur a $300 fee; cancellations after 6:00 PM up until the job day incur a $400 fee.'
+    const cancellationSummaryText = systemPolicy.cancellation_policy_text || defaultSummary
+    const paymentTermsChoice = systemPolicy.payment_terms_choice || '30'
+    const paymentTermsDescription = systemPolicy.payment_terms_description || 'Payment is due within 30 days of invoice issuance.'
+    const paymentTermsCopy = paymentTermsChoice === 'CUSTOM'
+        ? (systemPolicy.payment_terms_custom || 'Custom agreement governs payment.')
+        : `${paymentTermsChoice} Day Terms`
+    const rateServicePreview = services.slice(0, 3)
+
     // Edit add-ons modal state
     const [editBookingId, setEditBookingId] = useState<string | null>(null)
     const [editNotes, setEditNotes] = useState('')
-    const [editAddOns, setEditAddOns] = useState({
-        roughDraft: false,
-        videographer: false,
-        realtimeSync: false,
-        interpreter: false,
-    })
+    const [editAddOnSelection, setEditAddOnSelection] = useState<string[]>([])
     const [editSaving, setEditSaving] = useState(false)
 
     const [scrolled, setScrolled] = useState(false)
@@ -105,13 +124,14 @@ export default function ClientPortal() {
                 return
             }
 
-            const [userRes, bookingsRes, servicesRes, docsRes, invoicesRes, messagesRes] = await Promise.all([
+            const [userRes, bookingsRes, servicesRes, docsRes, invoicesRes, messagesRes, policyRes] = await Promise.all([
                 fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch('/api/bookings', { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch('/api/services', { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch('/api/documents', { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch('/api/invoices', { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch('/api/messages', { headers: { 'Authorization': `Bearer ${token}` } })
+                fetch('/api/messages', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('/api/system-policy', { headers: { 'Authorization': `Bearer ${token}` } })
             ])
 
             const userData = await userRes.json()
@@ -120,6 +140,7 @@ export default function ClientPortal() {
             const docsData = await docsRes.json()
             const invoicesData = await invoicesRes.json()
             const messagesData = await messagesRes.json()
+            const policyData = await policyRes.json()
 
             if (userData.user) setUser(userData.user)
 
@@ -135,6 +156,9 @@ export default function ClientPortal() {
             )
             setInvoices(scopedInvoices)
             setMessages(Array.isArray(messagesData.messages) ? messagesData.messages : [])
+            if (policyData?.policies) {
+                setSystemPolicy(policyData.policies)
+            }
 
             // Calculate stats
             const active = userBookings.filter((b: any) => ['SUBMITTED', 'ACCEPTED', 'CONFIRMED'].includes(b.bookingStatus)).length
@@ -159,6 +183,55 @@ export default function ClientPortal() {
         const interval = setInterval(() => fetchAllData(true), 60000)
         return () => clearInterval(interval)
     }, [fetchAllData])
+
+    const uploadAcceptTypes = '.pdf,.doc,.docx,.txt,.rtf,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg'
+    const allowedUploadCopy = 'Allowed: PDF, DOC/DOCX, TXT, RTF, XLSX, PPTX, PNG, JPG'
+
+    const handleDocumentUpload = async (file: File) => {
+        if (!file) return
+        setUploadingDocument(true)
+        try {
+            const token = localStorage.getItem('token')
+            if (!token) {
+                alert('Authentication required to upload documents.')
+                return
+            }
+
+            const formData = new FormData()
+            formData.append('file', file)
+            formData.append('category', 'CLIENT_UPLOAD')
+            if (uploadBookingId) {
+                formData.append('bookingId', uploadBookingId)
+            }
+
+            const res = await fetch('/api/documents', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            })
+
+            if (res.ok) {
+                const newDoc = await res.json()
+                setDocuments(prev => [newDoc, ...prev])
+                setStats(prev => ({ ...prev, files: prev.files + 1 }))
+            } else {
+                const err = await res.json()
+                alert(err.error || 'Document upload failed')
+            }
+        } catch (error) {
+            console.error('Document upload failed:', error)
+            alert('Document upload failed. Please try again.')
+        } finally {
+            setUploadingDocument(false)
+        }
+    }
+
+    const lowercaseSearch = docSearchQuery.toLowerCase().trim()
+    const visibleDocuments = documents
+        .filter(doc => !lowercaseSearch || doc.fileName.toLowerCase().includes(lowercaseSearch))
+        .filter(doc => !documentBookingFilter || doc.bookingId === documentBookingFilter)
 
     const handleSendMessage = async () => {
         if (!messageContent.trim()) return
@@ -260,12 +333,12 @@ export default function ClientPortal() {
         setEditBookingId(booking.id)
         // Show an empty field with only placeholder text (no prefill)
         setEditNotes('')
-        setEditAddOns({
-            roughDraft: false,
-            videographer: false,
-            realtimeSync: false,
-            interpreter: false,
-        })
+        setEditAddOnSelection([])
+    }
+
+    const isEditAddOnSelected = (value: string) => editAddOnSelection.includes(value)
+    const toggleEditAddOn = (value: string) => {
+        setEditAddOnSelection(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value])
     }
 
     const saveEditAddOns = async () => {
@@ -274,10 +347,10 @@ export default function ClientPortal() {
         try {
             const token = localStorage.getItem('token')
             const addOnNotes: string[] = []
-            if (editAddOns.roughDraft) addOnNotes.push('Rough Draft requested')
-            if (editAddOns.videographer) addOnNotes.push('Videographer requested')
-            if (editAddOns.realtimeSync) addOnNotes.push('Realtime sync requested')
-            if (editAddOns.interpreter) addOnNotes.push('Interpreter requested')
+            editAddOnSelection.forEach(value => {
+                const option = effectiveAddOnOptions.find(o => o.value === value)
+                if (option) addOnNotes.push(`${option.label} requested`)
+            })
 
             const mergedNotes = [
                 editNotes.trim(),
@@ -446,7 +519,7 @@ export default function ClientPortal() {
                                 <p className="text-3xl font-black text-primary tracking-tighter uppercase">{stats.active}</p>
                             </button>
 
-                            <button onClick={() => navigateTab('financials')} className="p-6 rounded-2xl bg-card border border-border/50 text-left hover:border-amber-500/40 transition-all hover:bg-amber-500/[0.02]">
+                            <button onClick={() => navigateTab('rates')} className="p-6 rounded-2xl bg-card border border-border/50 text-left hover:border-amber-500/40 transition-all hover:bg-amber-500/[0.02]">
                                 <div className="h-10 w-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-500 mb-4 shadow-lg shadow-amber-500/10">
                                     <CreditCard className="h-5 w-5" />
                                 </div>
@@ -454,7 +527,7 @@ export default function ClientPortal() {
                                 <p className="text-3xl font-black text-amber-500 tracking-tighter uppercase">${stats.unpaid.toLocaleString()}</p>
                             </button>
 
-                            <button onClick={() => navigateTab('transcripts')} className="p-6 rounded-2xl bg-card border border-border/50 text-left hover:border-violet-500/40 transition-all hover:bg-violet-500/[0.02]">
+                            <button onClick={() => navigateTab('documents')} className="p-6 rounded-2xl bg-card border border-border/50 text-left hover:border-violet-500/40 transition-all hover:bg-violet-500/[0.02]">
                                 <div className="h-10 w-10 rounded-xl bg-violet-500/20 flex items-center justify-center text-violet-500 mb-4 shadow-lg shadow-violet-500/10">
                                     <FileText className="h-5 w-5" />
                                 </div>
@@ -502,7 +575,7 @@ export default function ClientPortal() {
                             </div>
                             <div className="flex-1">
                                 <h4 className="font-semibold text-foreground mb-0.5">Need assistance?</h4>
-                                <p className="text-sm text-muted-foreground">Contact our team directly for any questions about scheduling or transcripts.</p>
+                                <p className="text-sm text-muted-foreground">Contact our team directly for any questions about scheduling or documents.</p>
                             </div>
                             <button onClick={() => navigateTab('messages')} className="btn-secondary text-sm flex-shrink-0">
                                 Send a message
@@ -601,50 +674,79 @@ export default function ClientPortal() {
                 )
                 }
                 {
-                    activeTab === 'transcripts' && (
+                    activeTab === 'documents' && (
                         <div className="glass-panel rounded-[2.5rem] p-5 md:p-10">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
-                                <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Vault Storage</h3>
-                                <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-3 w-full sm:w-auto">
-                                    <div className="relative flex-1 min-w-0">
-                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <input
-                                            className="w-full pl-11 pr-4 py-3 rounded-xl bg-muted/50 border border-border text-[10px] font-black uppercase outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
-                                            placeholder="Search Vault..."
-                                            value={docSearchQuery}
-                                            onChange={(e) => setDocSearchQuery(e.target.value)}
-                                        />
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 mb-6">
+                                <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Documents Vault</h3>
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center w-full sm:w-auto">
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        <div className="relative flex-1 min-w-[220px]">
+                                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                            <input
+                                                className="w-full pl-11 pr-4 py-3 rounded-xl bg-muted/50 border border-border text-[10px] font-black uppercase outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
+                                                placeholder="Search Vault..."
+                                                value={docSearchQuery}
+                                                onChange={(e) => setDocSearchQuery(e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+                                            <span>Filter:</span>
+                                            <select
+                                                value={documentBookingFilter}
+                                                onChange={(e) => setDocumentBookingFilter(e.target.value)}
+                                                className="rounded-xl border border-border bg-card px-3 py-2 text-[9px] font-black uppercase tracking-tight outline-none"
+                                            >
+                                                <option value="">All bookings</option>
+                                                {bookings.map((booking) => (
+                                                    <option key={booking.id} value={booking.id}>
+                                                        #{booking.bookingNumber} • {booking.proceedingType}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
-                                    <label className="h-10 px-5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-2 cursor-pointer hover:opacity-90 transition-colors shrink-0">
-                                        <Upload className="h-4 w-4" /> Upload
-                                        <input
-                                            type="file"
-                                            className="hidden"
-                                            onChange={async (e) => {
-                                                const file = e.target.files?.[0]
-                                                if (!file) return
-                                                const formData = new FormData()
-                                                formData.append('file', file)
-                                                formData.append('category', 'CLIENT_UPLOAD')
-                                                const token = localStorage.getItem('token')
-                                                const res = await fetch('/api/documents', {
-                                                    method: 'POST',
-                                                    headers: { 'Authorization': `Bearer ${token}` },
-                                                    body: formData
-                                                })
-                                                if (res.ok) {
-                                                    const newDoc = await res.json()
-                                                    setDocuments([newDoc, ...documents])
-                                                    setStats(s => ({ ...s, files: s.files + 1 }))
-                                                }
-                                            }}
-                                        />
-                                    </label>
+                                    <div className="flex flex-col gap-2 text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+                                        <span>Attach to booking</span>
+                                        <select
+                                            value={uploadBookingId}
+                                            onChange={(e) => setUploadBookingId(e.target.value)}
+                                            className="rounded-xl border border-border bg-card px-3 py-2 text-[9px] font-black uppercase tracking-tight outline-none"
+                                        >
+                                            <option value="">General document</option>
+                                            {bookings.map((booking) => (
+                                                <option key={booking.id} value={booking.id}>
+                                                    #{booking.bookingNumber} • {booking.proceedingType}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
+                            <div className="flex flex-wrap items-center justify-between gap-3 mb-4 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground">
+                                <p>{allowedUploadCopy}</p>
+                                {uploadingDocument && <span className="text-primary">Uploading document...</span>}
+                            </div>
+                            <div className="mb-6">
+                                <label className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-[10px] font-black uppercase tracking-widest transition-colors ${uploadingDocument ? 'cursor-not-allowed bg-primary/40 text-primary-foreground' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}>
+                                    <Upload className="h-4 w-4" />
+                                    <span>{uploadingDocument ? 'Uploading…' : 'Upload document'}</span>
+                                    <input
+                                        type="file"
+                                        accept={uploadAcceptTypes}
+                                        className="hidden"
+                                        disabled={uploadingDocument}
+                                        onChange={async (e) => {
+                                            const file = e.target.files?.[0]
+                                            e.target.value = ''
+                                            if (!file) return
+                                            await handleDocumentUpload(file)
+                                        }}
+                                    />
+                                </label>
+                            </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {documents.filter(d => !docSearchQuery || d.fileName.toLowerCase().includes(docSearchQuery.toLowerCase())).length > 0 ? documents.filter(d => !docSearchQuery || d.fileName.toLowerCase().includes(docSearchQuery.toLowerCase())).map(doc => (
-                                    <div key={doc.id} className="p-6 rounded-2xl bg-card border border-border flex items-center justify-between hover:shadow-xl hover:border-primary/10 transition-all cursor-pointer group">
+                                {visibleDocuments.length > 0 ? visibleDocuments.map(doc => (
+                                    <div key={doc.id} className="p-6 rounded-2xl bg-card border border-border flex flex-col gap-4 hover:shadow-xl hover:border-primary/10 transition-all cursor-pointer group">
                                         <div className="flex items-center gap-4">
                                             <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${doc.fileType.includes('pdf') ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'}`}>
                                                 <FileText className="h-6 w-6" />
@@ -656,9 +758,21 @@ export default function ClientPortal() {
                                                 </p>
                                             </div>
                                         </div>
-                                        <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
-                                            <Download className="h-5 w-5 text-muted-foreground group-hover:text-foreground" />
-                                        </a>
+                                        {doc.booking && (
+                                            <div className="flex flex-wrap gap-2 text-[8px] font-black uppercase tracking-[0.3em] text-primary">
+                                                <span>#{doc.booking.bookingNumber}</span>
+                                                <span className="text-muted-foreground">({doc.booking.proceedingType})</span>
+                                            </div>
+                                        )}
+                                        <div className="flex items-center justify-between">
+                                            <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline flex items-center gap-2">
+                                                Download
+                                                <Download className="h-4 w-4" />
+                                            </a>
+                                            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em]">
+                                                {new Date(doc.createdAt).toLocaleDateString()}
+                                            </span>
+                                        </div>
                                     </div>
                                 )) : (
                                     <div className="md:col-span-2 py-20 text-center border-2 border-dashed border-border rounded-[2rem]">
@@ -672,17 +786,58 @@ export default function ClientPortal() {
                 }
 
                 {
-                    activeTab === 'financials' && (
+                    activeTab === 'rates' && (
                         <div className="glass-panel rounded-[2.5rem] p-5 md:p-10">
                             <div className="flex items-center justify-between mb-10">
-                                <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Financial Ledger</h3>
+                                <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Rates & Billing</h3>
                                 <div className="flex items-center gap-3 px-6 py-3 bg-primary/5 rounded-2xl border border-primary/20">
                                     <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Outstanding:</span>
                                     <span className="text-lg font-black text-primary">${stats.unpaid.toLocaleString()}</span>
                                 </div>
                             </div>
+                            <div className="glass-panel rounded-[2rem] p-6 border border-border bg-background/80 space-y-3 mb-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground">Financial Responsibility</p>
+                                        <h4 className="text-3xl font-black text-foreground tracking-tight">{financialResponsibilityDays} Days</h4>
+                                        <p className="text-[10px] uppercase tracking-tight text-muted-foreground mt-1">{isAgencyClient ? 'Agency Terms • Direct Deposit' : 'Client Terms • Standard Invoicing'}</p>
+                                    </div>
+                                    <div className="px-4 py-2 rounded-full border border-primary text-[10px] font-black uppercase tracking-[0.3em] text-primary">
+                                        {isAgencyClient ? 'Agency' : 'Client'}
+                                    </div>
+                                </div>
+                                <p className="text-sm text-foreground leading-relaxed">{cancellationSummaryText}</p>
+                                <div className="mt-3 space-y-1">
+                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em]">Payment Terms</p>
+                                    <p className="text-xs text-foreground font-semibold uppercase tracking-widest">{paymentTermsCopy}</p>
+                                    <p className="text-[10px] text-muted-foreground leading-relaxed">{paymentTermsDescription}</p>
+                                </div>
+                                {isAgencyClient && (
+                                    <p className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground">
+                                        Agencies settle via direct deposit; invoices are maintained outside this portal. Contact the operations desk for statements.
+                                    </p>
+                                )}
+                            </div>
+                            {rateServicePreview.length > 0 && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                    {rateServicePreview.map(service => (
+                                        <div key={service.id} className="p-6 rounded-2xl border border-border bg-card">
+                                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-2">{service.serviceName || 'Service'}</p>
+                                            <p className="text-2xl font-black text-foreground">${(service.defaultMinimumFee ?? service.minimumFee ?? 400).toFixed(2)}</p>
+                                            <p className="text-[9px] text-muted-foreground uppercase tracking-[0.3em] mt-2">Minimum Booking Fee</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                             <div className="space-y-4">
-                                {invoices.length > 0 ? invoices.map(invoice => (
+                                {isAgencyClient ? (
+                                    <div className="p-8 rounded-3xl bg-card border border-border text-center">
+                                        <h4 className="text-lg font-black text-foreground uppercase tracking-tight mb-3">Agency Payments</h4>
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                            Agencies manage settlements via direct deposit. Invoices and statements are handled through your agency ledger; contact operations for copies.
+                                        </p>
+                                    </div>
+                                ) : invoices.length > 0 ? invoices.map(invoice => (
                                     <div key={invoice.id} className="p-8 rounded-3xl bg-card border border-border hover:border-primary/20 hover:shadow-2xl transition-all group">
                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
                                             <div className="flex items-center gap-6">
@@ -841,7 +996,7 @@ export default function ClientPortal() {
                                 {/* Profile Pic Upload */}
                                 <div className="mb-8">
                                     <ProfileUpload
-                                        label="Your Digital Avatar"
+                                        label="Your Remote / On-Site Profile"
                                         currentImage={user.avatar}
                                         onUploadComplete={handleAvatarUpdate}
                                     />
@@ -1065,9 +1220,9 @@ export default function ClientPortal() {
                                         <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20">
                                             <div className="flex items-center gap-2 mb-1">
                                                 <AlertTriangle className="h-4 w-4 text-rose-500" />
-                                                <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest">Late Cancellation — $400 Fee</p>
+                                        <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest">{lateFeeLabel}</p>
                                             </div>
-                                            <p className="text-xs text-rose-700 leading-relaxed">{cancelInfo.message}</p>
+                                            <p className="text-xs text-rose-700 leading-relaxed">{cancelInfo.lateFeePolicy ?? cancelInfo.message}</p>
                                         </div>
                                         <div className="flex items-start gap-2 p-3 rounded-xl bg-muted/50 border border-border">
                                             <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
@@ -1079,7 +1234,7 @@ export default function ClientPortal() {
                                         <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20">
                                             <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest mb-1">Important Notice</p>
                                             <p className="text-xs text-amber-800 leading-relaxed">
-                                                By proceeding, a <strong>$400.00 cancellation invoice</strong> will be automatically generated and sent to your email. Payment is due within 14 days.
+                                                By proceeding, a <strong>${lateFeeAmountValue.toFixed(2)} cancellation invoice</strong> will be automatically generated and sent to your email. Payment is due within 14 days.
                                             </p>
                                         </div>
                                     </div>
@@ -1099,7 +1254,7 @@ export default function ClientPortal() {
                                             : 'bg-rose-600 text-white hover:bg-rose-700 shadow-rose-600/20'
                                             }`}
                                     >
-                                        {cancelInfo.canCancel ? 'Cancel — Free' : 'Cancel — $400 Fee'}
+                                        {cancelInfo.canCancel ? 'Cancel — Free' : lateFeeButtonLabel}
                                     </button>
                                 </div>
                             </>
@@ -1132,23 +1287,18 @@ export default function ClientPortal() {
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                            {[
-                                { key: 'roughDraft', label: 'Rough Draft' },
-                                { key: 'videographer', label: 'Videographer' },
-                                { key: 'realtimeSync', label: 'Realtime Sync' },
-                                { key: 'interpreter', label: 'Interpreter' },
-                            ].map(item => (
+                            {effectiveAddOnOptions.map(option => (
                                 <label
-                                    key={item.key}
+                                    key={option.value}
                                     className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/30 transition-colors cursor-pointer"
                                 >
                                     <input
                                         type="checkbox"
                                         className="h-4 w-4 accent-primary"
-                                        checked={(editAddOns as any)[item.key]}
-                                        onChange={(e) => setEditAddOns(prev => ({ ...prev, [item.key]: e.target.checked }))}
+                                        checked={isEditAddOnSelected(option.value)}
+                                        onChange={() => toggleEditAddOn(option.value)}
                                     />
-                                    <span className="text-sm font-semibold text-foreground">{item.label}</span>
+                                    <span className="text-sm font-semibold text-foreground">{option.label}</span>
                                 </label>
                             ))}
                         </div>

@@ -106,7 +106,7 @@ export default function RegisterPage() {
                                 />
                                 <RoleCard
                                     icon={<Briefcase className="h-10 w-10" />}
-                                    title="Stenographer"
+                                    title="Reporter"
                                     desc="Receive assignments and deliver excellence."
                                     active={formData.role === 'REPORTER'}
                                     onClick={() => setFormData({ ...formData, role: 'REPORTER' })}

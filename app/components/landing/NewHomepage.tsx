@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, CheckCircle2, Globe, Clock, ShieldCheck, Newspaper } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Globe, Clock, ShieldCheck, Newspaper, FileText } from 'lucide-react'
 import Image from 'next/image'
 
 export function HomepageHero() {
@@ -117,41 +117,92 @@ export function SolutionsSection() {
 export function ServiceGrid() {
     const services = [
         {
-            title: 'Court Reporting',
-            desc: 'Certified reporters, realtime options, and on-time transcript delivery built for high-volume litigation teams.',
-            img: 'https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=800&q=80'
+            title: 'Premium Court Reporting',
+            desc: 'Elite reporters supported by production teams that verify transcripts and deliver secure files for depositions, arbitrations, and examinations.',
+            bullets: ['Depositions', 'Arbitrations & Mediations', 'Examinations Under Oath', 'Mark “Other” for bespoke or multi-day matters'],
+            note: 'Select “Other” when your proceeding is custom—our concierge clarifies the scope before the calendar locks.',
+            img: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80'
         },
         {
-            title: 'Certified Transcript Delivery',
-            desc: 'Digitally signed transcripts, secure delivery channels, and predictable turnarounds for firm operations.',
-            img: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=600&q=80'
-        },
-        {
-            title: 'Remote Depositions',
-            desc: 'Hybrid-ready remote deposition support with monitored audio quality and streamlined exhibit workflows.',
-            img: 'https://images.unsplash.com/photo-1577412647305-991150c7d163?auto=format&fit=crop&w=600&q=80'
+            title: 'CART & Live Captioning',
+            desc: 'Communication Access Real-Time Translation engineered for ADA compliance with glossary-backed captioners and secure viewer portals.',
+            bullets: ['Remote / On-site CART', 'Secure viewer links & transcripts', 'Speaker ID + glossary prep'],
+            note: 'Always choose “Other” for CART and describe the hearing or meeting context so the right captioner and tech are staged.',
+            img: 'https://images.unsplash.com/photo-1580894894513-541e068a3e2c?auto=format&fit=crop&w=900&q=80'
         }
     ]
 
+    const proceedingSteps = [
+        'Choose the proceeding that most closely mirrors your deposition, hearing, or trial.',
+        'If there is no perfect match, select “Other” and add a short description in the booking notes.',
+        'Concierge operators review the note, confirm resources, and assign the proper reporter or CART captioner before confirming.'
+    ]
+
+    const addOns = [
+        'Expedited delivery windows (24-hour certified + PDF).',
+        'Glossary and terminology management for complex teams.',
+        'Remote monitoring alerts when the proceeding begins.'
+    ]
+
     return (
-        <section className="py-24 bg-gray-50">
-            <div className="max-w-7xl mx-auto px-4 md:px-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {services.map((s, i) => (
-                        <div key={i} className="relative aspect-[3/4] group overflow-hidden rounded-3xl shadow-2xl">
+        <section className="py-24 bg-gray-50 space-y-16">
+            <div className="max-w-7xl mx-auto px-4 md:px-8 grid gap-12">
+                {services.map((s) => (
+                    <div
+                        key={s.title}
+                        className="grid gap-8 md:grid-cols-2 items-center bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100"
+                    >
+                        <div className="relative h-[400px] md:h-full overflow-hidden">
                             <Image
                                 src={s.img}
                                 alt={s.title}
                                 fill
                                 className="object-cover group-hover:scale-105 transition-transform duration-700"
                             />
-                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-10 text-white">
-                                <h4 className="text-2xl font-black uppercase italic mb-4">{s.title}</h4>
-                                <p className="text-xs text-white/80 italic mb-6">{s.desc}</p>
-                                <ArrowRight className="h-6 w-6 text-[#0071c5] group-hover:translate-x-2 transition-transform" />
-                            </div>
                         </div>
-                    ))}
+                        <div className="p-10 space-y-6">
+                            <h4 className="text-3xl font-black text-[#1a1a1a] uppercase italic">{s.title}</h4>
+                            <p className="text-gray-600 text-sm font-medium leading-relaxed">{s.desc}</p>
+                            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[11px] font-black uppercase tracking-[0.3em] text-[#0071c5]">
+                                {s.bullets.map(b => (
+                                    <li key={b} className="flex items-center gap-2 bg-blue-50 rounded-full px-4 py-2">
+                                        <span className="h-2 w-2 rounded-full bg-[#0071c5] inline-flex"></span>
+                                        {b}
+                                    </li>
+                                ))}
+                            </ul>
+                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">{s.note}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <div className="max-w-6xl mx-auto px-4 md:px-8 grid gap-10 md:grid-cols-[minmax(0,2fr),minmax(0,1fr)]">
+                <div className="p-8 rounded-[2rem] bg-white border border-gray-100 shadow-lg">
+                    <h3 className="text-xl font-black uppercase tracking-tight mb-4">Proceeding logic</h3>
+                    <ol className="space-y-3 text-sm text-muted-foreground list-decimal list-inside">
+                        {proceedingSteps.map((step) => (
+                            <li key={step}>{step}</li>
+                        ))}
+                    </ol>
+                    <p className="text-[10px] uppercase tracking-[0.3em] mt-6 text-gray-500">Need guidance? Mention the courtroom or hearing type in the notes and the concierge will confirm resources prior to final approval.</p>
+                </div>
+                <div className="p-8 rounded-[2rem] bg-gradient-to-br from-[#f8fafc] to-white border border-border shadow-inner space-y-4">
+                    <div className="flex items-center gap-3">
+                        <FileText className="h-5 w-5 text-primary" />
+                        <div>
+                            <p className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground">Documents Vault</p>
+                            <p className="text-sm font-black text-foreground uppercase tracking-tight">PDF / DOC / TXT support</p>
+                        </div>
+                    </div>
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+                        Every transcript or exhibit you upload forwards to the Documents Vault, organized by booking so your team can download securely later.
+                    </p>
+                    <div className="space-y-2 text-[10px] uppercase tracking-[0.2em] text-gray-500">
+                        {addOns.map((addon) => (
+                            <p key={addon}>• {addon}</p>
+                        ))}
+                    </div>
                 </div>
             </div>
         </section>
