@@ -43,9 +43,13 @@ export async function PATCH(
         }
 
         const body = await req.json();
+        
+        // Strip out fields not supported by Prisma schema (e.g., coverVideo from frontend form design)
+        const { coverVideo, author, id, createdAt, updatedAt, ...validData } = body;
+
         const blog = await prisma.blogPost.update({
             where: { id: params.id },
-            data: body
+            data: validData
         });
 
         return NextResponse.json(blog);
