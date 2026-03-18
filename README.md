@@ -80,7 +80,7 @@ SMTP_HOST="smtp.gmail.com"
 SMTP_PORT="587"
 SMTP_USER="your-email@gmail.com"
 SMTP_PASSWORD="your-app-password"
-SMTP_FROM="Marina Dubson <noreply@marinadubson.com>"
+SMTP_FROM="Marina Dubson <noreply@dubsonstenoservices.com>"
 ```
 
 ### 3. Set Up Database
@@ -109,7 +109,7 @@ Or use the registration API:
 curl -X POST http://localhost:3000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "admin@marinadubson.com",
+    "email": "admin@dubsonstenoservices.com",
     "password": "SecurePassword123!",
     "firstName": "Marina",
     "lastName": "Dubson",

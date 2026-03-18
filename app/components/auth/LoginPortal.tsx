@@ -231,7 +231,7 @@ export default function LoginPortal() {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         className="form-input pl-10"
-                                        placeholder="email@marinadubson.com"
+                                        placeholder="email@dubsonstenoservices.com"
                                         autoComplete="email"
                                     />
                                 </div>

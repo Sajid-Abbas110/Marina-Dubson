@@ -115,14 +115,14 @@ Use Prisma Studio or the API:
 ```bash
 # Using curl (PowerShell)
 $body = @{
-    email = "admin@marinadubson.com"
+    email = "admin@dubsonstenoservices.com"
     password = "SecurePassword123!"
     firstName = "Marina"
     lastName = "Dubson"
     role = "ADMIN"
 } | ConvertTo-Json
 
-Invoke-RestMethod -Uri "https://marina-dubson.vercel.app/api/auth/register" -Method POST -Body $body -ContentType "application/json"
+Invoke-RestMethod -Uri "https://app.dubsonstenoservices.com/api/auth/register" -Method POST -Body $body -ContentType "application/json"
 ```
 
 ### 4. Configure Email Service
@@ -255,7 +255,7 @@ Before deploying to production:
 
 ## 📊 Current Status
 
-**Production Server:** ✅ Running on https://marina-dubson.vercel.app
+**Production Server:** ✅ Running on https://app.dubsonstenoservices.com
 
 **Build Status:** ✅ Successfully passing `npm run build`
 
