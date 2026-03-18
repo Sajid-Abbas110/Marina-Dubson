@@ -122,7 +122,7 @@ $body = @{
     role = "ADMIN"
 } | ConvertTo-Json
 
-Invoke-RestMethod -Uri "https://app.dubsonstenoservices.com/api/auth/register" -Method POST -Body $body -ContentType "application/json"
+Invoke-RestMethod -Uri "https://dubsonstenoservices.com/api/auth/register" -Method POST -Body $body -ContentType "application/json"
 ```
 
 ### 4. Configure Email Service
@@ -255,7 +255,7 @@ Before deploying to production:
 
 ## 📊 Current Status
 
-**Production Server:** ✅ Running on https://app.dubsonstenoservices.com
+**Production Server:** ✅ Running on https://dubsonstenoservices.com
 
 **Build Status:** ✅ Successfully passing `npm run build`
 
