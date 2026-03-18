@@ -30,7 +30,15 @@ export default function ClientBookingsPage() {
     // Cancel modal state
     const [showCancelModal, setShowCancelModal] = useState(false)
     const [cancelBookingId, setCancelBookingId] = useState<string | null>(null)
-    const [cancelInfo, setCancelInfo] = useState<{ canCancel: boolean; deadline: string; hoursRemaining?: number; message: string } | null>(null)
+    const [cancelInfo, setCancelInfo] = useState<{
+        canCancel: boolean
+        deadline: string
+        hoursRemaining?: number
+        message: string
+        lateFeeAmount?: number
+        lateFeeLabel?: string
+        lateFeePolicy?: string
+    } | null>(null)
     const [cancelLoading, setCancelLoading] = useState(false)
 
     const lateFeeAmountValue = cancelInfo?.lateFeeAmount ?? 400

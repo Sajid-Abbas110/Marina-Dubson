@@ -70,11 +70,20 @@ export default function ClientPortal() {
     const [documentBookingFilter, setDocumentBookingFilter] = useState('')
     const [uploadBookingId, setUploadBookingId] = useState('')
     const [uploadingDocument, setUploadingDocument] = useState(false)
+    const [effectiveAddOnOptions, setEffectiveAddOnOptions] = useState<{ label: string; value: string }[]>([])
 
     // Cancel booking modal state
     const [showCancelModal, setShowCancelModal] = useState(false)
     const [cancelBookingId, setCancelBookingId] = useState<string | null>(null)
-    const [cancelInfo, setCancelInfo] = useState<{ canCancel: boolean; deadline: string; hoursRemaining?: number; message: string } | null>(null)
+    const [cancelInfo, setCancelInfo] = useState<{
+        canCancel: boolean
+        deadline: string
+        hoursRemaining?: number
+        message: string
+        lateFeeAmount?: number
+        lateFeeLabel?: string
+        lateFeePolicy?: string
+    } | null>(null)
     const [cancelLoading, setCancelLoading] = useState(false)
 
     const lateFeeAmountValue = cancelInfo?.lateFeeAmount ?? 400
@@ -124,13 +133,14 @@ export default function ClientPortal() {
                 return
             }
 
-            const [userRes, bookingsRes, servicesRes, docsRes, invoicesRes, messagesRes, policyRes] = await Promise.all([
+            const [userRes, bookingsRes, servicesRes, docsRes, invoicesRes, messagesRes, addOnsRes, policyRes] = await Promise.all([
                 fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch('/api/bookings', { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch('/api/services', { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch('/api/documents', { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch('/api/invoices', { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch('/api/messages', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('/api/add-ons', { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch('/api/system-policy', { headers: { 'Authorization': `Bearer ${token}` } })
             ])
 
@@ -140,6 +150,7 @@ export default function ClientPortal() {
             const docsData = await docsRes.json()
             const invoicesData = await invoicesRes.json()
             const messagesData = await messagesRes.json()
+            const addOnsData = await addOnsRes.json()
             const policyData = await policyRes.json()
 
             if (userData.user) setUser(userData.user)
@@ -156,6 +167,7 @@ export default function ClientPortal() {
             )
             setInvoices(scopedInvoices)
             setMessages(Array.isArray(messagesData.messages) ? messagesData.messages : [])
+            setEffectiveAddOnOptions(Array.isArray(addOnsData.options) ? addOnsData.options : [])
             if (policyData?.policies) {
                 setSystemPolicy(policyData.policies)
             }

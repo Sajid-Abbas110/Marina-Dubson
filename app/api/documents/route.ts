@@ -52,6 +52,15 @@ export async function GET(request: NextRequest) {
         const documents = await prisma.document.findMany({
             where,
             orderBy: { createdAt: 'desc' },
+            include: {
+                booking: {
+                    select: {
+                        id: true,
+                        bookingNumber: true,
+                        proceedingType: true,
+                    }
+                }
+            }
         })
 
         return NextResponse.json({ documents })
