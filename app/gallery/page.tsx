@@ -1,21 +1,42 @@
 import React from 'react'
-import fs from 'fs'
-import path from 'path'
 import Image from 'next/image'
 import { PublicTopBar, PublicHeader, PublicFooter } from '@/app/components/landing/PublicLayout'
 
-export const dynamic = 'force-dynamic';
-
 export default function GalleryPage() {
-    // Read the images from the public folder
-    const publicDir = path.join(process.cwd(), 'public')
-    const files = fs.readdirSync(publicDir)
-    
-    // Filter for common image formats
-    const imageFiles = files.filter(file => {
-        const ext = path.extname(file).toLowerCase()
-        return ['.jpg', '.jpeg', '.png', '.webp'].includes(ext)
-    })
+    // Statically provided image names to prevent Vercel from bundling all assets into the Serverless Function (Limit: 50MB)
+    const imageFiles = [
+        "JCP_MARINA-2675-20250508-Edit.jpg",
+        "JCP_MARINA-2685-20250508-Edit.jpg",
+        "JCP_MARINA-2750-20250508-Edit.jpg",
+        "JCP_MARINA-2756-20250508-Edit.jpg",
+        "JCP_MARINA-2758-20250508-Edit.jpg",
+        "JCP_MARINA-2811-20250508.jpg",
+        "JCP_MARINA-2815-20250508.jpg",
+        "JCP_MARINA-2819-20250508.jpg",
+        "JCP_MARINA-2833-20250508.jpg",
+        "JCP_MARINA-2861-20250508.jpg",
+        "JCP_MARINA-2882-20250508-Edit.jpg",
+        "JCP_MARINA-2891-20250508.jpg",
+        "JCP_MARINA-2905-20250508.jpg",
+        "JCP_MARINA-2919-20250508.jpg",
+        "JCP_MARINA-2957-20250508.jpg",
+        "JCP_MARINA-2984-20250508.jpg",
+        "JCP_MARINA-2987-20250508.jpg",
+        "JCP_MARINA-2991-20250508.jpg",
+        "JCP_MARINA-2997-20250508.jpg",
+        "JCP_MARINA-3015-20250508.jpg",
+        "JCP_MARINA-3049-20250508.jpg",
+        "JCP_MARINA-3085-20250508.jpg",
+        "JCP_MARINA-3087-20250508.jpg",
+        "JCP_MARINA-3093-20250508.jpg",
+        "JCP_MARINA-3117-20250508.jpg",
+        "JCP_MARINA-3143-20250508.jpg",
+        "JCP_MARINA-3146-20250508.jpg",
+        "JCP_MARINA-3148-20250508-Edit.jpg",
+        "JCP_MARINA-3178-20250508-Edit.jpg",
+        "JCP_MARINA-3182-20250508-Edit.jpg",
+        "JCP_MARINA-3183-20250508-Edit.jpg"
+    ]
 
     return (
         <div className="bg-white min-h-screen flex flex-col">
