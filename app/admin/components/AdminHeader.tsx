@@ -154,7 +154,7 @@ export default function AdminHeader({ onToggleSidebar }: { onToggleSidebar: () =
             <div className="flex items-center gap-3 flex-shrink-0">
                 <button
                     onClick={onToggleSidebar}
-                    className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all active:scale-95"
+                    className="hidden lg:flex p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all active:scale-95"
                     title="Toggle Sidebar"
                 >
                     <Menu className="h-5 w-5" />
