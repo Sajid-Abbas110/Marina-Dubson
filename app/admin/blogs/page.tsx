@@ -578,7 +578,7 @@ export default function BlogManagementPage() {
                                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Short Excerpt</label>
                                         <textarea
                                             rows={3}
-                                            className="w-full border border-slate-200 rounded-xl p-4 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-100 transition-all resize-none"
+                                            className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-100 transition-all resize-none"
                                             placeholder="One-paragraph preview shown in listings..."
                                             value={formData.excerpt}
                                             onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
