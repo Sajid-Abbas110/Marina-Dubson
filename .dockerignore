@@ -5,5 +5,12 @@ node_modules
 npm-debug.log
 Dockerfile
 docker-compose.yml
+docker-compose.prod.yml
 *.log
 .env
+prisma/dev.db
+prisma/seed-*.js
+prisma/seed-*.ts
+test*.js
+create-bid.js
+.docs/
