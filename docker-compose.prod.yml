@@ -27,6 +27,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-marina}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-marina_crm}
       - NODE_ENV=production
+      - HOSTNAME=0.0.0.0
       - JWT_SECRET=${JWT_SECRET}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - NEXTAUTH_URL=https://md.aitaah.com
