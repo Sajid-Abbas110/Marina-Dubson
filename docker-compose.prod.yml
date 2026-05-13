@@ -38,10 +38,25 @@ services:
       - marina_uploads:/app/uploads
     networks:
       - marina-network
+      - coolify
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.marina-app-http.entryPoints=http
+      - traefik.http.routers.marina-app-http.rule=Host(`md.aitaah.com`)
+      - traefik.http.routers.marina-app-http.middlewares=redirect-to-https
+      - traefik.http.routers.marina-app-https.entryPoints=https
+      - traefik.http.routers.marina-app-https.rule=Host(`md.aitaah.com`)
+      - traefik.http.routers.marina-app-https.tls=true
+      - traefik.http.routers.marina-app-https.tls.certresolver=letsencrypt
+      - traefik.http.services.marina-app.loadbalancer.server.port=3000
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.docker.network=coolify
 
 networks:
   marina-network:
     driver: bridge
+  coolify:
+    external: true
 
 volumes:
   marina_postgres_data:
