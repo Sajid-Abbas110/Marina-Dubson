@@ -1,6 +1,7 @@
 # --- base deps ---
 FROM node:20-bookworm AS deps
 WORKDIR /app
+ENV NODE_ENV=development
 COPY package.json package-lock.json ./
 RUN npm ci
 
