@@ -38,13 +38,10 @@ services:
       - marina_uploads:/app/uploads
     networks:
       - marina-network
-      - coolify
 
 networks:
   marina-network:
     driver: bridge
-  coolify:
-    external: true
 
 volumes:
   marina_postgres_data:
