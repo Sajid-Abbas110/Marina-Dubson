@@ -1,4 +1,4 @@
-﻿-- CreateEnum
+-- CreateEnum
 CREATE TYPE "AddOnCategory" AS ENUM ('ADD_ON', 'EXPEDITE');
 
 -- CreateTable
