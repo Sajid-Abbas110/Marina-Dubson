@@ -1,10 +1,7 @@
 #!/bin/sh
 
-# Exit on error
-set -e
-
 echo "Running database migrations..."
-npx prisma migrate deploy
+node node_modules/prisma/build/index.js migrate deploy
 
 echo "Starting application..."
 exec node server.js

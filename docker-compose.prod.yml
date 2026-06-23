@@ -1,0 +1,55 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-marina}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-marina_crm}
+    volumes:
+      - marina_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-marina} -d ${POSTGRES_DB:-marina_crm}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - marina-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - DATABASE_URL=postgresql://${POSTGRES_USER:-marina}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-marina_crm}
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-marina}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-marina_crm}
+      - NODE_ENV=production
+      - HOSTNAME=0.0.0.0
+      - JWT_SECRET=${JWT_SECRET}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=https://md.aitaah.com
+      - NEXT_PUBLIC_APP_URL=https://md.aitaah.com
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - marina_uploads:/app/uploads
+    networks:
+      - marina-network
+      - coolify
+    labels:
+      - traefik.http.services.http-0-ottnitw3za2ym5kze7o38bfq-app.loadbalancer.server.port=3000
+      - traefik.docker.network=coolify
+
+networks:
+  marina-network:
+    driver: bridge
+  coolify:
+    external: true
+
+volumes:
+  marina_postgres_data:
+  marina_uploads:
