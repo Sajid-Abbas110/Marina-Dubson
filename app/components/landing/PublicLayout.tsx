@@ -2,39 +2,15 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Phone, Mail, Globe, Facebook, Twitter, Instagram, Briefcase, LogIn, Menu, X } from 'lucide-react'
+import { Phone, Mail, Globe, Facebook, Twitter, Instagram, Menu, X } from 'lucide-react'
 
 export function PublicTopBar() {
-    return (
-        <div className="hidden md:block bg-[#a89100] text-white px-4 md:px-8 py-3">
-            <div className="max-w-7xl mx-auto flex flex-col gap-3 md:flex-row md:items-center md:justify-between text-[11px] md:text-[12px]">
-                <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-6 flex-1 min-w-0">
-                    <div className="flex items-center gap-2 whitespace-nowrap">
-                        <Phone className="h-4 w-4" />
-                        <span className="font-semibold tracking-[0.08em]">Mobile: + (917) 494-1859</span>
-                    </div>
-                    <div className="flex items-center gap-2 whitespace-nowrap">
-                        <Mail className="h-4 w-4" />
-                        <span className="font-semibold tracking-[0.08em]">Email: MarinaDubson@gmail.com</span>
-                    </div>
-                </div>
-                <div className="flex items-center gap-3 flex-shrink-0 md:pl-4">
-                    <Link
-                        href="/login"
-                        className="flex items-center gap-2 px-4 py-1.5 bg-white/10 hover:bg-white/20 border border-white/30 rounded-full text-[12px] font-semibold transition-all group"
-                    >
-                        <LogIn className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
-                        <span>Login</span>
-                    </Link>
-                    <span className="text-[12px] font-semibold tracking-[0.12em] uppercase">English</span>
-                </div>
-            </div>
-        </div>
-    )
+    return null; // Removed as per new design
 }
 
 export function PublicHeader() {
     const [menuOpen, setMenuOpen] = useState(false)
+    const [scrolled, setScrolled] = useState(false)
 
     const navLinks = [
         { name: 'Home', href: '/' },
@@ -42,8 +18,15 @@ export function PublicHeader() {
         { name: 'Services', href: '/services' },
         { name: 'Gallery', href: '/gallery' },
         { name: 'Blogs', href: '/blogs' },
-        { name: 'Contact Us', href: '/contact' },
     ]
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 50)
+        }
+        window.addEventListener('scroll', handleScroll)
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
 
     useEffect(() => {
         if (!menuOpen || typeof window === 'undefined') return
@@ -72,103 +55,89 @@ export function PublicHeader() {
     }, [menuOpen])
 
     return (
-        <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
-            <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div className="flex items-center justify-between gap-3 w-full md:w-auto">
-                        <Link href="/" className="flex items-center gap-3 shrink-0">
-                            <div className="h-10 w-10 md:h-12 md:w-12 rounded-lg flex items-center justify-center bg-[#0051a8] text-white">
-                                <Globe className="h-6 w-6 md:h-8 md:w-8" />
-                            </div>
-                            <div>
-                                <h1 className="text-lg md:text-xl font-black text-[#0051a8] leading-none uppercase italic">Marina Dubson</h1>
-                                <p className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">Stenographic Services</p>
-                            </div>
+        <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-[#020617] shadow-lg py-4' : 'py-6'}`} style={!scrolled ? {backgroundColor: '#00000033'} : {}}>
+            <div className="max-w-7xl mx-auto px-4 md:px-8">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 w-auto">
+                        <Link href="/" className="flex items-center shrink-0">
+                            <h1 className="text-xl md:text-2xl font-black text-white leading-none uppercase tracking-wide">
+                                Marina <span className="font-light italic">Dubson</span>
+                            </h1>
                         </Link>
-                        <button
-                            type="button"
-                            onClick={() => setMenuOpen(true)}
-                            className="md:hidden h-10 w-10 flex items-center justify-center rounded-full border border-gray-200 text-[#1a1a1a] hover:bg-gray-50 transition-colors"
-                        >
-                            <span className="sr-only">Open navigation menu</span>
-                            <Menu className="h-5 w-5" />
-                        </button>
                     </div>
 
-                    <nav className="hidden md:flex flex-wrap items-center justify-center gap-4 text-[10px] md:text-[12px] font-black uppercase tracking-[0.18em] md:tracking-[0.2em] text-[#1a1a1a]">
+                    <nav className="hidden md:flex flex-wrap items-center justify-center gap-8 text-[13px] font-semibold text-white/90">
                         {navLinks.map((link) => (
                             <Link
                                 key={link.name}
                                 href={link.href}
-                                className="transition-colors hover:text-[#a89100] tracking-[0.12em]"
+                                className="transition-colors hover:text-white"
                             >
                                 {link.name}
                             </Link>
                         ))}
                     </nav>
 
-                    <div className="w-full md:w-auto flex justify-center md:justify-end">
-                        <div className="flex w-full max-w-[360px] items-center gap-2 rounded-full border border-gray-200 bg-white px-2 py-1 shadow-sm">
-                            <input
-                                type="text"
-                                placeholder="Search"
-                                className="flex-1 rounded-full border border-transparent bg-transparent px-4 py-2 text-[11px] font-medium outline-none focus:border-[#0051a8]"
-                            />
-                            <button className="rounded-full bg-[#0051a8] px-4 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white transition-colors hover:bg-[#003f8a]">
-                                Search
-                            </button>
-                        </div>
+                    <div className="hidden md:flex items-center justify-end w-auto gap-4">
+                        <Link href="/login" className="border border-white/30 text-white hover:border-white/80 hover:bg-white/5 px-5 py-2.5 rounded-md text-sm font-bold transition-all">
+                            Login
+                        </Link>
+                        <Link href="/contact" className="bg-[#0051a8] text-white px-6 py-2.5 rounded-md text-sm font-bold hover:bg-[#003f8a] transition-colors shadow-md">
+                            Contact us
+                        </Link>
+                    </div>
+
+                    <div className="md:hidden flex items-center">
+                        <button
+                            type="button"
+                            onClick={() => setMenuOpen(true)}
+                            className="h-10 w-10 flex items-center justify-center text-white"
+                        >
+                            <span className="sr-only">Open navigation menu</span>
+                            <Menu className="h-6 w-6" />
+                        </button>
                     </div>
                 </div>
 
                 {menuOpen && (
                     <div className="md:hidden fixed inset-0 z-50">
-                        <div className="absolute inset-0 bg-black/40" onClick={() => setMenuOpen(false)} />
-                        <div className="relative z-10 h-full w-full max-h-screen overflow-y-auto overscroll-y-none bg-white px-6 py-8">
-                            <div className="flex items-center justify-between border-b border-gray-200 pb-4 mb-6">
-                                <p className="text-xs font-black uppercase tracking-[0.4em] text-[#1a1a1a]">Navigation</p>
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
+                        <div className="relative z-10 h-full w-full max-w-[300px] ml-auto overflow-y-auto bg-[#020617] px-6 py-8 shadow-2xl flex flex-col">
+                            <div className="flex items-center justify-between border-b border-white/10 pb-6 mb-8">
+                                <h1 className="text-lg font-black text-white uppercase tracking-wide">
+                                    Marina <span className="font-light italic">Dubson</span>
+                               </h1>
                                 <button
                                     type="button"
                                     onClick={() => setMenuOpen(false)}
-                                    className="h-10 w-10 flex items-center justify-center rounded-full border border-gray-200 text-[#1a1a1a] hover:bg-gray-50 transition-colors"
+                                    className="h-8 w-8 flex items-center justify-center text-white/70 hover:text-white transition-colors"
                                 >
                                     <span className="sr-only">Close navigation menu</span>
-                                    <X className="h-4 w-4" />
+                                    <X className="h-5 w-5" />
                                 </button>
                             </div>
-                            <div className="space-y-3 border-b border-gray-200 pb-4 mb-4">
-                                <div className="flex items-center gap-3 text-sm font-semibold text-[#1a1a1a]">
-                                    <Phone className="h-4 w-4 text-[#a89100]" />
-                                    <span>+ (917) 494-1859</span>
-                                </div>
-                                <div className="flex items-center gap-3 text-sm font-semibold text-[#1a1a1a]">
-                                    <Mail className="h-4 w-4 text-[#a89100]" />
-                                    <span>MarinaDubson@gmail.com</span>
-                                </div>
-                                <div className="flex items-center gap-3 pt-3 border-t border-gray-200">
-                                    <Link
-                                        href="/login"
-                                        onClick={() => setMenuOpen(false)}
-                                        className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#a89100] text-[#a89100] font-black uppercase text-xs tracking-[0.3em] transition-colors hover:bg-[#a89100] hover:text-white"
-                                    >
-                                        <LogIn className="h-3.5 w-3.5" />
-                                        Login
-                                    </Link>
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1a1a1a]">English</span>
-                                </div>
-                            </div>
-                            <nav className="flex flex-col gap-4">
+                            
+                            <nav className="flex flex-col gap-6 flex-1">
                                 {navLinks.map((link) => (
                                     <Link
                                         key={link.name}
                                         href={link.href}
                                         onClick={() => setMenuOpen(false)}
-                                        className="text-base font-black uppercase tracking-[0.4em] text-[#1a1a1a] border-b border-gray-200 pb-3 transition-colors hover:text-[#a89100]"
+                                        className="text-sm font-bold uppercase tracking-widest text-white/90 transition-colors hover:text-white"
                                     >
                                         {link.name}
                                     </Link>
                                 ))}
                             </nav>
+                            
+                            <div className="pt-8 border-t border-white/10 flex flex-col gap-3">
+                                <Link href="/login" onClick={() => setMenuOpen(false)} className="block w-full border border-white/20 text-white px-6 py-4 rounded-md text-sm font-bold hover:bg-white/5 transition-colors text-center">
+                                    Login
+                                </Link>
+                                <Link href="/contact" onClick={() => setMenuOpen(false)} className="block w-full bg-[#0051a8] text-white px-6 py-4 rounded-md text-sm font-bold hover:bg-[#003f8a] transition-colors text-center shadow-md">
+                                    Contact us
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -179,76 +148,77 @@ export function PublicHeader() {
 
 export function PublicFooter() {
     return (
-        <footer className="bg-[#020617] text-white pt-8 pb-0 border-t border-white/5">
-            <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-8 md:space-y-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 flex items-center justify-center bg-[#0071c5] text-white rounded-lg">
-                                <Globe className="h-6 w-6" />
-                            </div>
-                            <h2 className="text-xl font-black uppercase italic">Marina Dubson</h2>
-                        </div>
-                        <p className="text-sm text-white/80 leading-relaxed font-medium">
-                            Elite stenographic services for complex litigation. We provide unmatched precision and reliability for every deposition, hearing, and trial worldwide.
+        <footer className="bg-[#eef1f6] text-gray-900 pt-16 pb-0">
+            <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-12">
+                <div className="flex justify-center mb-12">
+                    <div className="text-center">
+                        <h2 className="text-4xl font-black uppercase text-[#0051a8] italic tracking-tight mb-4">Marina Dubson</h2>
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500 max-w-lg mx-auto leading-relaxed">
+                            A dedicated legal professional. We provide unmatched precision and reliability for every deposition, hearing, and trial worldwide.
                         </p>
-                    </div>
-
-                    <div className="space-y-6">
-                        <h4 className="text-lg font-bold border-b border-white/20 pb-2 uppercase tracking-[0.2em]">Get In Touch</h4>
-                        <div className="space-y-4 text-sm font-medium">
-                            <div className="flex items-start gap-3">
-                                <Globe className="h-5 w-5 text-white/60 flex-shrink-0" />
-                                <span>12A Saturn Lane, Staten Island, NY</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-white">
-                                <Mail className="h-5 w-5 text-white/60 flex-shrink-0" />
-                                <a href="mailto:MarinaDubson@gmail.com" className="hover:underline transition-all">MarinaDubson@gmail.com</a>
-                            </div>
-                            <div className="flex items-center gap-3 text-white">
-                                <Phone className="h-5 w-5 text-white/60 flex-shrink-0" />
-                                <span>(917) 494-1859</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="space-y-6">
-                        <h4 className="text-lg font-bold border-b border-white/20 pb-2 uppercase tracking-[0.2em]">Follow Us</h4>
-                        <div className="flex items-center gap-3">
-                            <a href="#" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#0071c5] hover:border-[#0071c5] transition-all group" title="Facebook">
-                                <Facebook className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                            </a>
-                            <a href="#" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#0071c5] hover:border-[#0071c5] transition-all group" title="Twitter">
-                                <Twitter className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                            </a>
-                            <a href="#" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#0071c5] hover:border-[#0071c5] transition-all group" title="Instagram">
-                                <Instagram className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                            </a>
-                            <a href="#" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#0071c5] hover:border-[#0071c5] transition-all group" title="Indeed">
-                                <Briefcase className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                            </a>
-                        </div>
                     </div>
                 </div>
 
-                <div className="bg-white/5 border border-white/10 rounded-[28px] p-6 sm:p-8 shadow-inner shadow-black/40 mb-6 md:mb-8">
-                    <h4 className="text-lg font-black uppercase tracking-[0.3em] text-white">Subscribe Newsletter</h4>
-                    <p className="text-sm text-white/80 font-medium italic mt-2">Join our list for protocol updates and litigation trends.</p>
-                    <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                        <input
-                            type="email"
-                            placeholder="Your Email"
-                            className="flex-1 rounded-full border border-white/30 bg-transparent px-4 py-3 text-sm font-semibold text-white outline-none placeholder:text-white/60 focus:border-white"
-                        />
-                        <button className="w-full sm:w-auto flex-shrink-0 rounded-full bg-[#a89100] px-6 py-3 text-xs font-black uppercase tracking-widest text-white transition-all hover:bg-[#c5a012]">
-                            Subscribe Now
-                        </button>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 pb-12">
+                    <div className="space-y-6">
+                        <h4 className="text-lg font-black uppercase tracking-widest text-gray-900">Pages</h4>
+                        <div className="flex flex-col gap-3 text-sm font-bold text-gray-600">
+                            <Link href="/" className="hover:text-[#0051a8] transition-colors">Home</Link>
+                            <Link href="/services" className="hover:text-[#0051a8] transition-colors">Services</Link>
+                            <Link href="/gallery" className="hover:text-[#0051a8] transition-colors">Gallery</Link>
+                            <Link href="/blogs" className="hover:text-[#0051a8] transition-colors">Blogs</Link>
+                            <Link href="/contact" className="hover:text-[#0051a8] transition-colors">Contact Us</Link>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <h4 className="text-lg font-black uppercase tracking-widest text-gray-900">Services</h4>
+                        <div className="flex flex-col gap-3 text-sm font-bold text-gray-600">
+                            <Link href="/services" className="hover:text-[#0051a8] transition-colors">Service</Link>
+                            <Link href="/gallery" className="hover:text-[#0051a8] transition-colors">Gallery</Link>
+                            <Link href="/contact" className="hover:text-[#0051a8] transition-colors">Contact Us</Link>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <h4 className="text-lg font-black uppercase tracking-widest text-gray-900">Social Links</h4>
+                        <div className="flex flex-col gap-3 text-sm font-bold text-gray-600">
+                            <a href="#" className="flex items-center gap-3 hover:text-[#0051a8] transition-colors group">
+                                <div className="h-8 w-8 rounded-full bg-[#0051a8] text-white flex items-center justify-center group-hover:bg-[#003f8a]">
+                                    <Facebook className="h-4 w-4" />
+                                </div>
+                                <span>Facebook</span>
+                            </a>
+                            <a href="#" className="flex items-center gap-3 hover:text-[#0051a8] transition-colors group">
+                                <div className="h-8 w-8 rounded-full bg-[#0051a8] text-white flex items-center justify-center group-hover:bg-[#003f8a]">
+                                    <Twitter className="h-4 w-4" />
+                                </div>
+                                <span>Twitter</span>
+                            </a>
+                            <a href="#" className="flex items-center gap-3 hover:text-[#0051a8] transition-colors group">
+                                <div className="h-8 w-8 rounded-full bg-[#0051a8] text-white flex items-center justify-center group-hover:bg-[#003f8a]">
+                                    <Instagram className="h-4 w-4" />
+                                </div>
+                                <span>Instagram</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <h4 className="text-lg font-black uppercase tracking-widest text-gray-900">Pages</h4>
+                        <div className="flex flex-col gap-3 text-sm font-bold text-gray-600">
+                            <Link href="/" className="hover:text-[#0051a8] transition-colors">Home</Link>
+                            <Link href="/services" className="hover:text-[#0051a8] transition-colors">Services</Link>
+                            <Link href="/gallery" className="hover:text-[#0051a8] transition-colors">Gallery</Link>
+                            <Link href="/blogs" className="hover:text-[#0051a8] transition-colors">Blogs</Link>
+                            <Link href="/contact" className="hover:text-[#0051a8] transition-colors">Contact Us</Link>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="bg-[#a89100] py-4 text-center mt-3 ">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/90">
+            <div className="border-t border-gray-200 py-6 text-center">
+                <p className="text-xs font-bold uppercase tracking-widest text-gray-500">
                     Copyright © 2026 Marina Dubson. All Rights Reserved.
                 </p>
             </div>

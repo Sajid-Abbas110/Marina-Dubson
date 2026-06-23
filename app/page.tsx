@@ -1,22 +1,30 @@
 'use client'
 
 import React from 'react'
-import { PublicTopBar, PublicHeader, PublicFooter } from './components/landing/PublicLayout'
-import { HomepageHero, WhoWeAre, SolutionsSection, ServiceGrid, BlogTeaser, ContactSection } from './components/landing/NewHomepage'
+import { PublicHeader, PublicFooter } from './components/landing/PublicLayout'
+import { 
+    MarinaHero, 
+    MarinaAbout, 
+    MarinaWhyChoose, 
+    MarinaPracticeAreas, 
+    MarinaContact, 
+    MarinaTestimonials, 
+    MarinaCTA 
+} from './components/landing/MarinaHomepage'
 
 export default function HomePage() {
     return (
-        <div className="bg-white min-h-screen flex flex-col">
-            <PublicTopBar />
+        <div className="bg-white min-h-screen flex flex-col font-sans">
             <PublicHeader />
 
             <main className="flex-1">
-                <HomepageHero />
-                <WhoWeAre />
-                <SolutionsSection />
-                <ServiceGrid />
-                <BlogTeaser />
-                <ContactSection />
+                <MarinaHero />
+                <MarinaAbout />
+                <MarinaWhyChoose />
+                <MarinaPracticeAreas />
+                <MarinaContact />
+                <MarinaTestimonials />
+                <MarinaCTA />
             </main>
 
             <PublicFooter />
