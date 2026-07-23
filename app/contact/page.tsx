@@ -1,3 +1,4 @@
+
 'use client'
 
 import Image from 'next/image'
@@ -55,27 +56,24 @@ export default function ContactPage() {
                     <div className="relative z-10 w-full mx-auto max-w-6xl px-4 md:px-8 pt-32 pb-28 md:pt-44 md:pb-36">
                         <div className="max-w-md">
                             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase leading-[1.1] text-white mb-6">
-                                Direct{' '}
+                                Request a{' '}
                                 <span
                                     className="text-transparent"
                                     style={{ WebkitTextStroke: '2px white' }}
                                 >
-                                    Access
+                                    Court
                                 </span>
                                 <br />
-                                To Our
-                                <br />
-                                <span className="text-white">Concierge Team</span>
+                                <span className="text-white">Reporter</span>
                             </h1>
                             <p className="text-sm md:text-base font-medium text-white/80 mb-10 leading-relaxed">
-                                Whether you have a scheduling inquiry, need help with complex proceeding
-                                requirements, or require immediate technical support, our team is ready to assist.
+                                Whether you need Realtime reporting for tomorrow morning&apos;s deposition, CART services for an event, or long-term support for a series of hearings, Marina welcomes inquiries from attorneys, agencies, institutions, and schools. Every assignment is handled personally, and every inquiry receives a prompt response.
                             </p>
                             <a
                                 href="#contact-form"
                                 className="inline-flex items-center justify-center border border-white text-white px-7 py-3 rounded-md text-sm font-bold uppercase tracking-widest hover:bg-white hover:text-[#0051a8] transition-colors"
                             >
-                                Contact Marina
+                                Request Coverage
                             </a>
                         </div>
                     </div>
@@ -220,6 +218,11 @@ export default function ContactPage() {
                     MAP — same blue background as contact section
                 ══════════════════════════════════════════════════════════ */}
                 <section className="bg-[#0051a8] px-4 md:px-8 pb-16">
+                    <div className="max-w-6xl mx-auto mb-10">
+                        <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white">
+                            Need a Court Reporter for Your Next Proceeding?
+                        </h2>
+                    </div>
                     <div className="max-w-6xl mx-auto">
                         <div className="rounded-2xl overflow-hidden shadow-xl border border-white/10" style={{ height: 340 }}>
                             <iframe
@@ -252,7 +255,7 @@ export default function ContactPage() {
 
                 {/* ─── CTA BANNER ─────────────────────────────────────────── */}
                 <div className="bg-[#f4f6fa] pb-16 pt-10">
-                    <MarinaCTA />
+                    <MarinaCTA title="Request a Court Reporter Today" buttonLabel="Book A Consultation" href="#contact-form" />
                 </div>
 
             </main>

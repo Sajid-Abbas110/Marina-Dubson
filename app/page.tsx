@@ -2,14 +2,15 @@
 
 import React from 'react'
 import { PublicHeader, PublicFooter } from './components/landing/PublicLayout'
-import { 
-    MarinaHero, 
-    MarinaAbout, 
-    MarinaWhyChoose, 
-    MarinaPracticeAreas, 
-    MarinaContact, 
-    MarinaTestimonials, 
-    MarinaCTA 
+import {
+    MarinaHero,
+    MarinaAbout,
+    MarinaServicesGrid,
+    MarinaWhyChoose,
+    MarinaExperienceTeaser,
+    MarinaContact,
+    MarinaTestimonials,
+    MarinaCTA
 } from './components/landing/MarinaHomepage'
 
 export default function HomePage() {
@@ -20,11 +21,14 @@ export default function HomePage() {
             <main className="flex-1">
                 <MarinaHero />
                 <MarinaAbout />
+                <MarinaServicesGrid />
                 <MarinaWhyChoose />
-                <MarinaPracticeAreas />
+                <MarinaExperienceTeaser />
                 <MarinaContact />
                 <MarinaTestimonials />
-                <MarinaCTA />
+                <div className="bg-[#f4f6fa] pb-16 pt-10">
+                    <MarinaCTA title="Request a Court Reporter Today" buttonLabel="Book A Consultation" href="/contact" />
+                </div>
             </main>
 
             <PublicFooter />

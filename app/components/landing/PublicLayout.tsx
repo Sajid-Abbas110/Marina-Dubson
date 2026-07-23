@@ -18,6 +18,7 @@ export function PublicHeader() {
         { name: 'Services', href: '/services' },
         { name: 'Gallery', href: '/gallery' },
         { name: 'Blogs', href: '/blogs' },
+        { name: 'Notable Experience', href: '/notable-experience' },
     ]
 
     useEffect(() => {
@@ -154,7 +155,7 @@ export function PublicFooter() {
                     <div className="text-center">
                         <h2 className="text-4xl font-black uppercase text-[#0051a8] italic tracking-tight mb-4">Marina Dubson</h2>
                         <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500 max-w-lg mx-auto leading-relaxed">
-                            A dedicated legal professional. We provide unmatched precision and reliability for every deposition, hearing, and trial worldwide.
+                            Certified stenographic court reporting for attorneys, agencies, and institutions across New York and nationwide.
                         </p>
                     </div>
                 </div>
@@ -174,9 +175,11 @@ export function PublicFooter() {
                     <div className="space-y-6">
                         <h4 className="text-lg font-black uppercase tracking-widest text-gray-900">Services</h4>
                         <div className="flex flex-col gap-3 text-sm font-bold text-gray-600">
-                            <Link href="/services" className="hover:text-[#0051a8] transition-colors">Service</Link>
-                            <Link href="/gallery" className="hover:text-[#0051a8] transition-colors">Gallery</Link>
-                            <Link href="/contact" className="hover:text-[#0051a8] transition-colors">Contact Us</Link>
+                            <Link href="/services" className="hover:text-[#0051a8] transition-colors">Realtime Reporting</Link>
+                            <Link href="/services" className="hover:text-[#0051a8] transition-colors">Depositions</Link>
+                            <Link href="/services" className="hover:text-[#0051a8] transition-colors">Arbitrations &amp; Hearings</Link>
+                            <Link href="/services" className="hover:text-[#0051a8] transition-colors">CART Services</Link>
+                            <Link href="/services" className="hover:text-[#0051a8] transition-colors">Transcript Production</Link>
                         </div>
                     </div>
 
