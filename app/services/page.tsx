@@ -39,7 +39,7 @@ export default function ServicesPage() {
                             <div className="mt-9">
                                 <Link
                                     href="/contact"
-                                    className="inline-flex items-center justify-center rounded-md border border-white/70 px-8 py-4 text-sm font-bold uppercase tracking-widest text-white transition-colors hover:bg-white hover:text-[#0051a8]"
+                                    className="inline-flex items-center justify-center rounded-md border border-white/70 px-8 py-4 text-sm font-bold uppercase tracking-widest text-white transition-colors hover:bg-white hover:text-[#B8860B]"
                                 >
                                     Request a Court Reporter
                                 </Link>
@@ -55,16 +55,16 @@ export default function ServicesPage() {
                 <section className="relative overflow-hidden bg-[#f4f6fa] pb-24 pt-20 md:pb-32 md:pt-28">
                     <div className="mx-auto max-w-7xl px-4 md:px-8">
                         <div className="mb-8 flex items-center gap-4">
-                            <div className="h-px w-24 bg-[#0051a8]" />
-                            <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#0051a8]">Our Services</p>
+                            <div className="h-px w-24 bg-[#D4AF37]" />
+                            <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#B8860B]">Our Services</p>
                         </div>
 
                         <div className="grid gap-12 md:grid-cols-2 lg:gap-20">
                             <article>
-                                <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-md border border-[#0051a8] text-[#0051a8]">
+                                <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-md border border-[#B8860B] text-[#B8860B]">
                                     <Radio className="h-6 w-6" />
                                 </div>
-                                <p className="mb-4 text-xs font-bold uppercase tracking-[0.35em] text-[#0051a8]">
+                                <p className="mb-4 text-xs font-bold uppercase tracking-[0.35em] text-[#B8860B]">
                                     Realtime Reporting
                                 </p>
                                 <h2 className="mb-7 text-4xl font-black uppercase leading-none tracking-tight text-gray-950 md:text-5xl">
@@ -76,10 +76,10 @@ export default function ServicesPage() {
                             </article>
 
                             <article>
-                                <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-md border border-[#0051a8] text-[#0051a8]">
+                                <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-md border border-[#B8860B] text-[#B8860B]">
                                     <ClipboardList className="h-6 w-6" />
                                 </div>
-                                <p className="mb-4 text-xs font-bold uppercase tracking-[0.35em] text-[#0051a8]">
+                                <p className="mb-4 text-xs font-bold uppercase tracking-[0.35em] text-[#B8860B]">
                                     Deposition Reporting
                                 </p>
                                 <h2 className="mb-7 text-4xl font-black uppercase leading-none tracking-tight text-gray-950 md:text-5xl">
@@ -97,7 +97,7 @@ export default function ServicesPage() {
                     </div>
                 </section>
 
-                <section className="overflow-hidden bg-[#0051a8] text-white">
+                <section className="overflow-hidden bg-[#0B0B0C] text-white">
                     <div className="relative overflow-hidden">
                         <div className="absolute inset-0 z-0">
                             <Image
@@ -148,7 +148,7 @@ export default function ServicesPage() {
                 </section>
 
                 <section className="relative bg-[#f4f6fa] pb-16 md:pb-24">
-                    <div className="h-[220px] bg-[#0051a8]" />
+                    <div className="h-[220px] bg-[#0B0B0C]" />
                     <div className="relative z-10 mx-auto w-[90%] max-w-6xl -mt-[220px]">
                         <div className="relative min-h-[480px] overflow-hidden rounded-2xl flex items-center justify-center">
                             <Image
@@ -158,7 +158,7 @@ export default function ServicesPage() {
                                 className="object-cover object-center"
                                 sizes="90vw"
                             />
-                            <div className="absolute inset-0 bg-[#0051a8]/80" />
+                            <div className="absolute inset-0 bg-[#0B0B0C]/80" />
 
                             <div className="relative z-10 max-w-2xl mx-auto px-6 py-16 md:py-20 text-center text-white">
                                 <div className="flex items-center justify-center gap-3 mb-4">
@@ -178,7 +178,7 @@ export default function ServicesPage() {
                                 </p>
                                 <Link
                                     href="/contact"
-                                    className="inline-flex items-center justify-center rounded-md bg-white px-8 py-4 text-sm font-bold uppercase tracking-widest text-[#0051a8] shadow-md transition-colors hover:bg-gray-100"
+                                    className="inline-flex items-center justify-center rounded-md bg-white px-8 py-4 text-sm font-bold uppercase tracking-widest text-[#B8860B] shadow-md transition-colors hover:bg-gray-100"
                                 >
                                     Request a Court Reporter
                                 </Link>

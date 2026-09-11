@@ -49,6 +49,8 @@ module.exports = {
                 sans: ['"DM Sans"', 'system-ui', '-apple-system', 'sans-serif'],
                 serif: ['"DM Serif Display"', 'Georgia', 'serif'],
                 mono: ['"JetBrains Mono"', 'Menlo', 'monospace'],
+                poppins: ['var(--font-poppins)', 'system-ui', 'sans-serif'],
+                script: ['var(--font-script)', 'cursive'],
             },
 
             fontSize: {

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Phone, Mail, Globe, Facebook, Twitter, Instagram, Menu, X } from 'lucide-react'
 
@@ -61,9 +62,14 @@ export function PublicHeader() {
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 w-auto">
                         <Link href="/" className="flex items-center shrink-0">
-                            <h1 className="text-xl md:text-2xl font-black text-white leading-none uppercase tracking-wide">
-                                Marina <span className="font-light italic">Dubson</span>
-                            </h1>
+                            <Image
+                                src="/latest-logo.png"
+                                alt="Marina Dubson, Stenographer"
+                                width={2286}
+                                height={594}
+                                priority
+                                className="h-9 md:h-11 w-auto object-contain"
+                            />
                         </Link>
                     </div>
 
@@ -105,9 +111,13 @@ export function PublicHeader() {
                         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
                         <div className="relative z-10 h-full w-full max-w-[300px] ml-auto overflow-y-auto bg-[#020617] px-6 py-8 shadow-2xl flex flex-col">
                             <div className="flex items-center justify-between border-b border-white/10 pb-6 mb-8">
-                                <h1 className="text-lg font-black text-white uppercase tracking-wide">
-                                    Marina <span className="font-light italic">Dubson</span>
-                               </h1>
+                                <Image
+                                    src="/latest-logo.png"
+                                    alt="Marina Dubson, Stenographer"
+                                    width={2286}
+                                    height={594}
+                                    className="h-8 w-auto object-contain"
+                                />
                                 <button
                                     type="button"
                                     onClick={() => setMenuOpen(false)}
@@ -153,7 +163,13 @@ export function PublicFooter() {
             <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-12">
                 <div className="flex justify-center mb-12">
                     <div className="text-center">
-                        <h2 className="text-4xl font-black uppercase text-[#0051a8] italic tracking-tight mb-4">Marina Dubson</h2>
+                        <Image
+                            src="/latest-logo.png"
+                            alt="Marina Dubson, Stenographer"
+                            width={2286}
+                            height={594}
+                            className="h-14 md:h-16 w-auto object-contain mx-auto mb-4"
+                        />
                         <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500 max-w-lg mx-auto leading-relaxed">
                             Certified stenographic court reporting for attorneys, agencies, and institutions across New York and nationwide.
                         </p>

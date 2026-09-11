@@ -561,6 +561,21 @@ model DataSubjectRequest {
   @@index([email])
 }
 
+model ContactInquiry {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String?
+  email     String
+  phone     String?
+  message   String   @db.Text
+  source    String?  // which page/form the inquiry came from, e.g. /contact
+  status    String   @default("NEW") // NEW, READ, RESPONDED, ARCHIVED
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@index([createdAt])
+}
+
 model SecurityIncident {
   id              String   @id @default(cuid())
   incidentType    String   // BREACH, UNAUTHORIZED_ACCESS, DATA_LOSS, etc.

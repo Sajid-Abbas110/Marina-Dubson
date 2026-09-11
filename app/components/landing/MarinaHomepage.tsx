@@ -3,18 +3,18 @@
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { MapPin, Phone, Mail, Star, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Phone, Mail, Star, ChevronLeft, ChevronRight } from 'lucide-react'
 
-export function MarinaHero({ bgImage = '/home-hero-bg.png' }: { bgImage?: string }) {
+export function MarinaHero({ bgImage = '/marina-hero.jpg' }: { bgImage?: string }) {
   return (
     <section className="relative w-full h-[1024px] flex items-center bg-[#f8f9fa] overflow-hidden">
       <div className="absolute inset-0 z-0">
         <Image src={bgImage} alt="Marina Dubson" fill className="object-cover object-center" priority />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent w-full md:w-2/3" />
+        <div className="absolute inset-y-0 right-0 w-full md:w-2/3 bg-gradient-to-l from-black/60 via-black/40 to-transparent" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 w-full">
-        <div className="text-white pt-24 pb-12 lg:pt-32 lg:pb-0 lg:max-w-[703px] flex flex-col gap-6">
+        <div className="ml-auto text-white pt-24 pb-12 lg:pt-32 lg:pb-0 lg:max-w-[703px] flex flex-col gap-6">
           <h1
             className="text-4xl md:text-6xl lg:text-[64px] font-bold uppercase leading-[1.1] lg:leading-[68px] tracking-tight lg:tracking-[-0.03em] font-poppins drop-shadow-md lg:w-[703px]"
           >
@@ -63,13 +63,13 @@ export function MarinaAbout() {
           </div>
           <h2 className="text-4xl md:text-[3.5rem] font-black uppercase text-gray-900 mb-8 tracking-tight leading-none">Marina Dubson</h2>
           <p className="text-gray-600 mb-6 leading-relaxed font-medium text-[16px]">
-            For attorneys, agencies, and institutions that can&apos;t afford a single missed word, Marina pairs stenographic speed with a deep command of English grammar, syntax, and legal phraseology. The result is a clean, certified transcript delivered when you need it — not a rough draft you have to fix.
+            For attorneys, agencies, and institutions that can&apos;t afford a single missed word, Marina pairs stenographic speed with a deep command of English grammar, syntax, and legal phraseology. The result is a clean, certified transcript delivered accurately the first time.
           </p>
           <p className="text-gray-600 mb-10 leading-relaxed font-medium text-[16px]">
-            Marina is an independent court reporter who personally handles every assignment she accepts. When you book Marina, you get Marina.
+            Marina is an independent court reporter who personally handles every assignment she accepts. And if she&apos;s ever unable to cover a job herself, she draws on her trusted network of vetted reporters to help find coverage — so your proceeding is never left without a reporter.
           </p>
           <Link href="/services" className="inline-block bg-[#0051a8] text-white px-8 py-4 rounded-md font-medium tracking-wide text-sm hover:bg-[#003f8a] transition-colors shadow-md">
-            View Practice Areas
+            View Our Services
           </Link>
         </div>
       </div>
@@ -275,24 +275,16 @@ export function MarinaContact() {
                   <Mail className="h-5 w-5 text-[#0051a8] flex-shrink-0" />
                   <span className="font-semibold text-lg leading-none">MarinaDubson@gmail.com</span>
                 </div>
-                <div className="flex items-start gap-4 text-gray-800">
-                  <MapPin className="h-5 w-5 text-[#0051a8] flex-shrink-0 mt-0.5" />
-                  <span className="font-semibold text-lg leading-snug">12A Saturn Lane, Staten Island, NY</span>
-                </div>
               </div>
             </div>
-            {/* Real Mock Google Map using Staten Island location */}
-            <div className="w-full h-[350px] bg-gray-100 rounded-2xl overflow-hidden relative border border-gray-200 shadow-sm mt-4">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d48479.9922904598!2d-74.195022!3d40.579022!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa170089739%3A0xc34b049e31a67554!2sStaten%20Island%2C%20NY!5e0!3m2!1sen!2sus!4v1700000000000"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen={false}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="w-full h-full grayscale opacity-90"
-              ></iframe>
+            <div className="w-full h-[350px] bg-[#0B0B0C] rounded-2xl overflow-hidden relative border border-gray-200 shadow-sm mt-4 flex items-center justify-center p-8">
+              <Image
+                src="/chair-logo.png"
+                alt="Marina Dubson, Stenographer"
+                width={1737}
+                height={1148}
+                className="h-full w-auto max-w-full object-contain"
+              />
             </div>
           </div>
           <div className="w-full md:w-7/12">
@@ -441,8 +433,8 @@ export function MarinaTestimonials() {
 }
 
 export function MarinaCTA({
-  title = "Need Experienced\nLegal Guidance?",
-  buttonLabel = "Book A Consultation",
+  title = "Request a Court\nReporter Today",
+  buttonLabel = "Request a Court Reporter",
   href = "/contact",
 }: {
   title?: string

@@ -80,12 +80,15 @@ export default function AboutPage() {
                                 <p>
                                     Accuracy, professionalism, and timeliness are the cornerstones of every assignment. Marina currently partners with court reporting agencies across the United States, and new requests are always welcome.
                                 </p>
+                                <p>
+                                    A court reporter since 2011, Marina has covered depositions, arbitrations, trials, and hearings across nearly every area of the legal field — including personal injury, medical malpractice, fraud, breach-of-contract, intellectual property and patent matters, workplace harassment, discrimination and EEOC-related lawsuits, wrongful termination, and complex litigation, among many others.
+                                </p>
                             </div>
                             <Link
                                 href="/services"
                                 className="mt-9 inline-flex items-center justify-center rounded-md bg-[#0051a8] px-8 py-4 text-sm font-bold uppercase tracking-widest text-white shadow-md transition-colors hover:bg-[#003f8a]"
                             >
-                                View Practice Areas
+                                View Our Services
                             </Link>
                         </div>
 

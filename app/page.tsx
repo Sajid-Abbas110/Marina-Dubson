@@ -27,7 +27,7 @@ export default function HomePage() {
                 <MarinaContact />
                 <MarinaTestimonials />
                 <div className="bg-[#f4f6fa] pb-16 pt-10">
-                    <MarinaCTA title="Request a Court Reporter Today" buttonLabel="Book A Consultation" href="/contact" />
+                    <MarinaCTA title="Request a Court Reporter Today" buttonLabel="Request a Court Reporter" href="/contact" />
                 </div>
             </main>
 

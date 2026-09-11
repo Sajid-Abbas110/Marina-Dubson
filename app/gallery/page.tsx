@@ -4,13 +4,14 @@ import Link from 'next/link'
 import { PublicHeader, PublicFooter } from '@/app/components/landing/PublicLayout'
 import { MarinaCTA } from '@/app/components/landing/MarinaHomepage'
 
+// Note: JCP_MARINA-2811 (marina-at-desk.jpg) is now used elsewhere on the site
+// (About page, Home hero) and is excluded here to avoid a duplicate.
 const imageFiles = [
     'JCP_MARINA-2675-20250508-Edit.jpg',
     'JCP_MARINA-2685-20250508-Edit.jpg',
     'JCP_MARINA-2750-20250508-Edit.jpg',
     'JCP_MARINA-2756-20250508-Edit.jpg',
     'JCP_MARINA-2758-20250508-Edit.jpg',
-    'JCP_MARINA-2811-20250508.jpg',
     'JCP_MARINA-2815-20250508.jpg',
     'JCP_MARINA-2819-20250508.jpg',
     'JCP_MARINA-2833-20250508.jpg',
@@ -37,7 +38,6 @@ const focusPositions = [
     'object-[52%_18%]',
     'object-[50%_12%]',
     'object-[50%_12%]',
-    'object-[52%_35%]',
     'object-[50%_35%]',
     'object-[52%_42%]',
     'object-[48%_40%]',
@@ -90,7 +90,7 @@ export default function GalleryPage() {
                             <div className="mt-9">
                                 <Link
                                     href="/contact"
-                                    className="inline-flex items-center justify-center rounded-md border border-white/70 px-8 py-4 text-sm font-bold uppercase tracking-widest text-white transition-colors hover:bg-white hover:text-[#0051a8]"
+                                    className="inline-flex items-center justify-center rounded-md border border-white/70 px-8 py-4 text-sm font-bold uppercase tracking-widest text-white transition-colors hover:bg-white hover:text-black"
                                 >
                                     Contact Marina
                                 </Link>

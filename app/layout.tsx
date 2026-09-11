@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 export const fetchCache = 'force-no-store'
 
 import type { Metadata, Viewport } from 'next'
-import { Poppins } from 'next/font/google'
+import { Poppins, Alex_Brush } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/lib/theme-context'
 import PWAInstallPrompt from '@/app/components/PWAInstallPrompt'
@@ -12,6 +12,13 @@ const poppins = Poppins({
     subsets: ['latin'],
     weight: ['300', '400', '500', '600', '700'],
     variable: '--font-poppins',
+    display: 'swap',
+})
+
+const alexBrush = Alex_Brush({
+    subsets: ['latin'],
+    weight: ['400'],
+    variable: '--font-script',
     display: 'swap',
 })
 
@@ -39,7 +46,7 @@ export default function RootLayout({
     children: React.ReactNode
 }) {
     return (
-        <html lang="en" suppressHydrationWarning className={poppins.variable}>
+        <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${alexBrush.variable}`}>
             <head>
                 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
                 <link rel="apple-touch-icon" href="/favicon.svg" />

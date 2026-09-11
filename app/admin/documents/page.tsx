@@ -14,6 +14,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 
 const CATEGORY_LABELS: Record<string, string> = {
+    RESUME: 'Résumé (public site)',
     RATE_SHEET: 'Rate Sheet',
     CONTRACT: 'Contract',
     INVOICE: 'Invoice',
@@ -140,6 +141,9 @@ export default function AdminDocumentArchivePage() {
                 </h1>
                 <p className="text-sm text-muted-foreground max-w-2xl">
                     Upload, categorize, and distribute PDF, DOC, DOCX, or TXT assets for court reporters, clients, and internal stakeholders.
+                </p>
+                <p className="text-xs text-muted-foreground max-w-2xl">
+                    To update the résumé shown on the public site&apos;s &quot;View Resume&quot; links, upload a new file under the <strong>Résumé (public site)</strong> category — the most recent one uploaded is what visitors see at <code>/resume</code>.
                 </p>
             </header>
 

@@ -5,7 +5,7 @@ import Image from 'next/image'
 import React, { useState } from 'react'
 import { PublicHeader, PublicFooter } from '../components/landing/PublicLayout'
 import { MarinaCTA } from '../components/landing/MarinaHomepage'
-import { Phone, Mail, MapPin } from 'lucide-react'
+import { Phone, Mail } from 'lucide-react'
 
 export default function ContactPage() {
     const [formData, setFormData] = useState({
@@ -15,19 +15,29 @@ export default function ContactPage() {
         phone: '',
         message: '',
     })
-    const [submitted, setSubmitted] = useState(false)
+    const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target
         setFormData(prev => ({ ...prev, [name]: value }))
     }
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        console.log(formData)
-        setSubmitted(true)
-        setTimeout(() => setSubmitted(false), 4000)
-        setFormData({ firstName: '', lastName: '', email: '', phone: '', message: '' })
+        setStatus('sending')
+        try {
+            const res = await fetch('/api/contact-inquiries', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...formData, source: '/contact' }),
+            })
+            if (!res.ok) throw new Error('Request failed')
+            setStatus('sent')
+            setFormData({ firstName: '', lastName: '', email: '', phone: '', message: '' })
+            setTimeout(() => setStatus('idle'), 4000)
+        } catch {
+            setStatus('error')
+        }
     }
 
     return (
@@ -71,7 +81,7 @@ export default function ContactPage() {
                             </p>
                             <a
                                 href="#contact-form"
-                                className="inline-flex items-center justify-center border border-white text-white px-7 py-3 rounded-md text-sm font-bold uppercase tracking-widest hover:bg-white hover:text-[#0051a8] transition-colors"
+                                className="inline-flex items-center justify-center border border-white text-white px-7 py-3 rounded-md text-sm font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-colors"
                             >
                                 Request Coverage
                             </a>
@@ -94,7 +104,7 @@ export default function ContactPage() {
                 {/* ══════════════════════════════════════════════════════════
                     BLUE SECTION — Contact Info (left) + Form card (right, floated up)
                 ══════════════════════════════════════════════════════════ */}
-                <section id="contact-form" className="relative bg-[#0051a8]">
+                <section id="contact-form" className="relative bg-[#0B0B0C]">
                     <div className="mx-auto max-w-6xl px-4 md:px-8">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-start">
 
@@ -124,15 +134,6 @@ export default function ContactPage() {
                                         </a>
                                     </div>
 
-                                    {/* Address */}
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-9 w-9 rounded-full border-2 border-white/50 flex items-center justify-center shrink-0">
-                                            <MapPin className="h-4 w-4 text-white" />
-                                        </div>
-                                        <p className="text-base font-semibold text-white">
-                                            12A Saturn Lane, Staten Island, NY
-                                        </p>
-                                    </div>
                                 </div>
                             </div>
 
@@ -155,7 +156,7 @@ export default function ContactPage() {
                                                 value={formData.firstName}
                                                 onChange={handleChange}
                                                 placeholder="First Name"
-                                                className="w-full bg-white border border-[#0051a8] rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#0051a8]/20 text-gray-800 placeholder:text-gray-400 font-medium transition-all"
+                                                className="w-full bg-white border border-[#B8860B] rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#D4AF37]/30 text-gray-800 placeholder:text-gray-400 font-medium transition-all"
                                             />
                                             <input
                                                 type="text"
@@ -163,7 +164,7 @@ export default function ContactPage() {
                                                 value={formData.lastName}
                                                 onChange={handleChange}
                                                 placeholder="Last Name"
-                                                className="w-full bg-white border border-[#0051a8] rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#0051a8]/20 text-gray-800 placeholder:text-gray-400 font-medium transition-all"
+                                                className="w-full bg-white border border-[#B8860B] rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#D4AF37]/30 text-gray-800 placeholder:text-gray-400 font-medium transition-all"
                                             />
                                         </div>
 
@@ -175,7 +176,7 @@ export default function ContactPage() {
                                                 value={formData.email}
                                                 onChange={handleChange}
                                                 placeholder="Email"
-                                                className="w-full bg-white border border-[#0051a8] rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#0051a8]/20 text-gray-800 placeholder:text-gray-400 font-medium transition-all"
+                                                className="w-full bg-white border border-[#B8860B] rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#D4AF37]/30 text-gray-800 placeholder:text-gray-400 font-medium transition-all"
                                             />
                                             <input
                                                 type="tel"
@@ -183,7 +184,7 @@ export default function ContactPage() {
                                                 value={formData.phone}
                                                 onChange={handleChange}
                                                 placeholder="Phone Num"
-                                                className="w-full bg-white border border-[#0051a8] rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#0051a8]/20 text-gray-800 placeholder:text-gray-400 font-medium transition-all"
+                                                className="w-full bg-white border border-[#B8860B] rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#D4AF37]/30 text-gray-800 placeholder:text-gray-400 font-medium transition-all"
                                             />
                                         </div>
 
@@ -194,16 +195,17 @@ export default function ContactPage() {
                                             onChange={handleChange}
                                             rows={5}
                                             placeholder="Message"
-                                            className="w-full bg-white border border-[#0051a8] rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#0051a8]/20 text-gray-800 placeholder:text-gray-400 font-medium transition-all resize-none"
+                                            className="w-full bg-white border border-[#B8860B] rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#D4AF37]/30 text-gray-800 placeholder:text-gray-400 font-medium transition-all resize-none"
                                         />
 
                                         {/* Submit */}
                                         <div>
                                             <button
                                                 type="submit"
-                                                className="bg-[#0051a8] hover:bg-[#003d7a] text-white px-8 py-3 rounded-lg text-sm font-semibold transition-colors shadow-md"
+                                                disabled={status === 'sending'}
+                                                className="bg-[#D4AF37] hover:bg-[#B8860B] text-black px-8 py-3 rounded-lg text-sm font-semibold transition-colors shadow-md disabled:opacity-60"
                                             >
-                                                {submitted ? 'Sent ✓' : 'Submit'}
+                                                {status === 'sending' ? 'Sending…' : status === 'sent' ? 'Sent ✓' : status === 'error' ? 'Try Again' : 'Submit'}
                                             </button>
                                         </div>
                                     </div>
@@ -215,25 +217,22 @@ export default function ContactPage() {
                 </section>
 
                 {/* ══════════════════════════════════════════════════════════
-                    MAP — same blue background as contact section
+                    LOGO BANNER — replaces the previous map/home-address block
                 ══════════════════════════════════════════════════════════ */}
-                <section className="bg-[#0051a8] px-4 md:px-8 pb-16">
+                <section className="bg-[#0B0B0C] px-4 md:px-8 pb-16">
                     <div className="max-w-6xl mx-auto mb-10">
                         <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white">
                             Need a Court Reporter for Your Next Proceeding?
                         </h2>
                     </div>
                     <div className="max-w-6xl mx-auto">
-                        <div className="rounded-2xl overflow-hidden shadow-xl border border-white/10" style={{ height: 340 }}>
-                            <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3026.7253584887394!2d-74.1197!3d40.5795!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24f3c3b4e4d9b%3A0x0!2zNDBvMzQnNDYuMiJOIDc0bzA3JzEwLjkiVw!5e0!3m2!1sen!2sus!4v1698000000000!5m2!1sen!2sus"
-                                width="100%"
-                                height="100%"
-                                style={{ border: 0 }}
-                                allowFullScreen
-                                loading="lazy"
-                                referrerPolicy="no-referrer-when-downgrade"
-                                title="Marina Dubson Office Location"
+                        <div className="rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-black flex items-center justify-center p-10" style={{ height: 280 }}>
+                            <Image
+                                src="/latest-logo.png"
+                                alt="Marina Dubson, Stenographer"
+                                width={2286}
+                                height={594}
+                                className="h-auto w-full max-w-[420px] object-contain"
                             />
                         </div>
                     </div>
@@ -255,7 +254,7 @@ export default function ContactPage() {
 
                 {/* ─── CTA BANNER ─────────────────────────────────────────── */}
                 <div className="bg-[#f4f6fa] pb-16 pt-10">
-                    <MarinaCTA title="Request a Court Reporter Today" buttonLabel="Book A Consultation" href="#contact-form" />
+                    <MarinaCTA title="Request a Court Reporter Today" buttonLabel="Request a Court Reporter" href="#contact-form" />
                 </div>
 
             </main>

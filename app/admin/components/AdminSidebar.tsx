@@ -32,6 +32,7 @@ const navigation = [
                 { name: 'Calendar', href: '/admin/calendar', icon: Calendar, roles: ['ADMIN', 'MANAGER', 'STAFF', 'REPORTER'] },
                 { name: 'Bookings', href: '/admin/bookings', icon: Calendar, roles: ['ADMIN', 'MANAGER', 'STAFF', 'REPORTER'] },
                 { name: 'Documents', href: '/admin/documents', icon: FileText, roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+                { name: 'Website Inquiries', href: '/admin/inquiries', icon: Mail, roles: ['ADMIN', 'MANAGER', 'STAFF'] },
                 { name: 'Jobs', href: '/admin/jobs', icon: Briefcase, roles: ['ADMIN', 'MANAGER', 'STAFF', 'REPORTER'] },
             ]
         },
