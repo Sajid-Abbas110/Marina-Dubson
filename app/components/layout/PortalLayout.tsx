@@ -5,6 +5,7 @@ import PortalSidebar from './PortalSidebar'
 import PortalHeader from './PortalHeader'
 import ProtectedRoute from '@/app/components/ProtectedRoute'
 import MobileTabNavigation from '@/app/components/MobileTabNavigation'
+import TechnicalSupportWidget from '@/app/components/TechnicalSupportWidget'
 
 interface PortalLayoutProps {
     children: React.ReactNode
@@ -45,6 +46,8 @@ export default function PortalLayout({ children, navigation, userRole }: PortalL
                 <MobileTabNavigation navigation={navigation} />
 
                 {/* Mobile overlay - Not needed without hamburger */}
+
+                <TechnicalSupportWidget />
             </div>
         </ProtectedRoute>
     )

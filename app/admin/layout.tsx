@@ -8,6 +8,7 @@ import AdminHeader from './components/AdminHeader'
 import ProtectedRoute from '@/app/components/ProtectedRoute'
 import { LayoutDashboard, CalendarDays, ClipboardList, Users, FileText, Settings, BarChart3, Zap, MessageSquare, UsersRound, UserCheck, UserCog } from 'lucide-react'
 import MobileTabNavigation from '@/app/components/MobileTabNavigation'
+import TechnicalSupportWidget from '@/app/components/TechnicalSupportWidget'
 
 const adminMobileNav = [
     { name: 'Home', href: '/admin/dashboard', icon: LayoutDashboard },
@@ -69,6 +70,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <MobileTabNavigation navigation={adminMobileNav} />
 
                 {/* Mobile overlay - Not needed */}
+
+                <TechnicalSupportWidget />
             </div>
         </ProtectedRoute>
     )

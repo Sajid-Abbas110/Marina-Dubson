@@ -1,0 +1,91 @@
+/* ============================================================
+   Technical Support — in-portal help assistant (widget styles)
+   Everything is namespaced under .ts-root / .ts- so it will not
+   collide with the host portal's own CSS.
+   Load this file only on authenticated portal pages.
+   ============================================================ */
+
+.ts-root{
+  --ts-surface:#ffffff; --ts-surface-2:#eef0f5; --ts-border:#dce0ea;
+  --ts-ink:#1a1f2b; --ts-ink-soft:#4b5263; --ts-muted:#79808f;
+  --ts-accent:#4f46e5; --ts-accent-soft:#eae9fd; --ts-accent-ink:#4f46e5;
+  --ts-bad:#d0463c; --ts-bad-soft:#fbe6e4;
+  --ts-shadow-lg:0 12px 40px rgba(20,24,35,.18);
+  --ts-sans:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  --ts-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+/* follow OS dark unless the host stamps a theme it also honors */
+@media (prefers-color-scheme:dark){
+  .ts-root:not([data-ts-theme="light"]){
+    --ts-surface:#151a24; --ts-surface-2:#1b212d; --ts-border:#293141;
+    --ts-ink:#e7eaf2; --ts-ink-soft:#b3bacb; --ts-muted:#7f8798;
+    --ts-accent:#818cf8; --ts-accent-soft:#20263a; --ts-accent-ink:#a5adff;
+    --ts-bad:#f87171; --ts-bad-soft:#2c1717;
+    --ts-shadow-lg:0 16px 50px rgba(0,0,0,.6);
+  }
+}
+.ts-root[data-ts-theme="dark"]{
+  --ts-surface:#151a24; --ts-surface-2:#1b212d; --ts-border:#293141;
+  --ts-ink:#e7eaf2; --ts-ink-soft:#b3bacb; --ts-muted:#7f8798;
+  --ts-accent:#818cf8; --ts-accent-soft:#20263a; --ts-accent-ink:#a5adff;
+  --ts-bad:#f87171; --ts-bad-soft:#2c1717;
+  --ts-shadow-lg:0 16px 50px rgba(0,0,0,.6);
+}
+
+.ts-root *{box-sizing:border-box}
+
+/* launcher */
+.ts-launcher{position:fixed;right:24px;bottom:24px;z-index:2147483000;display:inline-flex;align-items:center;
+  gap:10px;padding:13px 20px 13px 16px;border:0;border-radius:999px;color:#fff;font-weight:600;font-size:14.5px;
+  font-family:var(--ts-sans);cursor:pointer;background:linear-gradient(135deg,var(--ts-accent),#7c3aed);
+  box-shadow:var(--ts-shadow-lg);transition:transform .18s}
+.ts-launcher:hover{transform:translateY(-2px)}
+.ts-launcher .ts-dot{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.22);
+  display:grid;place-items:center;font-size:13px}
+
+/* panel */
+.ts-panel{position:fixed;right:24px;bottom:24px;z-index:2147483001;width:390px;max-width:calc(100vw - 32px);
+  height:min(620px,calc(100vh - 40px));background:var(--ts-surface);border:1px solid var(--ts-border);
+  border-radius:18px;box-shadow:var(--ts-shadow-lg);display:flex;flex-direction:column;overflow:hidden;
+  font-family:var(--ts-sans);color:var(--ts-ink)}
+.ts-panel[hidden]{display:none}
+.ts-head{padding:15px 16px;border-bottom:1px solid var(--ts-border);background:var(--ts-surface-2);
+  display:flex;align-items:center;gap:12px}
+.ts-head .ts-avatar{width:36px;height:36px;border-radius:10px;flex:none;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(135deg,var(--ts-accent),#7c3aed);font-size:17px}
+.ts-head h2{margin:0;font-size:15px;font-weight:700}
+.ts-head .ts-aware{font-family:var(--ts-mono);font-size:10px;letter-spacing:.05em;color:var(--ts-muted);margin-top:2px}
+.ts-head .ts-aware b{color:var(--ts-accent-ink)}
+.ts-head .ts-x{margin-left:auto;border:0;background:transparent;color:var(--ts-muted);font-size:20px;cursor:pointer;
+  width:30px;height:30px;border-radius:8px}
+.ts-head .ts-x:hover{background:var(--ts-border);color:var(--ts-ink)}
+
+.ts-stream{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+.ts-msg{max-width:88%;padding:11px 14px;border-radius:14px;font-size:13.7px;line-height:1.55}
+.ts-msg.ts-bot{align-self:flex-start;background:var(--ts-surface-2);border:1px solid var(--ts-border);border-bottom-left-radius:5px}
+.ts-msg.ts-me{align-self:flex-end;background:var(--ts-accent);color:#fff;border-bottom-right-radius:5px}
+.ts-msg.ts-decline{border-color:color-mix(in srgb,var(--ts-bad) 40%,var(--ts-border));background:var(--ts-bad-soft)}
+.ts-msg strong{font-weight:700}
+.ts-msg ol,.ts-msg ul{margin:8px 0 2px;padding-left:20px}
+.ts-msg li{margin:3px 0}
+.ts-msg .ts-ref{display:inline-block;font-family:var(--ts-mono);font-size:11px;background:var(--ts-accent-soft);
+  color:var(--ts-accent-ink);padding:1px 6px;border-radius:5px}
+
+.ts-chips{display:flex;flex-wrap:wrap;gap:7px;padding:0 16px 4px}
+.ts-chips .ts-lbl{width:100%;font-family:var(--ts-mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ts-muted);margin-bottom:1px}
+.ts-chip{border:1px solid var(--ts-border);background:var(--ts-surface);color:var(--ts-ink-soft);font-size:12px;
+  padding:7px 11px;border-radius:999px;text-align:left;cursor:pointer;line-height:1.3;font-family:inherit}
+.ts-chip:hover{border-color:var(--ts-accent);color:var(--ts-accent-ink);background:var(--ts-accent-soft)}
+
+.ts-composer{padding:12px;border-top:1px solid var(--ts-border);background:var(--ts-surface)}
+.ts-composer form{display:flex;gap:8px;align-items:flex-end;margin:0}
+.ts-composer textarea{flex:1;resize:none;border:1px solid var(--ts-border);background:var(--ts-surface-2);
+  color:var(--ts-ink);border-radius:11px;padding:10px 12px;font-family:inherit;font-size:13.5px;line-height:1.4;max-height:96px}
+.ts-composer textarea:focus{outline:2px solid var(--ts-accent);outline-offset:0;border-color:transparent}
+.ts-send{border:0;background:var(--ts-accent);color:#fff;width:40px;height:40px;border-radius:11px;flex:none;
+  font-size:17px;cursor:pointer}
+.ts-send:hover{filter:brightness(1.08)}
+.ts-foot{font-family:var(--ts-mono);font-size:9.5px;letter-spacing:.05em;color:var(--ts-muted);text-align:center;margin-top:9px}
+
+@media (prefers-reduced-motion:reduce){.ts-root *{transition:none!important;scroll-behavior:auto!important}}

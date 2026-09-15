@@ -7,6 +7,7 @@ import './globals.css'
 import { ThemeProvider } from '@/lib/theme-context'
 import PWAInstallPrompt from '@/app/components/PWAInstallPrompt'
 import CookieConsent from '@/app/components/CookieConsent'
+import PublicSiteAssistant from '@/app/components/PublicSiteAssistant'
 
 const poppins = Poppins({
     subsets: ['latin'],
@@ -57,6 +58,7 @@ export default function RootLayout({
                         {children}
                     </main>
                     <CookieConsent />
+                    <PublicSiteAssistant />
                     {/* <PWAInstallPrompt /> */}
                 </ThemeProvider>
             </body>
