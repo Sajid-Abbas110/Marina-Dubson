@@ -1,8 +1,14 @@
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Clock } from 'lucide-react'
 import { PublicHeader, PublicFooter } from '@/app/components/landing/PublicLayout'
 import { MarinaCTA } from '@/app/components/landing/MarinaHomepage'
+
+export const metadata: Metadata = {
+    title: 'Blog | Legal & Access Perspectives from Marina Dubson',
+    description: 'Updates, best practices, and operational guidance for litigation teams, paralegals, and court reporting coordinators from stenographic court reporter Marina Dubson.',
+}
 
 const blogCards = [
     {
@@ -80,7 +86,7 @@ export default function BlogsPage() {
                             </p>
                             <Link
                                 href="/contact"
-                                className="mt-16 inline-flex items-center justify-center rounded-md border border-white/80 px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-[#0051a8]"
+                                className="mt-16 inline-flex items-center justify-center rounded-md border border-white/80 px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-[#B8860B]"
                             >
                                 Contact Marina
                             </Link>
@@ -88,20 +94,20 @@ export default function BlogsPage() {
                     </div>
 
                     <div className="absolute bottom-0 left-0 right-0 z-20 translate-y-px leading-none">
-                        <Image src="/blog-hero-svg.png" alt="" width={1440} height={104} className="h-auto w-full object-cover" />
+                        <Image src="/about-us-svg.png" alt="" width={1440} height={104} className="h-auto w-full object-cover" />
                     </div>
                 </section>
 
-                <section className="relative overflow-hidden bg-[#0051a8] pb-28 pt-16 md:pb-40 md:pt-24">
+                <section className="relative overflow-hidden bg-[#D9C035] pb-28 pt-16 md:pb-40 md:pt-24 text-gray-900">
                     <div className="mx-auto max-w-7xl px-4 md:px-8">
                         <div className="mx-auto mb-12 max-w-2xl text-center">
-                            <p className="mb-4 text-xs font-bold uppercase tracking-[0.35em] text-white/70">Blog</p>
+                            <p className="mb-4 text-xs font-bold uppercase tracking-[0.35em] text-gray-900/70">Blog</p>
                             <h2 className="text-4xl font-black uppercase leading-[0.95] tracking-tight md:text-5xl">
                                 Marina Dubson
                                 <br />
                                 Blog
                             </h2>
-                            <p className="mx-auto mt-5 max-w-xl text-sm font-medium leading-relaxed text-white/75">
+                            <p className="mx-auto mt-5 max-w-xl text-sm font-medium leading-relaxed text-gray-900/75">
                                 Updates, best practices, and operational guidance for litigation teams, paralegals, and court reporting coordinators.
                             </p>
                         </div>
@@ -110,9 +116,9 @@ export default function BlogsPage() {
                             {blogCards.map((blog) => (
                                 <article
                                     key={blog.slug}
-                                    className="overflow-hidden rounded-lg border border-white/45 bg-[#0051a8] shadow-lg"
+                                    className="overflow-hidden rounded-lg border border-gray-900/25 bg-[#D9C035] shadow-lg"
                                 >
-                                    <div className="relative aspect-[1.36] overflow-hidden bg-[#00458f]">
+                                    <div className="relative aspect-[1.36] overflow-hidden bg-[#B8860B]">
                                         <Image
                                             src={blog.image}
                                             alt={blog.title}
@@ -122,17 +128,17 @@ export default function BlogsPage() {
                                         />
                                     </div>
                                     <div className="p-6">
-                                        <h3 className="text-xl font-semibold leading-snug text-white">{blog.title}</h3>
-                                        <div className="mt-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-white/45">
+                                        <h3 className="text-xl font-semibold leading-snug text-gray-950">{blog.title}</h3>
+                                        <div className="mt-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-gray-900/55">
                                             <Clock className="h-3.5 w-3.5" />
                                             {blog.date}
                                         </div>
-                                        <p className="mt-4 text-sm font-medium leading-relaxed text-white/80">
+                                        <p className="mt-4 text-sm font-medium leading-relaxed text-gray-900/80">
                                             {blog.excerpt}
                                         </p>
                                         <Link
                                             href={`/blogs/${blog.slug}`}
-                                            className="mt-5 inline-flex items-center gap-2 rounded-md border border-white/70 px-5 py-2.5 text-xs font-bold text-white transition-colors hover:bg-white hover:text-[#0051a8]"
+                                            className="mt-5 inline-flex items-center gap-2 rounded-md border border-gray-900/50 px-5 py-2.5 text-xs font-bold text-gray-900 transition-colors hover:bg-gray-900 hover:text-[#D9C035]"
                                         >
                                             Learn More <ArrowRight className="h-4 w-4" />
                                         </Link>
@@ -144,7 +150,7 @@ export default function BlogsPage() {
                         <div className="mt-14 text-center">
                             <Link
                                 href="/blogs"
-                                className="inline-flex items-center gap-2 rounded-md bg-white px-8 py-3 text-sm font-bold text-[#0051a8] shadow-md transition-colors hover:bg-[#eef4fb]"
+                                className="inline-flex items-center gap-2 rounded-md bg-white px-8 py-3 text-sm font-bold text-[#B8860B] shadow-md transition-colors hover:bg-[#eef4fb]"
                             >
                                 See More <ArrowRight className="h-4 w-4" />
                             </Link>
@@ -153,7 +159,7 @@ export default function BlogsPage() {
                 </section>
 
                 <div className="bg-[#eef4fb] leading-none">
-                    <Image src="/blog-section-svg.png" alt="" width={1440} height={104} className="h-auto w-full object-cover" />
+                    <Image src="/about-us-svg-inverted.png" alt="" width={1440} height={104} className="h-auto w-full object-cover" />
                 </div>
 
                 <div className="bg-[#eef4fb] pb-8 pt-20">

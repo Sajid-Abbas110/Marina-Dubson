@@ -24,7 +24,7 @@ const alexBrush = Alex_Brush({
 })
 
 export const viewport: Viewport = {
-    themeColor: '#182B3F',
+    themeColor: '#0B0B0C',
     width: 'device-width',
     initialScale: 1,
     maximumScale: 1,

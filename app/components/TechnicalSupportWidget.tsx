@@ -134,6 +134,16 @@ function TechnicalSupportInner() {
         if (!mountedRef.current) {
             window.TechnicalSupport.mount({
                 role, page: label, theme: 'auto',
+                mode: 'api',
+                apiEndpoint: '/api/assistant/ask',
+                getAuthHeaders: () => {
+                    try {
+                        const t = localStorage.getItem('token')
+                        return t ? { Authorization: `Bearer ${t}` } : {}
+                    } catch {
+                        return {}
+                    }
+                },
                 onLog: (entry: unknown) => console.log('[technical-support]', entry)
             })
             mountedRef.current = true

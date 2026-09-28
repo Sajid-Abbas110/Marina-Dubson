@@ -23,7 +23,7 @@ export default function PrivacyPolicy() {
                         Last Updated: April 15, 2026 | Effective Date: April 15, 2026
                     </p>
                     <p className="text-slate-400 max-w-3xl leading-relaxed">
-                        Marina Dubson Stenographic Services ("we," "us," or "our") is committed to protecting your privacy. 
+                        Marina Dubson Stenographic Services (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) is committed to protecting your privacy.
                         This Privacy Policy explains how we collect, use, disclose, and safeguard your personal information 
                         in compliance with the <strong>New York SHIELD Act</strong> and <strong>General Business Law Section 349</strong>.
                     </p>
@@ -508,7 +508,7 @@ export default function PrivacyPolicy() {
                             <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/10">
                                 <h4 className="text-white font-bold mb-2">Data Classification</h4>
                                 <p className="text-slate-400 text-sm">
-                                    All medical and health-related data is classified as "Highly Sensitive" and receives 
+                                    All medical and health-related data is classified as &quot;Highly Sensitive&quot; and receives
                                     the highest level of protection in our systems.
                                 </p>
                             </div>
@@ -645,7 +645,7 @@ export default function PrivacyPolicy() {
                             <p className="text-slate-400 text-sm leading-relaxed">
                                 We may update this Privacy Policy from time to time to reflect changes in our practices, 
                                 legal requirements, or operational needs. We will notify you of any material changes by 
-                                posting the updated policy on this page with a revised "Last Updated" date. We encourage 
+                                posting the updated policy on this page with a revised &quot;Last Updated&quot; date. We encourage
                                 you to review this policy periodically.
                             </p>
                         </div>

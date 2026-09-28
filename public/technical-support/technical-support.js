@@ -14,6 +14,12 @@
      page:  'Marketplace',       // current page label (see setContext)
      mode:  'scripted',          // 'scripted' (default) | 'api'
      apiEndpoint: '/api/assistant/ask',   // used only when mode==='api'
+     getAuthHeaders: function () {   // OPTIONAL, 'api' mode only. Return
+       // extra headers (e.g. { Authorization: 'Bearer ' + token }) to
+       // send with the ask request, read fresh on every question. Needed
+       // whenever the host app authenticates via header/token rather
+       // than an httpOnly cookie.
+     },
      onLog: function (entry) {    // OPTIONAL client hook. The server
        // POST entry to your audit endpoint. Server-side logging is
        // the authoritative record (see INTEGRATION.md).
@@ -38,7 +44,7 @@
 (function (root) {
   var KB, OOS, SUGGESTIONS, ROLE_LABEL;
 
-  var state = { role: "admin", page: "Dashboard", mode: "scripted", apiEndpoint: null, onLog: null, brand: "Technical Support" };
+  var state = { role: "admin", page: "Dashboard", mode: "scripted", apiEndpoint: null, getAuthHeaders: null, onLog: null, brand: "Technical Support" };
   var el = {}; // dom refs
   var mounted = false;
 
@@ -129,9 +135,16 @@
     if (state.mode === "api" && state.apiEndpoint) {
       var typing = bubble("ts-bot", "…");
       // Role is NOT sent — the server derives it from the session.
+      var headers = { "Content-Type": "application/json" };
+      if (typeof state.getAuthHeaders === "function") {
+        try {
+          var extra = state.getAuthHeaders() || {};
+          for (var hk in extra) { if (Object.prototype.hasOwnProperty.call(extra, hk)) headers[hk] = extra[hk]; }
+        } catch (e) { /* never let a header hook break the widget */ }
+      }
       fetch(state.apiEndpoint, {
         method: "POST", credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
+        headers: headers,
         body: JSON.stringify({ question: t, page: state.page })
       }).then(function(r){ return r.json(); })
         .then(function(data){
@@ -224,6 +237,7 @@
       if (cfg.page) state.page = cfg.page;
       if (cfg.mode) state.mode = cfg.mode;
       if (cfg.apiEndpoint) state.apiEndpoint = cfg.apiEndpoint;
+      if (cfg.getAuthHeaders) state.getAuthHeaders = cfg.getAuthHeaders;
       if (cfg.onLog) state.onLog = cfg.onLog;
       if (cfg.brandName) state.brand = cfg.brandName;
       state.theme = cfg.theme || "auto";

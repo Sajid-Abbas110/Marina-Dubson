@@ -1,11 +1,14 @@
-'use client'
-
-import React from 'react'
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Radio, ClipboardList, Gavel, Accessibility, FileCheck } from 'lucide-react'
 import { PublicHeader, PublicFooter } from '../components/landing/PublicLayout'
 import { MarinaCTA } from '../components/landing/MarinaHomepage'
+
+export const metadata: Metadata = {
+    title: 'Court Reporting Services | Realtime, Depositions, CART & Transcripts',
+    description: "Explore Marina Dubson's full range of stenographic services: realtime reporting, deposition transcripts, arbitrations and hearings, CART captioning, and certified transcript production.",
+}
 
 export default function ServicesPage() {
     return (
@@ -55,7 +58,7 @@ export default function ServicesPage() {
                 <section className="relative overflow-hidden bg-[#f4f6fa] pb-24 pt-20 md:pb-32 md:pt-28">
                     <div className="mx-auto max-w-7xl px-4 md:px-8">
                         <div className="mb-8 flex items-center gap-4">
-                            <div className="h-px w-24 bg-[#D4AF37]" />
+                            <div className="h-px w-24 bg-[#D9C035]" />
                             <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#B8860B]">Our Services</p>
                         </div>
 
@@ -93,11 +96,11 @@ export default function ServicesPage() {
                     </div>
 
                     <div className="absolute bottom-0 left-0 right-0 z-20 translate-y-px leading-none">
-                        <Image src="/our-mission-services-area-svg.png" alt="" width={1440} height={104} className="h-auto w-full object-cover" />
+                        <Image src="/about-us-svg.png" alt="" width={1440} height={104} className="h-auto w-full object-cover" />
                     </div>
                 </section>
 
-                <section className="overflow-hidden bg-[#0B0B0C] text-white">
+                <section className="overflow-hidden bg-[#D9C035] text-gray-900">
                     <div className="relative overflow-hidden">
                         <div className="absolute inset-0 z-0">
                             <Image
@@ -107,16 +110,16 @@ export default function ServicesPage() {
                                 className="object-cover object-right"
                             />
                         </div>
-                        <div className="relative z-10 mx-auto max-w-7xl px-4 py-32 md:px-8 md:py-40 lg:py-48">
-                            <div className="w-full md:w-3/5 lg:w-1/2">
+                        <div className="relative z-10 mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-40 lg:py-48">
+                            <div className="w-full rounded-xl bg-[#D9C035]/95 p-5 md:w-3/5 md:bg-transparent md:p-0 lg:w-1/2">
                                 <div className="mb-4 flex items-center gap-3">
                                     <Gavel className="h-6 w-6" />
-                                    <p className="text-[11px] font-bold uppercase tracking-[0.34em] text-white/75">Arbitrations &amp; Hearings</p>
+                                    <p className="text-[11px] font-bold uppercase tracking-[0.34em] text-gray-900/70">Arbitrations &amp; Hearings</p>
                                 </div>
                                 <h2 className="mb-6 text-[32px] font-black uppercase leading-[0.95] tracking-tight md:text-[42px]">
                                     Reliable Coverage for Hearings &amp; Legal Proceedings
                                 </h2>
-                                <p className="text-[15px] font-medium leading-relaxed text-white/90">
+                                <p className="text-[15px] font-medium leading-relaxed text-gray-900/80">
                                     Dependable coverage for arbitrations, administrative hearings, and legal proceedings, including government and ethics hearings. Marina&apos;s courtroom background means she&apos;s comfortable with the pace and formality these settings demand.
                                 </p>
                             </div>
@@ -124,23 +127,23 @@ export default function ServicesPage() {
                     </div>
 
                     <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-20 md:grid-cols-2 md:px-8 lg:gap-20 lg:py-28">
-                        <div className="relative mx-auto w-full max-w-[480px] h-[420px] rounded-2xl overflow-hidden">
+                        <div className="relative mx-auto w-full max-w-[420px] h-[420px] rounded-2xl overflow-hidden">
                             <Image
-                                src="/services-cart-background.png"
+                                src="/cart-new-image.png"
                                 alt="CART live captioning setup"
                                 fill
-                                className="object-cover object-center"
+                                className="object-contain object-center"
                             />
                         </div>
                         <div>
                             <div className="mb-4 flex items-center gap-3">
                                 <Accessibility className="h-6 w-6" />
-                                <p className="text-[11px] font-bold uppercase tracking-[0.34em] text-white/75">CART Services</p>
+                                <p className="text-[11px] font-bold uppercase tracking-[0.34em] text-gray-900/70">CART Services</p>
                             </div>
                             <h2 className="mb-6 text-[32px] font-black uppercase leading-[0.95] tracking-tight md:text-[42px]">
                                 Realtime Captioning for Accessible Communication
                             </h2>
-                            <p className="text-[15px] font-medium leading-relaxed text-white/90">
+                            <p className="text-[15px] font-medium leading-relaxed text-gray-900/80">
                                 Communication Access Realtime Translation (CART) for schools, universities, and live events — providing instant on-screen captioning that makes spoken content accessible. A natural extension of Marina&apos;s Realtime expertise.
                             </p>
                         </div>
@@ -148,7 +151,7 @@ export default function ServicesPage() {
                 </section>
 
                 <section className="relative bg-[#f4f6fa] pb-16 md:pb-24">
-                    <div className="h-[220px] bg-[#0B0B0C]" />
+                    <div className="h-[220px] bg-[#D9C035]" />
                     <div className="relative z-10 mx-auto w-[90%] max-w-6xl -mt-[220px]">
                         <div className="relative min-h-[480px] overflow-hidden rounded-2xl flex items-center justify-center">
                             <Image

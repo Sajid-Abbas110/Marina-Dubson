@@ -1,8 +1,22 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
 import prisma from '@/lib/prisma'
 import { PublicTopBar, PublicHeader, PublicFooter } from '@/app/components/landing/PublicLayout'
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+    const blog = await prisma.blogPost.findUnique({ where: { slug: params.slug } })
+
+    if (!blog || !blog.published) {
+        return { title: 'Blog | Marina Dubson Stenographic Services' }
+    }
+
+    return {
+        title: `${blog.title} | Marina Dubson Blog`,
+        description: blog.excerpt || `Read "${blog.title}" on the Marina Dubson Stenographic Services blog.`,
+    }
+}
 
 export default async function BlogDetailPage({ params }: { params: { slug: string } }) {
     const blog = await prisma.blogPost.findUnique({
@@ -24,7 +38,7 @@ export default async function BlogDetailPage({ params }: { params: { slug: strin
             <PublicHeader />
             <main>
                 <article className="max-w-4xl mx-auto px-4 md:px-8 py-16 md:py-20">
-                <Link href="/blogs" className="text-[10px] font-black uppercase tracking-widest text-[#0071c5] hover:text-[#0051a8]">
+                <Link href="/blogs" className="text-[10px] font-black uppercase tracking-widest text-[#B8860B] hover:text-[#D9C035]">
                     Back to Blogs
                 </Link>
 

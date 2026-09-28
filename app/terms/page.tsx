@@ -23,8 +23,8 @@ export default function TermsPage() {
                         Last Updated: April 15, 2026 | Effective Date: April 15, 2026
                     </p>
                     <p className="text-slate-400 max-w-3xl leading-relaxed">
-                        These Terms of Service ("Terms") constitute a legally binding agreement between you and 
-                        <strong> Marina Dubson Stenographic Services</strong> ("we," "us," or "our") regarding your use of our 
+                        These Terms of Service (&quot;Terms&quot;) constitute a legally binding agreement between you and
+                        <strong> Marina Dubson Stenographic Services</strong> (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) regarding your use of our
                         website, booking portal, and court reporting services. By accessing or using our services, you agree to these Terms.
                     </p>
                 </div>
@@ -447,7 +447,7 @@ export default function TermsPage() {
                             You agree to defend, indemnify, and hold harmless Marina Dubson Stenographic Services and its 
                             licensors, service providers, employees, agents, officers, and directors from and against any 
                             claims, liabilities, damages, judgments, awards, losses, costs, expenses, or fees (including 
-                            reasonable attorneys' fees) arising out of or relating to:
+                            reasonable attorneys&apos; fees) arising out of or relating to:
                         </p>
                         <ul className="space-y-2 text-slate-400 ml-4">
                             <li>• Your violation of these Terms</li>
@@ -473,7 +473,7 @@ export default function TermsPage() {
                             <p className="text-slate-400 text-sm">
                                 Before filing a claim, you agree to attempt to resolve any dispute informally by contacting 
                                 us at <a href="mailto:disputes@marinadubson.com" className="text-blue-400 hover:text-blue-300">disputes@marinadubson.com</a>. 
-                                We'll try to resolve the dispute informally for at least 30 days before either party 
+                                We&apos;ll try to resolve the dispute informally for at least 30 days before either party
                                 initiates formal proceedings.
                             </p>
                         </div>
@@ -486,7 +486,7 @@ export default function TermsPage() {
                             </p>
                             <ul className="space-y-2 text-slate-400 text-sm">
                                 <li>• Arbitration will be conducted in New York, New York</li>
-                                <li>• The arbitrator's decision will be final and binding</li>
+                                <li>• The arbitrator&apos;s decision will be final and binding</li>
                                 <li>• Each party bears its own costs, unless the arbitrator orders otherwise</li>
                                 <li>• Class action and representative action waivers apply</li>
                             </ul>

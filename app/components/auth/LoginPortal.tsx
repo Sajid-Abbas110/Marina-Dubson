@@ -174,7 +174,7 @@ export default function LoginPortal() {
             </div>
 
             {/* ── Right Panel ── */}
-            <div className="flex-1 flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-16 bg-background">
+            <div className="flex-1 flex flex-col justify-center px-6 pt-12 pb-24 sm:px-12 lg:px-16 bg-background">
                 {/* Mobile logo */}
                 <div className="lg:hidden flex items-center gap-3 mb-10">
                     <div className="h-10 w-10 rounded-xl flex items-center justify-center text-white"

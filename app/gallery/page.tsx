@@ -1,8 +1,13 @@
-import React from 'react'
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { PublicHeader, PublicFooter } from '@/app/components/landing/PublicLayout'
 import { MarinaCTA } from '@/app/components/landing/MarinaHomepage'
+
+export const metadata: Metadata = {
+    title: 'Gallery | Marina Dubson Stenographic Services',
+    description: "A visual look at Marina Dubson's professional court reporting work — realtime setups, depositions, and high-stakes proceedings across New York.",
+}
 
 // Note: JCP_MARINA-2811 (marina-at-desk.jpg) is now used elsewhere on the site
 // (About page, Home hero) and is excluded here to avoid a duplicate.
@@ -13,9 +18,6 @@ const imageFiles = [
     'JCP_MARINA-2756-20250508-Edit.jpg',
     'JCP_MARINA-2758-20250508-Edit.jpg',
     'JCP_MARINA-2815-20250508.jpg',
-    'JCP_MARINA-2819-20250508.jpg',
-    'JCP_MARINA-2833-20250508.jpg',
-    'JCP_MARINA-2861-20250508.jpg',
     'JCP_MARINA-2882-20250508-Edit.jpg',
     'JCP_MARINA-2891-20250508.jpg',
     'JCP_MARINA-2905-20250508.jpg',
@@ -30,6 +32,7 @@ const imageFiles = [
     'JCP_MARINA-3085-20250508.jpg',
     'JCP_MARINA-3087-20250508.jpg',
     'JCP_MARINA-3093-20250508.jpg',
+    'image-for-gallery.png',
 ]
 
 const focusPositions = [
@@ -39,9 +42,6 @@ const focusPositions = [
     'object-[50%_12%]',
     'object-[50%_12%]',
     'object-[50%_35%]',
-    'object-[52%_42%]',
-    'object-[48%_40%]',
-    'object-[50%_42%]',
     'object-[50%_45%]',
     'object-[52%_45%]',
     'object-[50%_45%]',
@@ -56,6 +56,7 @@ const focusPositions = [
     'object-[52%_36%]',
     'object-[48%_36%]',
     'object-[50%_36%]',
+    'object-[50%_40%]',
 ]
 
 export default function GalleryPage() {
@@ -64,7 +65,7 @@ export default function GalleryPage() {
             <PublicHeader />
 
             <main>
-                <section className="relative flex min-h-[720px] lg:min-h-[860px] items-center overflow-hidden bg-[#101820]">
+                <section className="relative flex min-h-[720px] lg:min-h-[860px] items-center overflow-hidden bg-[#0B0B0C]">
                     <div className="absolute inset-0 z-0">
                         <Image
                             src="/gallery-hero.png"
@@ -90,7 +91,7 @@ export default function GalleryPage() {
                             <div className="mt-9">
                                 <Link
                                     href="/contact"
-                                    className="inline-flex items-center justify-center rounded-md border border-white/70 px-8 py-4 text-sm font-bold uppercase tracking-widest text-white transition-colors hover:bg-white hover:text-black"
+                                    className="inline-flex items-center justify-center rounded-md border border-white/70 px-8 py-4 text-sm font-bold uppercase tracking-widest text-white transition-colors hover:bg-white hover:text-[#B8860B]"
                                 >
                                     Contact Marina
                                 </Link>
@@ -99,17 +100,17 @@ export default function GalleryPage() {
                     </div>
 
                     <div className="absolute bottom-0 left-0 right-0 z-20 translate-y-px leading-none">
-                        <Image src="/gallery-her-svg.png" alt="" width={1440} height={104} className="h-auto w-full object-cover" />
+                        <Image src="/about-us-svg.png" alt="" width={1440} height={104} className="h-auto w-full object-cover" />
                     </div>
                 </section>
 
-                <section className="relative overflow-hidden bg-[#0051a8] pb-28 pt-20 md:pb-36 md:pt-28">
+                <section className="relative overflow-hidden bg-[#D9C035] pb-28 pt-20 md:pb-36 md:pt-28">
                     <div className="mx-auto max-w-7xl px-4 md:px-8">
                         <div className="grid grid-cols-2 gap-5 md:grid-cols-3 md:gap-7 lg:grid-cols-4 lg:gap-8">
                             {imageFiles.map((image, index) => (
                                 <div
                                     key={image}
-                                    className="group relative aspect-square overflow-hidden rounded-md bg-[#00458f] shadow-md"
+                                    className="group relative aspect-square overflow-hidden rounded-md bg-[#B8860B] shadow-md"
                                 >
                                     <Image
                                         src={`/${image}`}
@@ -126,7 +127,7 @@ export default function GalleryPage() {
                 </section>
 
                 <div className="bg-[#f4f6fa] leading-none">
-                    <Image src="/gallery-section-svg.png" alt="" width={1440} height={104} className="h-auto w-full object-cover" />
+                    <Image src="/about-us-svg-inverted.png" alt="" width={1440} height={104} className="h-auto w-full object-cover" />
                 </div>
 
                 <div className="bg-[#f4f6fa] pb-16 pt-20">

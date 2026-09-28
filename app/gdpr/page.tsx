@@ -357,7 +357,7 @@ export default function GDPRPage() {
                         <div className="p-5 rounded-2xl bg-blue-500/5 border border-blue-500/20">
                             <h4 className="text-blue-400 font-bold mb-2">New York Residents</h4>
                             <p className="text-slate-400 text-sm">
-                                New York State Attorney General's Office<br />
+                                New York State Attorney General&apos;s Office<br />
                                 <a href="https://ag.ny.gov" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">
                                     ag.ny.gov
                                 </a>
