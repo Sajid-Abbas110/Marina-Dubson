@@ -198,7 +198,7 @@ export default function AboutPage() {
                     <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 md:grid-cols-2 md:px-8 lg:gap-20">
                         <div className="relative mx-auto flex w-full max-w-[550px] justify-center">
                             <Image
-                                src="/about-notable-experience.png"
+                                src="/WhyWorkWithMarina.jpg"
                                 alt="Marina Dubson on a notable proceeding"
                                 width={550}
                                 height={573}
